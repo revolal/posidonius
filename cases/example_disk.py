@@ -12,7 +12,7 @@ if __name__ == "__main__":
     #filename = posidonius.constants.BASE_DIR+"target/example.json"
 
     initial_time = 1.0e6*365.25 # time [days] where simulation starts
-    time_step = 0.08 # days
+    time_step = 0.3 #change from 0.08 # days
     #time_limit   = 4*time_step # days
     time_limit   = 365.25 * 1.0e7 # days
     historic_snapshot_period = 100.*365.25 # days
@@ -82,14 +82,14 @@ if __name__ == "__main__":
     #star_disk = posidonius.effects.disk.OrbitingBody()
     #star_disk = posidonius.effects.disk.Disabled()
     #
-    #star_evolution = posidonius.GalletBolmont2017(star_mass) # mass = 0.30 .. 1.40
+    star_evolution = posidonius.GalletBolmont2017(star_mass) # mass = 0.30 .. 1.40
     #star_evolution = posidonius.BolmontMathis2016(star_mass) # mass = 0.40 .. 1.40
     #star_evolution = posidonius.Baraffe2015(star_mass) # mass = 0.01 .. 1.40
     #star_evolution = posidonius.Leconte2011(star_mass) # mass = 0.01 .. 0.08
     #star_evolution = posidonius.Baraffe1998(star_mass) # Sun (mass = 1.0) or M-Dwarf (mass = 0.1)
     #star_evolution = posidonius.LeconteChabrier2013(False) # Jupiter without dissipation of dynamical tides
     #star_evolution = posidonius.LeconteChabrier2013(True) # Jupiter with dissipation of dynamical tides
-    star_evolution = posidonius.NonEvolving()
+    #star_evolution = posidonius.NonEvolving()
     #
     star = posidonius.Particle(star_mass, star_radius, star_radius_of_gyration, star_position, star_velocity, star_spin)
     star.set_tides(star_tides)
@@ -103,13 +103,13 @@ if __name__ == "__main__":
 
     ############################################################################
     planet_mass = 0.000954265748
-    planet_radius_factor = 0.845649342247916
+    planet_radius_factor = 0.102667942  #change from 0.845649342247916
     planet_radius = planet_radius_factor * posidonius.constants.R_SUN
     planet_radius_of_gyration = 4.88e-01
 
     #////////// Specify initial position and velocity for a stable orbit
     #////// Keplerian orbital elements, in the `asteroidal' format of Mercury code
-    a = 1.000;                             # semi-major axis (in AU)
+    a = 0.10;                             # semi-major axis (in AU)
     e = 0.1;                               # eccentricity
     i = 5. * posidonius.constants.DEG2RAD;                      # inclination (degrees)
     p = 0. * posidonius.constants.DEG2RAD;                                # argument of pericentre (degrees)

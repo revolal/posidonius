@@ -271,7 +271,7 @@ if __name__ == "__main__":
         ax.plot(planet_data['current_time'], planets_computed_data[key]['corotation_radius'], label=None, ls="--", c=line.get_color()) # corotation
     ax.set_ylabel(field+" (AU)")
     #ax.set_ylim([0.005, 0.028])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
@@ -282,7 +282,7 @@ if __name__ == "__main__":
         ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_obliquity'], label=key)
     ax.set_ylabel(field)
     #ax.set_ylim([0.0001, 100.0])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     ax.set_yscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
@@ -294,7 +294,7 @@ if __name__ == "__main__":
         ax.plot(planet_data['current_time'], planet_data[field], label=key)
     ax.set_ylabel(field)
     #ax.set_ylim([0.001, 1.000])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     ax.set_yscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
@@ -307,7 +307,7 @@ if __name__ == "__main__":
         ax.plot(planet_data['current_time'], planet_data[field] * (180 / np.pi), label=key) # From rad to degrees
     ax.set_ylabel('planet '+field+ " (deg)")
     #ax.set_ylim([0.5, 5.5])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
@@ -321,7 +321,7 @@ if __name__ == "__main__":
         ax.plot(planet_data['current_time'], planets_computed_data[key]['mean_tidal_flux'], label=None, ls="--", c=line.get_color()) # Mean energy loss
     ax.set_ylabel(field)
     #ax.set_ylim([1e-2, 1e5])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     ax.set_yscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
@@ -336,7 +336,7 @@ if __name__ == "__main__":
         ax.plot(planet_data['current_time'], planets_computed_data[key]['pseudo_synchronization_period'], label=None, ls="--", c=line.get_color()) # Pseudo-sync
     ax.set_ylabel(field)
     #ax.set_ylim([40, 160.0])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
@@ -345,7 +345,7 @@ if __name__ == "__main__":
     ax.plot(planet_data['current_time'], conservation_of_angular_momentum)
     ax.set_ylabel(field)
     #ax.set_ylim([0., 0.000007])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     ax.set_yscale('log')
 
     #ax = fig.add_subplot(5,3,8, sharex=ax)
@@ -358,7 +358,7 @@ if __name__ == "__main__":
         #ax.plot(planet_data['current_time'], planets_computed_data[key]['gravitational_energy_lost'], label=None, ls="--", c=line.get_color()) # Mean energy loss
     #ax.set_ylabel(field)
     ##ax.set_ylim([1e12, 1e19])
-    ##ax.set_xscale('log')
+    #ax.set_xscale('log')
     #ax.set_yscale('symlog')
     #ax.legend(loc=0, prop={'size':8})
     #ax = fig.add_subplot(5,3,8, sharex=ax)
@@ -372,7 +372,7 @@ if __name__ == "__main__":
         ax.plot(planet_data['current_time'], planets_computed_data[key]['orbital_period'], label=key) #
     ax.set_ylabel(field)
     #ax.set_ylim([1e12, 1e19])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     #ax.set_yscale('symlog')
     ax.legend(loc=0, prop={'size':8})
 
@@ -381,7 +381,7 @@ if __name__ == "__main__":
     ax.plot(planet_data['current_time'], star_rotation_period)
     ax.set_ylabel(field)
     #ax.set_ylim([2.915, 2.92])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     #plt.setp(ax.get_xticklabels(), visible=False)
 
     ax = fig.add_subplot(5,3,10, sharex=ax)
@@ -391,7 +391,7 @@ if __name__ == "__main__":
         ax.plot(planet_data['current_time'], planets_computed_data[key]['star_obliquity'], label=key)
     ax.set_ylabel(field)
     #ax.set_ylim([0.5, 5.5])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     #ax.set_yscale('symlog')
     ax.legend(loc=0, prop={'size':8})
 
@@ -402,7 +402,7 @@ if __name__ == "__main__":
         ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_precession_angle'], label=key)
     ax.set_ylabel(field)
     #ax.set_ylim([80., 100.])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     #ax.set_yscale('symlog')
     ax.legend(loc=0, prop={'size':8})
 
@@ -427,26 +427,26 @@ if __name__ == "__main__":
     ax.plot(planet_data['current_time'], relative_energy_error)
     ax.set_ylabel(field)
     #ax.set_ylim([-0.35, 0.05])
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
     #ax.set_yscale('symlog')
 
     ax = fig.add_subplot(5,3,13, sharex=ax)
     field = 'Star radius (AU)'
     ax.plot(star_data['current_time'], star_data['radius'])
     ax.set_ylabel(field)
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
 
     ax = fig.add_subplot(5,3,14, sharex=ax)
     field = 'Star radius of\ngyration 2'
     ax.plot(star_data['current_time'], star_data['radius_of_gyration_2'])
     ax.set_ylabel(field)
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
 
     ax = fig.add_subplot(5,3,15, sharex=ax)
     field = 'Star love number'
     ax.plot(star_data['current_time'], star_data['love_number'])
     ax.set_ylabel(field)
-    #ax.set_xscale('log')
+    ax.set_xscale('log')
 
     #ax.set_xlim([100.0, .0e8])
     plt.tight_layout()
