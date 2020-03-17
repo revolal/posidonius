@@ -396,7 +396,6 @@ pub fn calculate_denergy_dt(particles: &mut [Particle], more_particles: &mut [Pa
     }
 }
 
-
 pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particles: &mut [Particle], more_particles: &mut [Particle]) {
     let factor2 = 1. / tidal_host_particle.mass;
     let mut sum_total_tidal_force = Axes{x:0., y:0., z:0.};
