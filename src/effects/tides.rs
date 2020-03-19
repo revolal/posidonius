@@ -7,6 +7,7 @@ use super::{EvolutionType};
 
 use crate::constants::G;
 
+
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TidesParticleInputParameters {
     pub dissipation_factor: f64,
@@ -451,77 +452,76 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
     tidal_host_particle.tides.parameters.output.acceleration.z = -1.0 * factor2 * sum_total_tidal_force.z;
 }
 
-//Let's star the modifications bro:
-impl Particle{
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Let's star the modifications:
 
-    fn Excitatin_frequency(){
+pub fn apply_tidal_torque_kaula_coplanar(tidal_host_particle: &mut Particle, particles: &mut [Particle], more_particles: &mut [Particle]) {
 
-    }
+    for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
+        if let TidesEffect::OrbitingBody = particle.tides.effect {
 
-    pub fn fonction_G_excentricite(&mut self) -> [[f64; 5]; 3]{
+            let orbital_elements = tools::calculate_keplerian_orbital_elements(tidal_host_particle.mass+particle.mass, particle.heliocentric_position, particle.heliocentric_velocity);
+            let a = orbital_elements.0;
+            let e = orbital_elements.2;
 
-        let mut Stuff = calculate_keplerian_orbital_element(self.mass, self.inertial_position, self.inertial_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity]);
-    
-        let mut G_excentricite = [[0.9;5];3];
-        // in this notation: 0 is q=-2, 1 is q=-1, 2 is q=0, 3 is q=1, 4 is q=2 ... cf Kaula 64 Table 3
-    
-        G_excentricite[0][0] = 0.                                                          ;
-        G_excentricite[0][1] = -(1./2.)*self.eccentricity +(1./16.)*self.eccentricity.powf(3.)                             ;
-        G_excentricite[0][2] = 1. -(5./2.)*self.eccentricity.powf(2.) +(13./16.)*self.eccentricity.powf(4.)                ;
-        G_excentricite[0][3] = (7./2.)*self.eccentricity -(123./16.)*self.eccentricity.powf(3.)                            ;
-        G_excentricite[0][4] = (17./2.)*self.eccentricity.powf(2.) -(115./6.)*self.eccentricity.powf(4.)                   ;
-    
-        // G_excentricite[1][0] = (9./4.)*e.powf(2.) +(7./4.)*e.powf(4.)                      ;
-        // G_excentricite[1][1] = (3./2.)*e +(27./16.)*e.powf(3.)                             ;
-        // G_excentricite[1][2] = (1. -e.powf(2.)).powf(-(3./2.))                             ;
-        // G_excentricite[1][3] = (3./2.)*e +(27./16.)*e.powf(3.)                             ;
-        // G_excentricite[1][4] = (9./4.)*e.powf(2.) +(7./4.)*e.powf(4.)                      ;
-    
-        // G_excentricite[2][0] = (17./2.)*e.powf(2.) -(115./6.)*e.powf(4.)                   ;
-        // G_excentricite[2][1] = (7./2.)*e -(123./16.)*e.powf(3.)                            ;
-        // G_excentricite[2][2] = 1. -(5./2.)*e.powf(2.) +(13./16.)*e.powf(4.)                ;
-        // G_excentricite[2][3] = -(1./2.)*e + (1./16.)*e.powf(3.)                            ;
-        // G_excentricite[2][4] = 0.                                                          ;
-    
-        return G_excentricite;
-    }
-    
-    // fn fonction_F_inclinaison(i: f64) -> [[f64; 3]; 3]{
-    
-    //     let mut F_inclinaison = [[0.9;3];3];
-    //     // in this notation: 0 is q=-2, 1 is q=-1, 2 is q=0, 3 is q=1, 4 is q=2 ... cf Kaula 64 Table 3
-    
-    //     F_inclinaison[0][0] = -(3./8.)*i.sin().powf(2.)                                   ;
-    //     F_inclinaison[0][1] = (3./4.)*i.sin().powf(2.) -(1./2.)                           ;
-    //     F_inclinaison[0][2] = -(3./8.)*i.sin().powf(2.)                                   ;
-    
-    //     F_inclinaison[1][0] = (3./4.)*i.sin()*(1. +i.cos())                               ;
-    //     F_inclinaison[1][1] = -(3./2.)*i.sin()*i.cos()                                    ;
-    //     F_inclinaison[1][2] = (3./4.)*i.sin()*(1. +i.cos())                               ;
-    
-    //     F_inclinaison[2][0] = (3./4.)*(1. +i.cos()).powf(2.)                              ;
-    //     F_inclinaison[2][1] = (3./2.)*i.sin()                                             ;
-    //     F_inclinaison[2][2] = (3./4.)*(1. -i.cos())                                       ;
-        
-    //     return F_inclinaison;
-    // }
+            let mut tidal_torque_kaula_coplanar = [0.;3];
 
-    pub fn Tial_torque_Kaula_coplanar(&self, Star_mass: f64) {
+            //let mut e = 0.1;
 
-        let mut N = [0.;3];
-       // let mut F = fonction_F_inclinaison;
-        let mut G_excentricite = fonction_G_excentricite();
-        let mut Sum_over_q = 0.;
-        let mut q = 1;
+            let g_eccentricity = fonction_g_eccentricity(e);
 
-        N[2] = (3./2.)*(G*Star_mass.powf(2.)*self.radius);
+            let  sum_g_im_k2_over_q = 0.;
+            //let mut q = 1;
 
-        loop{
-            Sum_over_q += G_excentricite[0][q];
-            q += 1;
+            //tidal_torque_Kaula_coplanar[2] = (3./2.)*(G* tidal_host_particle.mass.powf(2.)* particle.radius.powf(5.))*( g_eccentricity[0][0] +g_eccentricity[0][1] +g_eccentricity[0][2] +g_eccentricity[0][3] +g_eccentricity[0][4]);
+            tidal_torque_kaula_coplanar[2] = (3./2.)*((G* tidal_host_particle.mass.powf(2.)* particle.radius.powf(5.))/a.powf(6.)) *sum_g_im_k2_over_q;
+
         }
-
     }
 }
 
+pub fn fonction_g_eccentricity(eccentricity: f64) -> [[f64; 5]; 3]{
 
+    let mut g_eccentricity = [[0.9;5];3];
+    // in this notation: 0 is q=-2, 1 is q=-1, 2 is q=0, 3 is q=1, 4 is q=2 ... cf Kaula 64 Table 3
+
+    g_eccentricity[0][0] = 0.                                                                                ;
+    g_eccentricity[0][1] = -(1./2.)*eccentricity +(1./16.)*eccentricity.powf(3.)                             ;
+    g_eccentricity[0][2] = 1. -(5./2.)*eccentricity.powf(2.) +(13./16.)*eccentricity.powf(4.)                ;
+    g_eccentricity[0][3] = (7./2.)*eccentricity -(123./16.)*eccentricity.powf(3.)                            ;
+    g_eccentricity[0][4] = (17./2.)*eccentricity.powf(2.) -(115./6.)*eccentricity.powf(4.)                   ;
+
+    g_eccentricity[1][0] = (9./4.)*eccentricity.powf(2.) +(7./4.)*eccentricity.powf(4.)                      ;
+    g_eccentricity[1][1] = (3./2.)*eccentricity +(27./16.)*eccentricity.powf(3.)                             ;
+    g_eccentricity[1][2] = (1. -eccentricity.powf(2.)).powf(-(3./2.))                             ;
+    g_eccentricity[1][3] = (3./2.)*eccentricity +(27./16.)*eccentricity.powf(3.)                             ;
+    g_eccentricity[1][4] = (9./4.)*eccentricity.powf(2.) +(7./4.)*eccentricity.powf(4.)                      ;
+
+    g_eccentricity[2][0] = (17./2.)*eccentricity.powf(2.) -(115./6.)*eccentricity.powf(4.)                   ;
+    g_eccentricity[2][1] = (7./2.)*eccentricity -(123./16.)*eccentricity.powf(3.)                            ;
+    g_eccentricity[2][2] = 1. -(5./2.)*eccentricity.powf(2.) +(13./16.)*eccentricity.powf(4.)                ;
+    g_eccentricity[2][3] = -(1./2.)*eccentricity + (1./16.)*eccentricity.powf(3.)                            ;
+    g_eccentricity[2][4] = 0.                                                          ;
+
+    return g_eccentricity;
+}
+
+pub fn fonction_f_inclinaison(inclinaison: f64) -> [[f64; 3]; 3]{
+
+    let mut f_inclinaison = [[0.9;3];3];
+    // in this notation: 0 is q=-2, 1 is q=-1, 2 is q=0, 3 is q=1, 4 is q=2 ... cf Kaula 64 Table 3
+
+    f_inclinaison[0][0] = -(3./8.)*inclinaison.sin().powf(2.)                                   ;
+    f_inclinaison[0][1] = (3./4.)*inclinaison.sin().powf(2.) -(1./2.)                           ;
+    f_inclinaison[0][2] = -(3./8.)*inclinaison.sin().powf(2.)                                   ;
+
+    f_inclinaison[1][0] = (3./4.)*inclinaison.sin()*(1. +inclinaison.cos())                               ;
+    f_inclinaison[1][1] = -(3./2.)*inclinaison.sin()*inclinaison.cos()                                    ;
+    f_inclinaison[1][2] = (3./4.)*inclinaison.sin()*(1. +inclinaison.cos())                               ;
+
+    f_inclinaison[2][0] = (3./4.)*(1. +inclinaison.cos()).powf(2.)                              ;
+    f_inclinaison[2][1] = (3./2.)*inclinaison.sin()                                             ;
+    f_inclinaison[2][2] = (3./4.)*(1. -inclinaison.cos())                                       ;
+    
+    return f_inclinaison;
+}

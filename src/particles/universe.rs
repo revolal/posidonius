@@ -9,6 +9,7 @@ use super::super::effects::{tides, rotational_flattening, general_relativity, ev
 use super::super::{TidesEffect, RotationalFlatteningEffect, DiskEffect, WindEffect};
 use super::super::{GeneralRelativityImplementation, GeneralRelativityEffect};
 
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct HostIndices {
     pub most_massive: usize,
@@ -494,6 +495,10 @@ impl Universe {
             //panic!("*** {:?}", self.particles[1].inertial_acceleration);
         }
 
+        if false {
+            //tides::apply_tidal_torque_Kaula_coplanar(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
+        }
+
     }
 
 
@@ -933,3 +938,4 @@ fn find_indices(particles: &Vec<Particle>, consider_effects: &ConsiderEffects) -
         }
     }
 }
+
