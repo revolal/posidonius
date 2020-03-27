@@ -86,12 +86,12 @@ if __name__ == "__main__":
     #
     #star_evolution = posidonius.GalletBolmont2017(star_mass) # mass = 0.30 .. 1.40
     #star_evolution = posidonius.BolmontMathis2016(star_mass) # mass = 0.40 .. 1.40
-    #star_evolution = posidonius.Baraffe2015(star_mass) # mass = 0.01 .. 1.40
+    star_evolution = posidonius.Baraffe2015(star_mass) # mass = 0.01 .. 1.40
     #star_evolution = posidonius.Leconte2011(star_mass) # mass = 0.01 .. 0.08
     #star_evolution = posidonius.Baraffe1998(star_mass) # Sun (mass = 1.0) or M-Dwarf (mass = 0.1)
     #star_evolution = posidonius.LeconteChabrier2013(False) # Jupiter without dissipation of dynamical tides
     #star_evolution = posidonius.LeconteChabrier2013(True) # Jupiter with dissipation of dynamical tides
-    star_evolution = posidonius.NonEvolving()
+    #star_evolution = posidonius.NonEvolving()
     #
     star = posidonius.Particle(star_mass, star_radius, star_radius_of_gyration, star_position, star_velocity, star_spin)
     star.set_tides(star_tides)
@@ -186,12 +186,12 @@ if __name__ == "__main__":
         #
         #planet_evolution = posidonius.GalletBolmont2017(planet_mass) # mass = 0.30 .. 1.40
         #planet_evolution = posidonius.BolmontMathis2016(planet_mass) # mass = 0.40 .. 1.40
-        #planet_evolution = posidonius.Baraffe2015(planet_mass) # mass = 0.01 .. 1.40
+        planet_evolution = posidonius.Baraffe2015(planet_mass) # mass = 0.01 .. 1.40
         #planet_evolution = posidonius.Leconte2011(planet_mass) # mass = 0.01 .. 0.08
         #planet_evolution = posidonius.Baraffe1998(planet_mass) # Sun (mass = 1.0) or M-Dwarf (mass = 0.1)
         #planet_evolution = posidonius.LeconteChabrier2013(False) # Jupiter without dissipation of dynamical tides
         #planet_evolution = posidonius.LeconteChabrier2013(True) # Jupiter with dissipation of dynamical tides
-        planet_evolution = posidonius.NonEvolving()
+        #planet_evolution = posidonius.NonEvolving()
         #
         planet = posidonius.Particle(planet_mass, planet_radius, planet_radius_of_gyration, planet_position, planet_velocity, planet_spin)
         planet.set_tides(planet_tides)

@@ -1,8 +1,12 @@
 use super::super::constants::{K2};
 use super::{Axes};
 use super::super::{Tides, RotationalFlattening, GeneralRelativity, Disk, Wind, EvolutionType};
+//use super::super::{Tides, RotationalFlattening, GeneralRelativity, Disk, Wind, EvolutionType, KaulaCoplanarTides};
 use super::super::{TidesEffect, RotationalFlatteningEffect, GeneralRelativityEffect, DiskEffect, WindEffect};
 use time;
+
+use crate::effects::tides::KaulaCoplanarTides;
+//use crate::effects::tides::MAchin;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Reference {
@@ -11,6 +15,7 @@ pub enum Reference {
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+//#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Particle {
     pub id: usize, // Unique internal identifier
     pub mass: f64,
@@ -47,6 +52,10 @@ pub struct Particle {
     pub reference: Reference, // Particle of reference for computing keplerian orbital parameters
     //
     pub tides: Tides,
+    /////////////////////////////////////////////////////////////
+    pub kaula_coplanar_tides: KaulaCoplanarTides,
+    //pub tides_types: MAchin,
+    /////////////////////////////////////////////////////////////
     pub rotational_flattening: RotationalFlattening,
     pub general_relativity: GeneralRelativity,
     pub wind: Wind,
@@ -61,9 +70,15 @@ impl Particle {
         let dissipation_factor = 0.;
         let dissipation_factor_scale = 0.;
         let love_number = 0.;
+        // //add://///////////////////////////////////////////////////////////////////////////////////////////
+        // let love_number_eccitation_frequency: Vec<f64>;
+        // let real_part_love_number: Vec<f64>;
+        // let imaginary_part_love_number: Vec<f64>;
+        // ///////////////////////////////////////////////////////////////////////////////////////////////////
         let k_factor = 0.;
         let rotation_saturation = 0.;
         let tides = Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number);
+        //let tides = Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number, love_number_eccitation_frequency, real_part_love_number, imaginary_part_love_number);
         let rotational_flattening = RotationalFlattening::new(RotationalFlatteningEffect::Disabled, love_number);
         let general_relativity = GeneralRelativity::new(GeneralRelativityEffect::Disabled);
         let wind = Wind::new(WindEffect::Disabled, k_factor, rotation_saturation);
@@ -106,6 +121,11 @@ impl Particle {
         let dissipation_factor = 0.;
         let dissipation_factor_scale = 0.;
         let love_number = 0.;
+        // //add:////////////////////////////////////////////////////////////////////////////////////
+        // let love_number_eccitation_frequency: Vec<f64>;
+        // let real_part_love_number: Vec<f64>;
+        // let imaginary_part_love_number: Vec<f64>;
+        // /////////////////////////////////////////////////////////////////////////////////////////
         let k_factor = 0.;
         let rotation_saturation = 0.;
         Particle { 
@@ -132,6 +152,7 @@ impl Particle {
             moment_of_inertia: 0.,
             reference: Reference::MostMassiveParticle,
             tides: Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number),
+            //tides: Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number, love_number_eccitation_frequency, real_part_love_number, imaginary_part_love_number),
             rotational_flattening: RotationalFlattening::new(RotationalFlatteningEffect::Disabled, love_number),
             general_relativity: GeneralRelativity::new(GeneralRelativityEffect::Disabled),
             wind: Wind::new(WindEffect::Disabled, k_factor, rotation_saturation),

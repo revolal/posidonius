@@ -496,7 +496,8 @@ impl Universe {
         }
 
         if false {
-            //tides::apply_tidal_torque_Kaula_coplanar(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
+            //Application tides::apply_tidal_torque_Kaula_coplanar(&mut tidal_host_particle, &mut particles_left, &mut particles_right); If particule type Kaula into calculate_torque_due_to_tides
+            //condition , if tidal if ...->pb other solution possible? or in function? mind
         }
 
     }
@@ -707,7 +708,8 @@ fn check_effects_vs_central_and_orbiting(particles: &Vec<Particle>, consider_eff
                 println!("[WARNING {} UTC] Particle {} has tidal effect (central body) but the tidal effect is disabled for this simulation", time::now_utc().strftime("%Y.%m.%d %H:%M:%S").unwrap(), i);
             }
         }
-        if let TidesEffect::OrbitingBody = particle.tides.effect {
+        //if let TidesEffect::OrbitingBody = particle.tides.effect {
+        if let TidesEffect::ConstTimeLagOrbitingBody = particle.tides.effect {
             found_tides_orbiting_body = true;
             if !consider_effects.tides {
                 println!("[WARNING {} UTC] Particle {} has tidal effect (orbiting body) but the tidal effect is disabled for this simulation", time::now_utc().strftime("%Y.%m.%d %H:%M:%S").unwrap(), i);

@@ -62,7 +62,6 @@ impl Evolver {
         let mut radius_of_gyration_2: Vec<f64> = Vec::new();
         let mut love_number: Vec<f64> = Vec::new();
         let mut inverse_tidal_q_factor: Vec<f64> = Vec::new();
-
         let filename = match evolution {
             EvolutionType::GalletBolmont2017(mass) => {
                 if mass <= 0.301 && mass >= 0.299 {
@@ -316,7 +315,6 @@ impl Evolver {
                     0.
                 }
             };
-
             // Only save values needed for the evolution model to save memory
             // and computation time when cloning
             match evolution {
