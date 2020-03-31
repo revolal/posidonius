@@ -1,0 +1,3 @@
+git remote add upstream git@github.com:marblestation/posidonius.git
+git remote add upstream https://github.com/marblestation/posidonius.git
+git push origin dev
