@@ -26,10 +26,11 @@ class Tides(object):
                         "dissipation_factor": 0.0,
                         "love_number": 0.0,
                     },
-                    "KaulaCoplanar": {
+                    "kaula_coplanar_tides_inout_parameters": {
                         "love_number_excitation_frequency": 0.0,
                         "imaginary_part_love_number": 0.0,
                         "real_part_love_number": 0.0,
+                        "num_datapoints": 0.0,
                     },
                 },
 ############################################################################################

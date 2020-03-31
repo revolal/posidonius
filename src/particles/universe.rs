@@ -495,11 +495,6 @@ impl Universe {
             //panic!("*** {:?}", self.particles[1].inertial_acceleration);
         }
 
-        if false {
-            //Application tides::apply_tidal_torque_Kaula_coplanar(&mut tidal_host_particle, &mut particles_left, &mut particles_right); If particule type Kaula into calculate_torque_due_to_tides
-            //condition , if tidal if ...->pb other solution possible? or in function? mind
-        }
-
     }
 
 

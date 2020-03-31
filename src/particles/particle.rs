@@ -5,8 +5,8 @@ use super::super::{Tides, RotationalFlattening, GeneralRelativity, Disk, Wind, E
 use super::super::{TidesEffect, RotationalFlatteningEffect, GeneralRelativityEffect, DiskEffect, WindEffect};
 use time;
 
-use crate::effects::tides::KaulaCoplanarTides;
-//use crate::effects::tides::MAchin;
+//use crate::effects::tides::KaulaCoplanarTides;
+//use crate::effects::tides::Machin;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Reference {
@@ -53,7 +53,7 @@ pub struct Particle {
     //
     pub tides: Tides,
     /////////////////////////////////////////////////////////////
-    pub kaula_coplanar_tides: KaulaCoplanarTides,
+    //pub kaula_coplanar_tides: KaulaCoplanarTides,
     //pub tides_types: MAchin,
     /////////////////////////////////////////////////////////////
     pub rotational_flattening: RotationalFlattening,
@@ -74,11 +74,15 @@ impl Particle {
         // let love_number_eccitation_frequency: Vec<f64>;
         // let real_part_love_number: Vec<f64>;
         // let imaginary_part_love_number: Vec<f64>;
+        let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
+        let real_part_love_number: [[f64;32];32] = [[0.;32];32];
+        let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
+        let num_datapoints: f64 = 0. ;
         // ///////////////////////////////////////////////////////////////////////////////////////////////////
         let k_factor = 0.;
         let rotation_saturation = 0.;
-        let tides = Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number);
-        //let tides = Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number, love_number_eccitation_frequency, real_part_love_number, imaginary_part_love_number);
+        //let tides = Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number);
+        let tides = Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number, love_number_excitation_frequency, real_part_love_number, imaginary_part_love_number, num_datapoints);
         let rotational_flattening = RotationalFlattening::new(RotationalFlatteningEffect::Disabled, love_number);
         let general_relativity = GeneralRelativity::new(GeneralRelativityEffect::Disabled);
         let wind = Wind::new(WindEffect::Disabled, k_factor, rotation_saturation);
@@ -125,6 +129,10 @@ impl Particle {
         // let love_number_eccitation_frequency: Vec<f64>;
         // let real_part_love_number: Vec<f64>;
         // let imaginary_part_love_number: Vec<f64>;
+        let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
+        let real_part_love_number: [[f64;32];32] = [[0.;32];32];
+        let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
+        let num_datapoints: f64 = 0.;
         // /////////////////////////////////////////////////////////////////////////////////////////
         let k_factor = 0.;
         let rotation_saturation = 0.;
@@ -151,8 +159,8 @@ impl Particle {
             moment_of_inertia_ratio: 1.,
             moment_of_inertia: 0.,
             reference: Reference::MostMassiveParticle,
-            tides: Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number),
-            //tides: Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number, love_number_eccitation_frequency, real_part_love_number, imaginary_part_love_number),
+            //tides: Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number),
+            tides: Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number, love_number_excitation_frequency, real_part_love_number, imaginary_part_love_number, num_datapoints),
             rotational_flattening: RotationalFlattening::new(RotationalFlatteningEffect::Disabled, love_number),
             general_relativity: GeneralRelativity::new(GeneralRelativityEffect::Disabled),
             wind: Wind::new(WindEffect::Disabled, k_factor, rotation_saturation),

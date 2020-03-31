@@ -10,79 +10,83 @@ use crate::constants::PI;
 
 //use crate::TidesTypes::{KaulaCoplanarModel, Nil};
 
-///////////////////////////////////////////////////////////////////////////////////////////////
-//#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
-//#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+// /////////////////////////////////////////////////////////////////////////////////////////////
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// //#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 // pub enum TidesTypes {
 //     ConstTimeLagModel,
 //     KaulaCoplanarModel,
 //     NoTides,
-//     Nil,
 // }
 
-// #[derive(Debug, Serialize, Deserialize, PartialEq)]
-// pub struct MostGeneralListTides {
-//     pub tides_types: TidesTypes,
-//     pub love_number_excitation_frequency: Vec<f64>,
-//     pub real_part_love_number: Vec<f64>,
-//     pub imaginary_part_love_number: Vec<f64>,
-
-// // }
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// impl TidesTypes {
+//     ConstTimeLagModel: Tides,
+//     KaulaCoplanarModel : KaulaCoplanarTides,
+// }
 
 // #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 // pub struct Machin {
 //     pub lestypes: TidesTypes,
 // }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+//#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct KaulaCoplanarTidesInputParticleParameters {
-    pub love_number_excitation_frequency: Vec<f64>,
-    pub real_part_love_number: Vec<f64>,
-    pub imaginary_part_love_number: Vec<f64>,
-}
-//#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct KaulaCoplanarTidesParticleParameters {
-    pub input: KaulaCoplanarTidesInputParticleParameters,
-    // pub internal: TidesParticleInternalParameters,
-    // pub output: TidesParticleOutputParameters,
+    // pub love_number_excitation_frequency: Vec<f64>,
+    // pub real_part_love_number: Vec<f64>,
+    // pub imaginary_part_love_number: Vec<f64>,
+    pub love_number_excitation_frequency: [[f64;32];32],
+    pub real_part_love_number: [[f64;32];32],
+    pub imaginary_part_love_number: [[f64;32];32],
+    pub num_datapoints: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct KaulaCoplanarTides {
-    pub parameters: KaulaCoplanarTidesParticleParameters,
-}
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// //#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+// pub struct KaulaCoplanarTidesParticleParameters {
+//     pub input: KaulaCoplanarTidesInputParticleParameters,
+//     // pub internal: TidesParticleInternalParameters,
+//     // pub output: TidesParticleOutputParameters,
+// }
 
-impl KaulaCoplanarTides {
-    pub fn new( love_number_excitation_frequency: Vec<f64>, real_part_love_number: Vec<f64>, imaginary_part_love_number: Vec<f64>) -> KaulaCoplanarTides {
-        KaulaCoplanarTides {
-            parameters: KaulaCoplanarTidesParticleParameters {
-                input: KaulaCoplanarTidesInputParticleParameters{
-                    love_number_excitation_frequency: love_number_excitation_frequency,
-                    real_part_love_number: real_part_love_number,
-                    imaginary_part_love_number: imaginary_part_love_number,
-                },
-                // internal: TidesParticleInternalParameters {
-                //     distance: 0.,
-                //     radial_velocity: 0.,
-                //     scaled_dissipation_factor: dissipation_factor_scale*dissipation_factor,
-                //     scalar_product_of_vector_position_with_stellar_spin: 0.,
-                //     scalar_product_of_vector_position_with_planetary_spin: 0.,
-                //     orthogonal_component_of_the_tidal_force_due_to_stellar_tide: 0.,
-                //     orthogonal_component_of_the_tidal_force_due_to_planetary_tide: 0.,
-                //     radial_component_of_the_tidal_force: 0.,
-                //     radial_component_of_the_tidal_force_dissipative_part_when_star_as_point_mass: 0.,
-                //     denergy_dt: 0., // Only for history output
-                //     lag_angle: 0., // It will be initialized the first time the evolver is called
-                // },
-                // output: TidesParticleOutputParameters {
-                //     acceleration: Axes{x: 0., y: 0., z: 0.},
-                //     dangular_momentum_dt: Axes{x: 0., y: 0., z: 0.},
-                // },
-            },
-        }
-    }
-}
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// pub struct KaulaCoplanarTides {
+//     pub parameters: KaulaCoplanarTidesParticleParameters,
+// }
+
+// impl KaulaCoplanarTides {
+//     // pub fn new( love_number_excitation_frequency: Vec<f64>, real_part_love_number: Vec<f64>, imaginary_part_love_number: Vec<f64>) -> KaulaCoplanarTides {
+//     pub fn new( love_number_excitation_frequency: [[f64;32];32], real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], num_datapoints:usize) -> KaulaCoplanarTides {
+//         KaulaCoplanarTides {
+//             parameters: KaulaCoplanarTidesParticleParameters {
+//                 input: KaulaCoplanarTidesInputParticleParameters{
+//                     love_number_excitation_frequency: love_number_excitation_frequency,
+//                     real_part_love_number: real_part_love_number,
+//                     imaginary_part_love_number: imaginary_part_love_number,
+//                     num_datapoints: num_datapoints,
+//                 },
+//                 // internal: TidesParticleInternalParameters {
+//                 //     distance: 0.,
+//                 //     radial_velocity: 0.,
+//                 //     scaled_dissipation_factor: dissipation_factor_scale*dissipation_factor,
+//                 //     scalar_product_of_vector_position_with_stellar_spin: 0.,
+//                 //     scalar_product_of_vector_position_with_planetary_spin: 0.,
+//                 //     orthogonal_component_of_the_tidal_force_due_to_stellar_tide: 0.,
+//                 //     orthogonal_component_of_the_tidal_force_due_to_planetary_tide: 0.,
+//                 //     radial_component_of_the_tidal_force: 0.,
+//                 //     radial_component_of_the_tidal_force_dissipative_part_when_star_as_point_mass: 0.,
+//                 //     denergy_dt: 0., // Only for history output
+//                 //     lag_angle: 0., // It will be initialized the first time the evolver is called
+//                 // },
+//                 // output: TidesParticleOutputParameters {
+//                 //     acceleration: Axes{x: 0., y: 0., z: 0.},
+//                 //     dangular_momentum_dt: Axes{x: 0., y: 0., z: 0.},
+//                 // },
+//             },
+//         }
+//     }
+// }
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 //#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TidesParticleInputParameters {
@@ -90,8 +94,7 @@ pub struct TidesParticleInputParameters {
     pub dissipation_factor_scale: f64, // to scale the dissipation factor (multiply)
     pub love_number: f64,   // Love number of degree 2 (i.e., k2). Dimensionless parameters that measure the rigidity of a planetary body and the 
                             // susceptibility of its shape to change in response to a tidal potential.
-    //pub kaula_coplanar_tides_parameters: Box::new<KaulaCoplanarTidesParticleParameters>,
-    //pub kaula_coplanar_tides_parameters: KaulaCoplanarModel(KaulaCoplanarTidesParticleParameters, Box::new(Nil)),
+    pub kaula_coplanar_tides_input_parameters: KaulaCoplanarTidesInputParticleParameters,
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,8 +158,8 @@ pub struct Tides {
 }
 
 impl Tides {
-    pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64) -> Tides {
-    //pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64, love_number_excitation_frequency: Vec<f64>, real_part_love_number: Vec<f64>, imaginary_part_love_number: Vec<f64>) -> Tides {
+    //pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64) -> Tides {
+    pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64, love_number_excitation_frequency: [[f64;32];32], real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], num_datapoints: f64) -> Tides {
         Tides {
             effect: effect,
             parameters: TidesParticleParameters {
@@ -165,11 +168,12 @@ impl Tides {
                     dissipation_factor_scale: dissipation_factor_scale,
                     love_number: love_number,
                     // ////////////////////////////////////////////////////////////////////////////////
-                    // kaula_coplanar_tides_parameters : KaulaCoplanarTidesParameters {
-                    //     love_number_excitation_frequency: love_number_excitation_frequency,
-                    //     real_part_love_number: real_part_love_number,
-                    //     imaginary_part_love_number: imaginary_part_love_number,
-                    // },
+                    kaula_coplanar_tides_input_parameters: KaulaCoplanarTidesInputParticleParameters {
+                        love_number_excitation_frequency: love_number_excitation_frequency,
+                        real_part_love_number: real_part_love_number,
+                        imaginary_part_love_number: imaginary_part_love_number,
+                        num_datapoints: num_datapoints,
+                    },
                     // ////////////////////////////////////////////////////////////////////////////////
                 },
                 internal: TidesParticleInternalParameters {
@@ -402,20 +406,21 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             let spin = particle.norm_spin_vector_2.sqrt();
 
             let mut tidal_torque_kaula_coplanar = [0.;3];
-            let mut im_k2 = particle.kaula_coplanar_tides.imaginary_part_love_number; //KaulaCoplanarTides::imaginary_part_love_number; 
-            let mut w_lmpq = particle.kaula_coplanar_tides_parameters.love_number_excitation_frequency;  //KaulaCoplanarTides::love_number_excitation_frequency;
+//            let mut im_k2 = particle.tides.kaula_coplanar_tides_input_parameters.imaginary_part_love_number; //KaulaCoplanarTides::imaginary_part_love_number; 
+//            let mut w_lmpq = particle.tides.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;  //KaulaCoplanarTides::love_number_excitation_frequency;
+            let im_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.imaginary_part_love_number;
+            let w_lmpq = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;
 
             //let mut e = 0.1;
 
+            let eccentricity_function = eccentricty_function_g(eccentricity);
 
-            let eccentricity_function = Eccentricty_function_G(eccentricity);
-
-            let  sum_g_im_k2_over_q = 0.;
+            let mut sum_g_im_k2_over_q = 0.;
             let mut q = -2.;
 
-            for mut x in 0..5{
+            for x in 0..5{
                 //w_lmpq = 2.*(spin - orbital_frequency) + (q)*spin ;
-                sum_g_im_k2_over_q = sum_g_im_k2_over_q + ( eccentricity_function[0][x] * ImaginaryKaulaNumberAndFrequency(im_k2, w_lmpq, q, orbital_frequency, spin) );
+                sum_g_im_k2_over_q = sum_g_im_k2_over_q + ( eccentricity_function[0][x] * imaginary_kaula_number(im_k2, w_lmpq, q, orbital_frequency, spin) );
                 q+=1.;
             }
 
@@ -581,9 +586,9 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
             particle.tides.parameters.output.acceleration.y = factor1 * total_tidal_force_y;
             particle.tides.parameters.output.acceleration.z = factor1 * total_tidal_force_z;
         }
-        // if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
-
-        // }
+        if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
+            
+        }
     }
 
     // - Equation 19 from Bolmont et al. 2015 (second term)
@@ -601,7 +606,7 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Let's star the modifications:
 
-pub fn Eccentricty_function_G(eccentricity: f64) -> [[f64; 5]; 3]{
+pub fn eccentricty_function_g(eccentricity: f64) -> [[f64; 5]; 3]{
 
     let mut eccentricity_function = [[0.9;5];3];
     // in this notation: 0 is q=-2, 1 is q=-1, 2 is q=0, 3 is q=1, 4 is q=2 ... cf Kaula 64 Table 3
@@ -627,9 +632,9 @@ pub fn Eccentricty_function_G(eccentricity: f64) -> [[f64; 5]; 3]{
     return eccentricity_function;
 }
 
-pub fn Inclination_function_F(inclination: f64) -> [[f64; 3]; 3]{
+pub fn _inclination_function_f(inclination: f64) -> [[f64; 3]; 3]{
 
-    let mut inclination_function = [[0.9;3];3];
+    let mut inclination_function = [[0.;3];3];
     // in this notation: 0 is q=-2, 1 is q=-1, 2 is q=0, 3 is q=1, 4 is q=2 ... cf Kaula 64 Table 3
 
     inclination_function[0][0] = -(3./8.)*inclination.sin().powf(2.);
@@ -647,34 +652,36 @@ pub fn Inclination_function_F(inclination: f64) -> [[f64; 3]; 3]{
     return inclination_function;
 }
 
-pub fn ImaginaryKaulaNumberAndFrequency(imaginary_part_love_number: Vec<f64>, love_number_excitation_frequency: Vec<f64>, integer_q: f64, orbital_frequency: f64, spin_frequency: f64) -> f64{
+pub fn imaginary_kaula_number(imaginary_part_love_number: [[f64;32];32], love_number_excitation_frequency: [[f64;32];32], integer_q: f64, orbital_frequency: f64, spin_frequency: f64) -> f64{
 
     let mut w_k2 = 2.*(spin_frequency - orbital_frequency) + integer_q*spin_frequency ;
-    let mut Im_k2 = 0.;
-    let mut love_frequency_low_value = love_number_excitation_frequency[0];
-    let mut love_number_low_value = imaginary_part_love_number[0];
+    let mut im_k2 = 0.;
+    let mut love_frequency_low_value = love_number_excitation_frequency[0][0];
+    let mut love_number_low_value = imaginary_part_love_number[0][0];
 
-    for frequency in 0..love_number_excitation_frequency.len(){
-        if love_number_excitation_frequency[frequency] > w_k2 {
-            if love_number_excitation_frequency[frequency] == love_frequency_low_value {
-                w_k2 = love_number_excitation_frequency[frequency] ;
-                Im_k2 = imaginary_part_love_number[frequency];
-                break;
+    for frequency1 in 0..love_number_excitation_frequency.len(){
+        for frequency2 in 0..love_number_excitation_frequency.len(){
+            if love_number_excitation_frequency[frequency1][frequency2] > w_k2 {
+                if love_number_excitation_frequency[frequency1][frequency2] == love_frequency_low_value {
+                    w_k2 = love_number_excitation_frequency[frequency1][frequency2] ;
+                    im_k2 = imaginary_part_love_number[frequency1][frequency2];
+                    break;
+                }
+                else { 
+                    w_k2 = ( love_number_excitation_frequency[frequency1][frequency2] - love_frequency_low_value )/ 2.;
+                    im_k2 = ( imaginary_part_love_number[frequency1][frequency2] - love_number_low_value )/2.;
+                    break;
+                }
             }
-            else { 
-                w_k2 = ( love_number_excitation_frequency[frequency] - love_frequency_low_value )/ 2.;
-                Im_k2 = ( imaginary_part_love_number[frequency] - love_number_low_value )/2.;
-                break;
-            }
+            love_frequency_low_value = love_number_excitation_frequency[frequency1][frequency2];
+            love_number_low_value = imaginary_part_love_number[frequency1][frequency2];
+
+            // match w_k2.cmp(&love_number_excitation_frequency[frequency]){
+            //     Ordering::Greater =>,
+            //     Ordering::Equal => ,
+            //     Ordering::Less =>,
+            // }
         }
-        love_frequency_low_value = love_number_excitation_frequency[frequency];
-        love_number_low_value = imaginary_part_love_number[frequency];
-
-        // match w_k2.cmp(&love_number_excitation_frequency[frequency]){
-        //     Ordering::Greater =>,
-        //     Ordering::Equal => ,
-        //     Ordering::Less =>,
-        // }
     }
-    return Im_k2
+    return im_k2
 }
