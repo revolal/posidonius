@@ -26,7 +26,7 @@ class Tides(object):
                         "dissipation_factor": 0.0,
                         "love_number": 0.0,
                     },
-                    "kaula_coplanar_tides_inout_parameters": {
+                    "kaula_coplanar_tides_input_parameters": {
                         "love_number_excitation_frequency": 0.0,
                         "imaginary_part_love_number": 0.0,
                         "real_part_love_number": 0.0,
@@ -108,8 +108,8 @@ class Tides(object):
         elif variant in ("KaulaCoplanarCentralBody","KaulaCoplanarOrbitingBody"):
             self._data["effect"] = variant
             for key, value in six.iteritems(input_parameters):
-                if key in self._data["parameters"]["input"]["KaulaCoplanar"]:
-                    self._data["parameters"]["input"]["KaulaCoplanar"][key] = value
+                if key in self._data["parameters"]["input"]["kaula_coplanar_tides_input_parameters"]:
+                    self._data["parameters"]["input"]["kaula_coplanar_tides_input_parameters"][key] = value
                 else:
                     print("Ignored parameter: {}".format(key))
 ############################################################################################

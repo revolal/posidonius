@@ -39,7 +39,7 @@ pub struct KaulaCoplanarTidesInputParticleParameters {
     pub love_number_excitation_frequency: [[f64;32];32],
     pub real_part_love_number: [[f64;32];32],
     pub imaginary_part_love_number: [[f64;32];32],
-    pub num_datapoints: f64,
+    pub num_datapoints: i32,
 }
 
 // #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
@@ -159,7 +159,7 @@ pub struct Tides {
 
 impl Tides {
     //pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64) -> Tides {
-    pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64, love_number_excitation_frequency: [[f64;32];32], real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], num_datapoints: f64) -> Tides {
+    pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64, love_number_excitation_frequency: [[f64;32];32], real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], num_datapoints: i32) -> Tides {
         Tides {
             effect: effect,
             parameters: TidesParticleParameters {
@@ -406,10 +406,11 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             let spin = particle.norm_spin_vector_2.sqrt();
 
             let mut tidal_torque_kaula_coplanar = [0.;3];
-//            let mut im_k2 = particle.tides.kaula_coplanar_tides_input_parameters.imaginary_part_love_number; //KaulaCoplanarTides::imaginary_part_love_number; 
-//            let mut w_lmpq = particle.tides.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;  //KaulaCoplanarTides::love_number_excitation_frequency;
+
             let im_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.imaginary_part_love_number;
+            let re_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
             let w_lmpq = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;
+            let nm_data = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
 
             //let mut e = 0.1;
 
@@ -419,8 +420,9 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             let mut q = -2.;
 
             for x in 0..5{
-                //w_lmpq = 2.*(spin - orbital_frequency) + (q)*spin ;
-                sum_g_im_k2_over_q = sum_g_im_k2_over_q + ( eccentricity_function[0][x] * imaginary_kaula_number(im_k2, w_lmpq, q, orbital_frequency, spin) );
+                let excitative_frequency = 2.*(spin - orbital_frequency) + (q)*spin ;
+                let imaginary_kaula_number = kaula_number(excitative_frequency, nm_data, re_k2, im_k2, w_lmpq);
+                sum_g_im_k2_over_q = sum_g_im_k2_over_q + ( eccentricity_function[0][x].powf(2.) * imaginary_kaula_number.1 );
                 q+=1.;
             }
 
@@ -517,6 +519,43 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
             // Sum of the dissipative and conservative part of the radial force
             // - First line Equation 5 from Bolmont et al. 2015
             particle.tides.parameters.internal.radial_component_of_the_tidal_force = radial_component_of_the_tidal_force_conservative_part + radial_component_of_the_tidal_force_dissipative_part;
+        }
+
+        if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
+            
+            let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
+            //it return (a, q, eccentricity, i, p, n, l, orbital_period)
+            let _semi_major_axis = orbital_elements.0;
+            let eccentricity = orbital_elements.2;
+            let orbital_period = orbital_elements.7;
+            let orbital_frequency = (2.*PI) / (orbital_period *24.*60.*60.); // in 1/s
+            let spin = particle.norm_spin_vector_2.sqrt();
+
+            let imaginary_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.imaginary_part_love_number;
+            let real_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
+            let w_lmpq = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;
+            let nm_data = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
+
+            let eccentricity_function = eccentricty_function_g(eccentricity);
+            let mut excitative_frequency: f64;
+            let mut sum_over_q = 0.;
+            let mut q = -2.;
+            let mut _j = -2.;
+
+            for x in 0..5{
+                
+                // sum_over_q = sum_over_q -(3./4.) ( eccentricity_function[1][x].powf(2.) * real_part_love_number(nm_data, re_k2, w_lmpq, q, orbital_frequency, spin) );
+                excitative_frequency = sigma_2mpq(0., 1., q, spin, orbital_frequency);
+                let mut real_kaula_number = kaula_number(excitative_frequency, nm_data, real_k2, imaginary_k2, w_lmpq);
+                sum_over_q = sum_over_q -(3./4.)*( eccentricity_function[1][x].powf(2.) * real_kaula_number.0 );
+                
+                excitative_frequency = sigma_2mpq(2., 0., q, spin, orbital_frequency);
+                real_kaula_number = kaula_number( excitative_frequency, nm_data, real_k2, imaginary_k2, w_lmpq );
+                sum_over_q = sum_over_q -(9./4.)*( eccentricity_function[0][x].powf(2.) * real_kaula_number.0 );
+                
+                q+=1.;
+            }
+            
         }
     }
 }
@@ -652,29 +691,114 @@ pub fn _inclination_function_f(inclination: f64) -> [[f64; 3]; 3]{
     return inclination_function;
 }
 
-pub fn imaginary_kaula_number(imaginary_part_love_number: [[f64;32];32], love_number_excitation_frequency: [[f64;32];32], integer_q: f64, orbital_frequency: f64, spin_frequency: f64) -> f64{
+// pub fn imaginary_kaula_number(nm_data:i32, imaginary_part_love_number: [[f64;32];32], love_number_excitation_frequency: [[f64;32];32], integer_q: f64, orbital_frequency: f64, spin_frequency: f64) -> f64{
 
-    let mut w_k2 = 2.*(spin_frequency - orbital_frequency) + integer_q*spin_frequency ;
+//     let mut w_k2 = 2.*(spin_frequency - orbital_frequency) + integer_q*spin_frequency ;
+//     let mut im_k2 = 0.;
+//     let mut love_frequency_low_value = love_number_excitation_frequency[0][0];
+//     let mut love_number_low_value = imaginary_part_love_number[0][0];
+//     let mut x = 0;
+
+//     for frequency1 in 0..love_number_excitation_frequency.len(){
+//         for frequency2 in 0..love_number_excitation_frequency.len(){
+//             if love_number_excitation_frequency[frequency1][frequency2] > w_k2 {
+//                 if love_number_excitation_frequency[frequency1][frequency2] == love_frequency_low_value {
+//                     w_k2 = love_number_excitation_frequency[frequency1][frequency2] ;
+//                     im_k2 = imaginary_part_love_number[frequency1][frequency2];
+//                     break;
+//                 }
+//                 else { 
+//                     w_k2 = ( love_number_excitation_frequency[frequency1][frequency2] - love_frequency_low_value )/ 2.;
+//                     im_k2 = ( imaginary_part_love_number[frequency1][frequency2] - love_number_low_value )/2.;
+//                     break;
+//                 }
+//             }
+//             love_frequency_low_value = love_number_excitation_frequency[frequency1][frequency2];
+//             love_number_low_value = imaginary_part_love_number[frequency1][frequency2];
+
+//             x = x +1;
+//             if x==nm_data{break;}
+
+//             // match w_k2.cmp(&love_number_excitation_frequency[frequency]){
+//             //     Ordering::Greater =>,
+//             //     Ordering::Equal => ,
+//             //     Ordering::Less =>,
+//             // }
+//         }
+//     }
+//     return im_k2
+// }
+// //Thoses two function must be just one!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// pub fn real_kaula_number( w_k2:f64, nm_data:i32, real_part_love_number: [[f64;32];32], love_number_excitation_frequency: [[f64;32];32], _integer_q: f64, _orbital_frequency: f64, _spin_frequency: f64) -> f64{
+
+//     //let mut w_k2 = 2.*(spin_frequency - orbital_frequency) + integer_q*spin_frequency ;
+//     let mut re_k2 = 0.;
+//     let mut love_frequency_low_value = love_number_excitation_frequency[0][0];
+//     let mut love_number_low_value = real_part_love_number[0][0];
+//     let mut x = 0;
+
+//     for frequency1 in 0..love_number_excitation_frequency.len(){
+//         for frequency2 in 0..love_number_excitation_frequency.len(){
+//             if love_number_excitation_frequency[frequency1][frequency2] > w_k2 {
+//                 if love_number_excitation_frequency[frequency1][frequency2] == love_frequency_low_value {
+//                     //w_k2 = love_number_excitation_frequency[frequency1][frequency2] ;
+//                     re_k2 = real_part_love_number[frequency1][frequency2];
+//                     break;
+//                 }
+//                 else { 
+//                     //w_k2 = ( love_number_excitation_frequency[frequency1][frequency2] - love_frequency_low_value )/ 2.;
+//                     re_k2 = ( real_part_love_number[frequency1][frequency2] - love_number_low_value )/2.;
+//                     break;
+//                 }
+//             }
+//             love_frequency_low_value = love_number_excitation_frequency[frequency1][frequency2];
+//             love_number_low_value = real_part_love_number[frequency1][frequency2];
+
+//             x = x +1;
+//             if x==nm_data{break;}
+
+//         }
+//     }
+//     return re_k2
+// }
+
+pub fn sigma_2mpq(m:f64, p:f64, q:f64, spin:f64, orbital_frequency: f64) -> f64{
+
+    return (2. -2.*p + q)*spin -m*orbital_frequency;
+}
+
+pub fn kaula_number(w_k2:f64, nm_data:i32, real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], love_number_excitation_frequency: [[f64;32];32] ) -> (f64,f64){
+
+    //let mut w_k2 = 2.*(spin_frequency - orbital_frequency) + integer_q*spin_frequency ;
+    let mut re_k2 = 0.;
     let mut im_k2 = 0.;
     let mut love_frequency_low_value = love_number_excitation_frequency[0][0];
-    let mut love_number_low_value = imaginary_part_love_number[0][0];
+    let mut im_love_number_low_value = imaginary_part_love_number[0][0];
+    let mut re_love_number_low_value = real_part_love_number[0][0];
+    let mut x = 0;
 
     for frequency1 in 0..love_number_excitation_frequency.len(){
         for frequency2 in 0..love_number_excitation_frequency.len(){
             if love_number_excitation_frequency[frequency1][frequency2] > w_k2 {
                 if love_number_excitation_frequency[frequency1][frequency2] == love_frequency_low_value {
-                    w_k2 = love_number_excitation_frequency[frequency1][frequency2] ;
+                    //w_k2 = love_number_excitation_frequency[frequency1][frequency2];
+                    re_k2 = real_part_love_number[frequency1][frequency2];
                     im_k2 = imaginary_part_love_number[frequency1][frequency2];
                     break;
                 }
                 else { 
-                    w_k2 = ( love_number_excitation_frequency[frequency1][frequency2] - love_frequency_low_value )/ 2.;
-                    im_k2 = ( imaginary_part_love_number[frequency1][frequency2] - love_number_low_value )/2.;
+                    //w_k2 = ( love_number_excitation_frequency[frequency1][frequency2] - love_frequency_low_value )/ 2.;
+                    re_k2 = ( real_part_love_number[frequency1][frequency2] - re_love_number_low_value )/2.;
+                    im_k2 = ( imaginary_part_love_number[frequency1][frequency2] - im_love_number_low_value )/2.;
                     break;
                 }
             }
             love_frequency_low_value = love_number_excitation_frequency[frequency1][frequency2];
-            love_number_low_value = imaginary_part_love_number[frequency1][frequency2];
+            re_love_number_low_value = real_part_love_number[frequency1][frequency2];
+            im_love_number_low_value = imaginary_part_love_number[frequency1][frequency2];
+
+            x = x +1;
+            if x==nm_data{break;}
 
             // match w_k2.cmp(&love_number_excitation_frequency[frequency]){
             //     Ordering::Greater =>,
@@ -683,5 +807,5 @@ pub fn imaginary_kaula_number(imaginary_part_love_number: [[f64;32];32], love_nu
             // }
         }
     }
-    return im_k2
+    return (re_k2, im_k2)
 }
