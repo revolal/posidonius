@@ -81,8 +81,8 @@ class Universe(object):
                     raise Exception("There can only be one central body for tidal effects!")
             else:
                 print("[WARNING {} UTC] Added a particle with tidal effect (central body) but the tidal effect is disabled for this simulation".format(datetime.datetime.utcnow().strftime("%Y.%m.%d %H:%M:%S")))
-        #if not self._data["consider_effects"]["tides"] and effects.tides.OrbitingBody in particle.effects():
-        if not self._data["consider_effects"]["tides"] and effects.tides.ConstTimeLagOrbitingBody in particle.effects():
+        if not self._data["consider_effects"]["tides"] and effects.tides.OrbitingBody in particle.effects():
+        #if not self._data["consider_effects"]["tides"] and effects.tides.ConstTimeLagOrbitingBody in particle.effects():
             print("[WARNING {} UTC] Added a particle with tidal effect (orbiting body) but the tidal effect is disabled for this simulation".format(datetime.datetime.utcnow().strftime("%Y.%m.%d %H:%M:%S")))
 
         if effects.rotational_flattening.CentralBody in particle.effects():
@@ -188,6 +188,8 @@ class Universe(object):
                 found_tides_central_body = True
             elif "OrbitingBody" in particle['tides']['effect']:
                 found_tides_orbiting_body = True
+            # elif "ConstTimeLagOrbitingBody" in particle['tides']['effect']:
+            #     found_tides_orbiting_body = True
             elif "CentralBody" in particle['rotational_flattening']['effect']:
                 found_rotational_flattening_central_body = True
             elif "OrbitingBody" in particle['rotational_flattening']['effect']:

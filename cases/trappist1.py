@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
         #////////// Specify initial position and velocity for a stable orbit
         #////// Keplerian orbital elements, in the `asteroidal' format of Mercury code
-        #a = 0.01111;                             # semi-major axis (in AU)
+        a = 0.01111;                             # semi-major axis (in AU)
         e = 0.0000010;                              # eccentricity
         i = i * posidonius.constants.DEG2RAD;                      # inclination (degrees)
         p = 0. * posidonius.constants.DEG2RAD;                                # argument of pericentre (degrees)

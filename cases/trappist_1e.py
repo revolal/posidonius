@@ -49,12 +49,12 @@ if __name__ == "__main__":
         "love_number": 0.307,
     }
     
-    star_tides = posidonius.effects.tides.CentralBody(star_tides_parameters)
+    #star_tides = posidonius.effects.tides.CentralBody(star_tides_parameters)
     #star_tides = posidonius.effects.tides.OrbitingBody(star_tides_parameters)
-    #star_tides = posidonius.effects.tides.Disabled()
+    star_tides = posidonius.effects.tides.Disabled()
     #
 
-    star_rotational_flattening_parameters = {"love_number": star_tides_parameters["love_number"] }
+    #star_rotational_flattening_parameters = {"love_number": star_tides_parameters["love_number"] }
     #star_rotational_flattening = posidonius.effects.rotational_flattening.CentralBody(star_rotational_flattening_parameters)
     #star_rotational_flattening = posidonius.effects.rotational_flattening.OrbitingBody(star_rotational_flattening_parameters)
     star_rotational_flattening = posidonius.effects.rotational_flattening.Disabled()
@@ -185,7 +185,7 @@ if __name__ == "__main__":
     }
 
     planet_tides_parameters_love_number_kaula = {
-        "love_number_excitation_frequency": w_lmpq.tolist(),
+        "love_number_excitation_frequency": w_lmpq.tolist(), #syntaxe tab [[32]32]
         "imaginary_part_love_number": ImK2.tolist(),
         "real_part_love_number": ReK2.tolist(),
         "num_datapoints": size,

@@ -14,18 +14,17 @@ class Tides(object):
                 #     "love_number": 0.0,
                 # },
 
-############################################################################################
+ ############################################################################################
                 "input": {
-
                     "dissipation_factor_scale": 0.0,
                     "dissipation_factor": 0.0,
                     "love_number": 0.0,
 
-                    "ConstantTimeLag": {
-                        "dissipation_factor_scale": 0.0,
-                        "dissipation_factor": 0.0,
-                        "love_number": 0.0,
-                    },
+                    # "ConstantTimeLag": {
+                    #     "dissipation_factor_scale": 0.0,
+                    #     "dissipation_factor": 0.0,
+                    #     "love_number": 0.0,
+                    # },
                     "kaula_coplanar_tides_input_parameters": {
                         "love_number_excitation_frequency": 0.0,
                         "imaginary_part_love_number": 0.0,
@@ -33,8 +32,7 @@ class Tides(object):
                         "num_datapoints": 0.0,
                     },
                 },
-############################################################################################
-
+ ############################################################################################
                 "internal": {
                     "denergy_dt": 0.0,
                     "distance": 0.0,
@@ -61,24 +59,7 @@ class Tides(object):
 
 
 
-        # if variant in ("CentralBody", "OrbitingBody"):
-        #     self._data["effect"] = variant
-
-        #     # Update default values, ignore non-recognised keys
-        #     for key, value in six.iteritems(input_parameters):
-
-        #         if key in self._data["parameters"]["input"]:
-        #             #self._data["parameters"]["input"][key] = float(value)
-        #             self._data["parameters"]["input"][key] = value
-        #         else:
-        #             print("Ignored parameter: {}".format(key))
-
-        #     self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["dissipation_factor"] * self._data["parameters"]["input"]["dissipation_factor_scale"]
-
-
-############################################################################################
-
-        if variant in ("CentralBody"):
+        if variant in ("CentralBody", "OrbitingBody"):
             self._data["effect"] = variant
 
             # Update default values, ignore non-recognised keys
@@ -92,19 +73,6 @@ class Tides(object):
 
             self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["dissipation_factor"] * self._data["parameters"]["input"]["dissipation_factor_scale"]
 
-        elif variant in ("ConstTimeLagCentralBody", "ConstTimeLagOrbitingBody"):
-            self._data["effect"] = variant
-
-            # Update default values, ignore non-recognised keys
-            for key, value in six.iteritems(input_parameters):
-
-                if key in self._data["parameters"]["input"]["ConstantTimeLag"]:
-                    self._data["parameters"]["input"]["ConstantTimeLag"][key] = value
-                else:
-                    print("Ignored parameter: {}".format(key))
-
-            self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["ConstantTimeLag"]["dissipation_factor"] * self._data["parameters"]["input"]["ConstantTimeLag"]["dissipation_factor_scale"] 
-        
         elif variant in ("KaulaCoplanarCentralBody","KaulaCoplanarOrbitingBody"):
             self._data["effect"] = variant
             for key, value in six.iteritems(input_parameters):
@@ -112,9 +80,7 @@ class Tides(object):
                     self._data["parameters"]["input"]["kaula_coplanar_tides_input_parameters"][key] = value
                 else:
                     print("Ignored parameter: {}".format(key))
-############################################################################################
-
-
+       
         elif variant in ("Disabled", ):
             self._data["effect"] = variant
         else:
@@ -126,15 +92,45 @@ class Tides(object):
         else:
             return self._data.copy()
 
+
+        # if variant in ("CentralBody"):
+        #     self._data["effect"] = variant
+
+        #     # Update default values, ignore non-recognised keys
+        #     for key, value in six.iteritems(input_parameters):
+
+        #         if key in self._data["parameters"]["input"]:
+        #             #self._data["parameters"]["input"][key] = float(value)
+        #             self._data["parameters"]["input"][key] = value
+        #         else:
+        #             print("Ignored parameter: {}".format(key))
+
+        #     self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["dissipation_factor"] * self._data["parameters"]["input"]["dissipation_factor_scale"]
+
+        # elif variant in ("ConstTimeLagCentralBody", "ConstTimeLagOrbitingBody"):
+        #     self._data["effect"] = variant
+
+        #     # Update default values, ignore non-recognised keys
+        #     for key, value in six.iteritems(input_parameters):
+
+        #         if key in self._data["parameters"]["input"]["ConstantTimeLag"]:
+        #             self._data["parameters"]["input"]["ConstantTimeLag"][key] = value
+        #         else:
+        #             print("Ignored parameter: {}".format(key))
+
+        #     self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["ConstantTimeLag"]["dissipation_factor"] * self._data["parameters"]["input"]["ConstantTimeLag"]["dissipation_factor_scale"] 
+        
+
+
+
 class Disabled(Tides):
     def __init__(self):
         super(Disabled, self).__init__("Disabled")
 
 
-
-# class OrbitingBody(Tides):
-#     def __init__(self, input_parameters):
-#         super(OrbitingBody, self).__init__("OrbitingBody", input_parameters=input_parameters)
+class OrbitingBody(Tides):
+    def __init__(self, input_parameters):
+        super(OrbitingBody, self).__init__("OrbitingBody", input_parameters=input_parameters)
 
 class CentralBody(Tides):
     def __init__(self, input_parameters):
@@ -142,11 +138,11 @@ class CentralBody(Tides):
 
 
 
-############################################################################################
+ ############################################################################################
 
-class ConstTimeLagOrbitingBody(Tides):
-    def __init__(self, input_parameters):
-        super(ConstTimeLagOrbitingBody, self).__init__("ConstTimeLagOrbitingBody", input_parameters=input_parameters)
+# class ConstTimeLagOrbitingBody(Tides):
+#     def __init__(self, input_parameters):
+#         super(ConstTimeLagOrbitingBody, self).__init__("ConstTimeLagOrbitingBody", input_parameters=input_parameters)
 
 # class ConstTimeLagCentralBody(Tides):
 #     def __init__(self, input_parameters):
@@ -156,9 +152,9 @@ class KaulaCoplanarOrbitingBody(Tides):
     def __init__(self, input_parameters):
         super(KaulaCoplanarOrbitingBody, self).__init__("KaulaCoplanarOrbitingBody", input_parameters=input_parameters)
 
-# class KaulaCoplanarCentralBody(Tides):
-#     def __init__(self, input_parameters):
-#         super(KaulaCoplanarCentralBody, self).__init__("KaulaCoplanarCentralBody", input_parameters=input_parameters)
+    # class KaulaCoplanarCentralBody(Tides):
+    #     def __init__(self, input_parameters):
+    #         super(KaulaCoplanarCentralBody, self).__init__("KaulaCoplanarCentralBody", input_parameters=input_parameters)
 
-############################################################################################
+    ############################################################################################
 

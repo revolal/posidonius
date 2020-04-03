@@ -703,8 +703,8 @@ fn check_effects_vs_central_and_orbiting(particles: &Vec<Particle>, consider_eff
                 println!("[WARNING {} UTC] Particle {} has tidal effect (central body) but the tidal effect is disabled for this simulation", time::now_utc().strftime("%Y.%m.%d %H:%M:%S").unwrap(), i);
             }
         }
-        //if let TidesEffect::OrbitingBody = particle.tides.effect {
-        if let TidesEffect::ConstTimeLagOrbitingBody = particle.tides.effect {
+        if let TidesEffect::OrbitingBody = particle.tides.effect {
+        //if let TidesEffect::ConstTimeLagOrbitingBody = particle.tides.effect {
             found_tides_orbiting_body = true;
             if !consider_effects.tides {
                 println!("[WARNING {} UTC] Particle {} has tidal effect (orbiting body) but the tidal effect is disabled for this simulation", time::now_utc().strftime("%Y.%m.%d %H:%M:%S").unwrap(), i);
