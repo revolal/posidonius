@@ -71,10 +71,14 @@ impl Particle {
         let dissipation_factor_scale = 0.;
         let love_number = 0.;
         // //add://///////////////////////////////////////////////////////////////////////////////////////////
-        let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
-        let real_part_love_number: [[f64;32];32] = [[0.;32];32];
-        let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
-        let num_datapoints: i32 = 0;
+        // let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
+        // let real_part_love_number: [[f64;32];32] = [[0.;32];32];
+        // let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
+        // let num_datapoints: i32 = 0;
+        let love_number_excitation_frequency: f64 = 0.;
+        let real_part_love_number: f64 = 0.;
+        let imaginary_part_love_number: f64 = 0.;
+        let num_datapoints: f64 = 0.;
         // ///////////////////////////////////////////////////////////////////////////////////////////////////
         let k_factor = 0.;
         let rotation_saturation = 0.;
@@ -123,10 +127,14 @@ impl Particle {
         let dissipation_factor_scale = 0.;
         let love_number = 0.;
         // //add:////////////////////////////////////////////////////////////////////////////////////
-        let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
-        let real_part_love_number: [[f64;32];32] = [[0.;32];32];
-        let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
-        let num_datapoints: i32 = 0;
+        // let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
+        // let real_part_love_number: [[f64;32];32] = [[0.;32];32];
+        // let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
+        // let num_datapoints: i32 = 0;
+        let love_number_excitation_frequency: f64 = 0.;
+        let real_part_love_number: f64 = 0.;
+        let imaginary_part_love_number: f64 = 0.;
+        let num_datapoints: f64 = 0.;
         // /////////////////////////////////////////////////////////////////////////////////////////
         let k_factor = 0.;
         let rotation_saturation = 0.;

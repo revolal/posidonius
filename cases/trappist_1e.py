@@ -115,6 +115,23 @@ if __name__ == "__main__":
     ReK2 = planet_data [1:,2]
     size = np.size(w_lmpq)
 
+    Tab_size = 32
+    Tab_w_lmpq = np.zeros((Tab_size,Tab_size))
+    Tab_ImK2 = np.zeros((Tab_size,Tab_size))
+    Tab_ReK2 = np.zeros((Tab_size,Tab_size))
+    k = 0
+
+    for i in range(0,int(size/Tab_size)):
+        Tab_w_lmpq[i,:] = w_lmpq[i*Tab_size : (1+i)*Tab_size]
+        Tab_ReK2[i,:] = ReK2[i*Tab_size : (1+i)*Tab_size]
+        Tab_ImK2[i,:] = ImK2[i*Tab_size : (1+i)*Tab_size]
+        k+=1
+
+    for i in range (k*Tab_size, size):
+        Tab_w_lmpq[k, i-k*Tab_size] = w_lmpq[i]
+        Tab_ReK2[k, i-k*Tab_size] = ReK2[i]
+        Tab_ImK2[k, i-k*Tab_size] = ImK2[i]
+
     ############################################################################
     #Trappist 1e only:
     # Radiuses in R_EARTH
@@ -145,7 +162,7 @@ if __name__ == "__main__":
     # planet_l = (323.732652895, 96.4925777097, 111.770368348, 165.724187804, 254.117367005, 161.020362506, 134.724813585)
 
     #for r, m, a, i, l in zip(planet_radiuses, planet_masses, planet_a, planet_i, planet_l):
-    planet_mass = 0.01 #planet_masses # m # Solar masses (3.0e-6 solar masses = 1 earth mass)
+    planet_mass = planet_masses # m # Solar masses (3.0e-6 solar masses = 1 earth mass)
     planet_radius_factor = planet_radiuses # r # R Earth
     planet_radius = planet_radius_factor * posidonius.constants.R_EARTH
     planet_radius_of_gyration = planet_gyration_radius # 5.75e-01
@@ -181,14 +198,33 @@ if __name__ == "__main__":
         "dissipation_factor_scale": 1.0,
         "dissipation_factor": 2. * posidonius.constants.K2 * k2pdelta/(3. * np.power(planet_radius, 5)),
         "love_number": 0.299,
-            
+        # "love_number_excitation_frequency": 0.99,
+        # "imaginary_part_love_number": 0.98,
+        # "real_part_love_number": 0.97,
+        # "num_datapoints": 0.96,
     }
 
+    # planet_tides_parameters_love_number_kaula = {
+    #     "love_number_excitation_frequency": w_lmpq.tolist(),
+    #     "imaginary_part_love_number": ImK2.tolist(),
+    #     "real_part_love_number": ReK2.tolist(),
+    #     "num_datapoints": size,
+    # }
+
+    # planet_tides_parameters_love_number_kaula = {
+    #     "love_number_excitation_frequency": Tab_w_lmpq.tolist(), #syntaxe tab [[32]32]
+    #     "imaginary_part_love_number": Tab_ImK2.tolist(),
+    #     "real_part_love_number": Tab_ReK2.tolist(),
+    #     "num_datapoints": size,
+    # }
     planet_tides_parameters_love_number_kaula = {
-        "love_number_excitation_frequency": w_lmpq.tolist(), #syntaxe tab [[32]32]
-        "imaginary_part_love_number": ImK2.tolist(),
-        "real_part_love_number": ReK2.tolist(),
-        "num_datapoints": size,
+        "dissipation_factor_scale": 1.0,
+        "dissipation_factor": 2. * posidonius.constants.K2 * k2pdelta/(3. * np.power(planet_radius, 5)),
+        "love_number": 0.299,
+        "love_number_excitation_frequency": 0.99,
+        "imaginary_part_love_number": 0.98,
+        "real_part_love_number": 0.97,
+        "num_datapoints": 0.96,
     }
 
     #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_parameters)
@@ -199,9 +235,10 @@ if __name__ == "__main__":
     #planet_tides = posidonius.effects.tides.ConstTimeLagOrbitingBody(planet_tides_parameters)
 
     #planet_tides = posidonius.effects.tides.KaulaCoplanarCentralBody(planet_tides_parameters_love_number_kaula)
+
     planet_tides = posidonius.effects.tides.KaulaCoplanarOrbitingBody(planet_tides_parameters_love_number_kaula)
+    #planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_parameters_love_number_kaula)
     
-    #planet_tides = posidonius.KaulaCoplanar() #Sounds good doesn't work
 
     planet_rotational_flattening_parameters = {"love_number": 0.9532}
     #planet_rotational_flattening = posidonius.effects.rotational_flattening.CentralBody(planet_rotational_flattening_parameters)
