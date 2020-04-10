@@ -5,85 +5,190 @@ use super::super::{Particle};
 use super::super::{Axes};
 use super::{EvolutionType};
 
+
 // use crate::constants::G;
 // use crate::constants::PI;
 
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////MY MODIFICATION
+// use std::collections::LinkedList;
+// pub enum Tides {
+//     // CTLCentralBody(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64),
+//     // CTLOrbitingBody(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64),
+//     // KCOrbitingBody(love_number_excitation_frequency: f64, real_part_love_number: f64, imaginary_part_love_number: f64, num_datapoints: f64),
+//     CTLCentralBody(f64, f64, f64),
+//     CTLOrbitingBody( f64, f64, f64),
+//     KaulaCoplanarOrbitingBody(f64, f64, f64, f64),
+//     Disabled,
+// }
 
-// /////////////////////////////////////////////////////////////////////////////////////////////
+// struct CTLCentralBody{
+//     pub effect: TidesEffect,
+//     pub parameters: TidesParticleParameters,
+//     pub coordinates: TidesParticleCoordinates,
+// }
+// struct CTLOrbitingBody{
+//     pub effect: TidesEffect,
+//     pub parameters: TidesParticleParameters,
+//     pub coordinates: TidesParticleCoordinates,
+// }
+// struct KCOrbitingBody{
+//     pub effect: TidesEffect,
+//     pub parameters: KaulaCoplanarTidesInputParticleParameters,
+//     pub coordinates: TidesParticleCoordinates,
+// }
+
+// ////
 // #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
-// //#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-// pub enum TidesTypes {
-//     ConstTimeLagModel,
-//     KaulaCoplanarModel,
-//     NoTides,
+// pub enum TidesEffect {
+//     CentralBody,
+//     OrbitingBody,
+//     KaulaCoplanarOrbitingBody,
+//     Disabled,
+// }
+// ///////
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// pub struct KaulaCoplanarTidesParticleParameters {
+//     pub input: KaulaCoplanarTidesInputParticleParameters,
+//     pub output: TidesParticleOutputParameters,
+// }
+// pub struct KaulaCoplanarTidesInputParticleParameters{
+//     // pub love_number_excitation_frequency: [[f64;32];32],
+//     // pub real_part_love_number: [[f64;32];32],
+//     // pub imaginary_part_love_number: [[f64;32];32],
+//     pub love_number_excitation_frequency: f64,
+//     pub real_part_love_number: f64,
+//     pub imaginary_part_love_number: f64,
+//     pub num_datapoints: f64,
+// }
+// //
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// pub struct TidesParticleParameters {
+//     pub input: TidesParticleInputParameters,
+//     pub internal: TidesParticleInternalParameters,
+//     pub output: TidesParticleOutputParameters,
+// }
+// pub struct TidesParticleInputParameters {
+//     pub dissipation_factor: f64,
+//     pub dissipation_factor_scale: f64, // to scale the dissipation factor (multiply)
+//     pub love_number: f64,   // Love number of degree 2 (i.e., k2). Dimensionless parameters that measure the rigidity of a planetary body and the 
+//                             // susceptibility of its shape to change in response to a tidal potential.
 // }
 // #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
-// pub struct TidesTypes {
-//     pub tide_type: TidesTypes,
-//     pub love_number_excitation_frequency: Vec<f64>,
-//     pub real_part_love_number: Vec<f64>,
-//     pub imaginary_part_love_number: Vec<f64>,
-//     pub num_datapoints: i32,
+// pub struct TidesParticleInternalParameters {
+//     pub distance: f64,
+//     pub radial_velocity: f64,
+//     pub scaled_dissipation_factor: f64, // sigma (dissipation_factor_scale*dissipation_factor)
+//     pub scalar_product_of_vector_position_with_stellar_spin: f64,
+//     pub scalar_product_of_vector_position_with_planetary_spin: f64,
+//     pub orthogonal_component_of_the_tidal_force_due_to_stellar_tide: f64,
+//     pub orthogonal_component_of_the_tidal_force_due_to_planetary_tide: f64,
+//     pub radial_component_of_the_tidal_force: f64,
+//     pub radial_component_of_the_tidal_force_dissipative_part_when_star_as_point_mass: f64, // Needed to compute denergy_dt
+//     pub denergy_dt: f64, // Only for history output
+//     pub lag_angle: f64, // Used by EvolutionType::BolmontMathis2016, EvolutionType::GalletBolmont2017 and EvolutionType::LeconteChabrier2013(true)
 // }
-// impl Clone for TidesTypes {
-//     fn clone(&self) -> Self {
-//         TidesTypes{
-//             tide_type: TidesTypes::NoTides,
-//             love_number_excitation_frequency: vec![],
-//             real_part_love_number: vec![],
-//             imaginary_part_love_number: vec![],
-//             num_datapoints: 0,
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// pub struct TidesParticleOutputParameters {
+//     pub acceleration: Axes,
+//     pub dangular_momentum_dt: Axes, // Force
+// }
+// //
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// pub struct TidesParticleCoordinates {
+//     // Positions/velocities in a heliocentric frame 
+//     // (i.e., the host is at rest with respect to the origin of the coordinate system)
+//     pub position: Axes,
+//     pub velocity: Axes,
+// }
+
+
+// impl CTLCentralBody {
+//     pub fn new(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64) -> CTLCentralBody{
+//         CTLCentralBody{
+//             parameters: TidesParticleParameters {
+//                 input: TidesParticleInputParameters {
+//                     dissipation_factor: dissipation_factor,
+//                     dissipation_factor_scale: dissipation_factor_scale,
+//                     love_number: love_number,
+//                 },
+//                 internal: TidesParticleInternalParameters {
+//                     distance: 0.,
+//                     radial_velocity: 0.,
+//                     scaled_dissipation_factor: dissipation_factor_scale*dissipation_factor,
+//                     scalar_product_of_vector_position_with_stellar_spin: 0.,
+//                     scalar_product_of_vector_position_with_planetary_spin: 0.,
+//                     orthogonal_component_of_the_tidal_force_due_to_stellar_tide: 0.,
+//                     orthogonal_component_of_the_tidal_force_due_to_planetary_tide: 0.,
+//                     radial_component_of_the_tidal_force: 0.,
+//                     radial_component_of_the_tidal_force_dissipative_part_when_star_as_point_mass: 0.,
+//                     denergy_dt: 0., // Only for history output
+//                     lag_angle: 0., // It will be initialized the first time the evolver is called
+//                 },
+//                 output: TidesParticleOutputParameters {
+//                     acceleration: Axes{x: 0., y: 0., z: 0.},
+//                     dangular_momentum_dt: Axes{x: 0., y: 0., z: 0.},
+//                 },
+//             },
+//             coordinates: TidesParticleCoordinates {
+//                 position: Axes{x: 0., y: 0., z: 0.},
+//                 velocity: Axes{x: 0., y: 0., z: 0.},
+//             },
 //         }
 //     }
 // }
-
-// impl TidesTypes {
-//     pub fn new(tide_type: TidesTypes ) -> TidesTypes{
-//         let mut love_number_excitation_frequency: Vec<f64> = Vec::new();
-//         let mut real_part_love_number: Vec<f64> = Vec::new();
-//         let mut imaginary_part_love_number: Vec<f64> = Vec::new();
-//         //let mut num_datapoints: i32 = i32::new(); 
-//         let filename = match tide_type{
-//             TidesTypes::KaulaCoplanarModel => {
-//                 String::from("Results_Trappist_1e_00.0_138_freq_Imk2_posidonius.txt")
-//             },          
-//         };
-//         let mut rdr = csv::Reader::from_file(&filename).unwrap().has_headers(false).delimiter(b' ').flexible(true);
-
+// impl CTLOrbitingBody {
+//     pub fn new(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64) -> CTLCentralBody{
+//         CTLCentralBody{
+//             parameters: TidesParticleParameters {
+//                 input: TidesParticleInputParameters {
+//                     dissipation_factor: dissipation_factor,
+//                     dissipation_factor_scale: dissipation_factor_scale,
+//                     love_number: love_number,
+//                 },
+//                 internal: TidesParticleInternalParameters {
+//                     distance: 0.,
+//                     radial_velocity: 0.,
+//                     scaled_dissipation_factor: dissipation_factor_scale*dissipation_factor,
+//                     scalar_product_of_vector_position_with_stellar_spin: 0.,
+//                     scalar_product_of_vector_position_with_planetary_spin: 0.,
+//                     orthogonal_component_of_the_tidal_force_due_to_stellar_tide: 0.,
+//                     orthogonal_component_of_the_tidal_force_due_to_planetary_tide: 0.,
+//                     radial_component_of_the_tidal_force: 0.,
+//                     radial_component_of_the_tidal_force_dissipative_part_when_star_as_point_mass: 0.,
+//                     denergy_dt: 0., // Only for history output
+//                     lag_angle: 0., // It will be initialized the first time the evolver is called
+//                 },
+//                 output: TidesParticleOutputParameters {
+//                     acceleration: Axes{x: 0., y: 0., z: 0.},
+//                     dangular_momentum_dt: Axes{x: 0., y: 0., z: 0.},
+//                 },
+//             },
+//             coordinates: TidesParticleCoordinates {
+//                 position: Axes{x: 0., y: 0., z: 0.},
+//                 velocity: Axes{x: 0., y: 0., z: 0.},
+//             },
+//         }
 //     }
 // }
-
-
-// #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-// pub struct Machin {
-//     pub lestypes: TidesTypes,
-// }
-
-// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
-// //#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-// pub struct KaulaCoplanarTidesParticleParameters {
-//     pub input: KaulaCoplanarTidesInputParticleParameters,
-//     // pub internal: TidesParticleInternalParameters,
-//     // pub output: TidesParticleOutputParameters,
-// }
-
-// impl KaulaCoplanarTides {
-//     // pub fn new( love_number_excitation_frequency: Vec<f64>, real_part_love_number: Vec<f64>, imaginary_part_love_number: Vec<f64>) -> KaulaCoplanarTides {
-//     pub fn new( love_number_excitation_frequency: [[f64;32];32], real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], num_datapoints:usize) -> KaulaCoplanarTides {
-//         KaulaCoplanarTides {
-//             parameters: KaulaCoplanarTidesParticleParameters {
-//                 input: KaulaCoplanarTidesInputParticleParameters{
-//                     love_number_excitation_frequency: love_number_excitation_frequency,
-//                     real_part_love_number: real_part_love_number,
-//                     imaginary_part_love_number: imaginary_part_love_number,
-//                     num_datapoints: num_datapoints,
-//                 },
+// impl KCOrbitingBody {
+//     pub fn new(love_number_excitation_frequency: [[f64;32];32], real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], num_datapoints: i32) -> KaulaCoplanarOrbitingBody{
+//         KCOrbitingBody{
+//             parameters: KaulaCoplanarTidesInputParticleParameters {
+//                 love_number_excitation_frequency: love_number_excitation_frequency,
+//                 real_part_love_number: real_part_love_number,
+//                 imaginary_part_love_number: imaginary_part_love_number,
+//                 num_datapoints: num_datapoints,
+//             },
+//             coordinates: TidesParticleCoordinates {
+//                 position: Axes{x: 0., y: 0., z: 0.},
+//                 velocity: Axes{x: 0., y: 0., z: 0.},
 //             },
 //         }
 //     }
 // }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 //#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TidesParticleInputParameters {
@@ -105,19 +210,24 @@ pub struct TidesParticleInputParameters {
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 //#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct KaulaCoplanarTidesInputParticleParameters {
-    // pub love_number_excitation_frequency: [[f64;32];32],
-    // pub real_part_love_number: [[f64;32];32],
-    // pub imaginary_part_love_number: [[f64;32];32],
-    // pub num_datapoints: i32,
+    pub love_number_excitation_frequency: [[f64;32];32],
+    pub real_part_love_number: [[f64;32];32],
+    pub imaginary_part_love_number: [[f64;32];32],
+    pub num_datapoints: f64,
     // pub love_number_excitation_frequency: Vec<f64>,
     // pub real_part_love_number: Vec<f64>,
     // pub imaginary_part_love_number: Vec<f64>,
-    pub love_number_excitation_frequency: f64,
-    pub real_part_love_number: f64,
-    pub imaginary_part_love_number: f64,
-    pub num_datapoints: f64,
+    // pub love_number_excitation_frequency: f64,
+    // pub real_part_love_number: f64,
+    // pub imaginary_part_love_number: f64,
+    // pub num_datapoints: f64,
+    // pub love_number_excitation_frequency: LinkedList<f64> = LinkedList::new();
+    // pub real_part_love_number: LinkedList<f64> = LinkedList::new();
+    // pub imaginary_kaula_number: LinkedList<f64> = LinkedList::new();
+    // pub num_datapoints: f64,
+
 }
-///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////END MODIFICATION
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 //#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -175,10 +285,12 @@ pub struct Tides {
     pub coordinates: TidesParticleCoordinates,
 }
 
+//impl TidesEffect{.....? prendre en compte l'enum dans 
 impl Tides {
     //pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64) -> Tides {
-    //pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64, love_number_excitation_frequency: [[f64;32];32], real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], num_datapoints: i32) -> Tides {
-    pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64, love_number_excitation_frequency: f64, real_part_love_number: f64, imaginary_part_love_number: f64, num_datapoints: f64) -> Tides {
+    pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64, love_number_excitation_frequency: [[f64;32];32], real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], num_datapoints: f64) -> Tides {
+    //pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64, love_number_excitation_frequency: LinkedList<f64>, real_part_love_number: LinkedList<f64>, imaginary_part_love_number: LinkedList<f64>, num_datapoints: f64) -> Tides {
+    //pub fn new(effect: TidesEffect, dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64, love_number_excitation_frequency: f64, real_part_love_number: f64, imaginary_part_love_number: f64, num_datapoints: f64) -> Tides {
         Tides {
             effect: effect,
             parameters: TidesParticleParameters {
@@ -234,7 +346,7 @@ pub fn initialize(host_particle: &mut Particle, particles: &mut [Particle], more
         for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
             if let TidesEffect::OrbitingBody = particle.tides.effect {
             //if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
-            //if let TidesEffect::ConstTimeLagOrbitingBody = particle.tides.effect {
+            //if let TidesEffect::CTOrbitingBody = particle.tides.effect {
                 particle.tides.parameters.internal.scalar_product_of_vector_position_with_stellar_spin = particle.tides.coordinates.position.x * host_particle.spin.x 
                                 + particle.tides.coordinates.position.y * host_particle.spin.y
                                 + particle.tides.coordinates.position.z * host_particle.spin.z;
@@ -265,7 +377,8 @@ pub fn inertial_to_heliocentric_coordinates(host_particle: &mut Particle, partic
         host_particle.tides.parameters.internal.radial_velocity = 0.;
         for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
             if let TidesEffect::OrbitingBody = particle.tides.effect {
-            //if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
+            //if let Tides::CTLOrbitingBody = particle.tides.effect {
+                //if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
                 particle.tides.coordinates.position.x = particle.inertial_position.x - host_particle.inertial_position.x;
                 particle.tides.coordinates.position.y = particle.inertial_position.y - host_particle.inertial_position.y;
                 particle.tides.coordinates.position.z = particle.inertial_position.z - host_particle.inertial_position.z;
@@ -291,6 +404,7 @@ pub fn copy_heliocentric_coordinates(host_particle: &mut Particle, particles: &m
         host_particle.tides.parameters.internal.radial_velocity = host_particle.heliocentric_radial_velocity;
         for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
             if let TidesEffect::OrbitingBody = particle.tides.effect {
+            //if let Tides::CTLOrbitingBody = particle.tides.effect {
             //if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
                 particle.tides.coordinates.position = particle.heliocentric_position;
                 particle.tides.coordinates.velocity = particle.heliocentric_velocity;
@@ -362,9 +476,12 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
     let mut reference_spin = tidal_host_particle.spin.clone();
     let mut orthogonal_component_of_the_tidal_force: f64;
     let mut reference_rscalspin: f64;
+    //panic!("Does it reach this point?-calculate_torque_due_to_tides");
+    //posidoinus --silent 
 
     for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
         if let TidesEffect::OrbitingBody = particle.tides.effect {
+        //if let Tides::CTLOrbitingBody = particle.tides.effect {
         //if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
             if !central_body {
                 reference_spin = particle.spin.clone();
@@ -432,7 +549,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
         //     let re_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
         //     let w_lmpq = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;
         //     let nm_data = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
-
+                //num_datapoints is f64
         //     //let mut e = 0.1;
 
         //     let eccentricity_function = eccentricty_function_g(eccentricity);
@@ -461,11 +578,14 @@ pub fn calculate_orthogonal_component_of_the_tidal_force(tidal_host_particle: &m
     let central_body = true;
     calculate_orthogonal_component_of_the_tidal_force_for(central_body, &mut tidal_host_particle, &mut particles, &mut more_particles, &mut star_planet_dependent_dissipation_factors);
     calculate_orthogonal_component_of_the_tidal_force_for(!central_body, &mut tidal_host_particle, &mut particles, &mut more_particles, &mut star_planet_dependent_dissipation_factors);
+    //panic!("Does it reach this point?-calculate_orthogonal_component_of_the_tidal_force");
+
 }
 
 fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tidal_host_particle: &mut Particle, particles: &mut [Particle], more_particles: &mut [Particle], star_planet_dependent_dissipation_factors: &mut HashMap<usize, f64>) {
     for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
         if let TidesEffect::OrbitingBody = particle.tides.effect {
+        //if let Tides::CTLOrbitingBody = particle.tides.effect {
         //if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
             //// Only calculate tides if planet is not in disk
             //if particle.disk_interaction_time == 0.0 {
@@ -524,7 +644,7 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
                 // let real_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
                 // let w_lmpq = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;
                 // let nm_data = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
-
+                //num_datapoint is f64
                 // let eccentricity_function = eccentricty_function_g(eccentricity);
                 // let mut excitative_frequency: f64;
                 // let mut sum_over_q = (3./2.)*(G* tidal_host_particle.mass.powf(2.)* particle.radius.powf(5.)) / (semi_major_axis.powf(6.) * particle.heliocentric_distance);
@@ -544,6 +664,8 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
             //}
         //}
     }
+    //panic!("Does it reach this point?-calculate_orthogonal_component_of_the_tidal_force_for");
+
 }
 
 pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut Particle, particles: &mut [Particle], more_particles: &mut [Particle], star_planet_dependent_dissipation_factors: &mut HashMap<usize, f64>) {
@@ -551,6 +673,7 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
 
     for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
         if let TidesEffect::OrbitingBody = particle.tides.effect {
+        //if let Tides::CTLOrbitingBody = particle.tides.effect {
         //if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
             let planet_mass_2 = particle.mass * particle.mass;
             // Conservative part of the radial tidal force
@@ -590,7 +713,7 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
             // let real_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
             // let w_lmpq = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;
             // let nm_data = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
-
+            // num_datapoint is f64
             // let eccentricity_function = eccentricty_function_g(eccentricity);
             // let mut excitative_frequency: f64;
             // let mut sum_over_q = 0.;
@@ -619,6 +742,7 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
 pub fn calculate_denergy_dt(particles: &mut [Particle], more_particles: &mut [Particle]) {
     for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
         if let TidesEffect::OrbitingBody = particle.tides.effect {
+        //if let Tides::CTLOrbitingBody = particle.tides.effect {
         //if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
             // - Equation 32 from Bolmont et al. 2015
             //// Instantaneous energy loss dE/dt due to tides
@@ -647,6 +771,7 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
         //elif CREEP
         //elif KAULA
         if let TidesEffect::OrbitingBody = particle.tides.effect {
+        //if let Tides::CTLOrbitingBody = particle.tides.effect {
         //if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
             let factor1 = 1. / particle.mass;
 
@@ -862,6 +987,9 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
 //     }
 //     return (re_k2, im_k2)
 // }
+//ne pas passer par tout les pts 
+//comparer le dernier element de chaque colonne si plut petit rentrer dedant ! 
+//no premature optimisation
 
 // pub fn recover_data(data: Vec<f64>) -> [[f64;32];32]{
 //     let mut Tab_w_lmpq: [[f64;32];32] = [[0.;32];32];

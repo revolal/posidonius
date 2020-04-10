@@ -3,10 +3,11 @@ use super::{Axes};
 use super::super::{Tides, RotationalFlattening, GeneralRelativity, Disk, Wind, EvolutionType};
 //use super::super::{Tides, RotationalFlattening, GeneralRelativity, Disk, Wind, EvolutionType, KaulaCoplanarTides};
 use super::super::{TidesEffect, RotationalFlatteningEffect, GeneralRelativityEffect, DiskEffect, WindEffect};
+//use super::super::{RotationalFlatteningEffect, GeneralRelativityEffect, DiskEffect, WindEffect};
 use time;
 
 //use crate::effects::tides::KaulaCoplanarTides;
-//use crate::effects::tides::Machin;
+//use super::super::{KCOrbitingBody, CTLOrbitingBody, CTLCentralBody};
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Reference {
@@ -64,6 +65,12 @@ pub struct Particle {
 }
 
 impl Particle {
+    // fn TypesTydes(tides: Tides) -> Tides{
+    //     match tides{
+    //         Tides::CTLCentralBody => CTLCentralBody(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64),
+    //         Tides::KCOrbitingBody => KCOrbitingBody(love_number_excitation_frequency: [[f64;32];32], real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], num_datapoints: i32),
+    //     }
+    // }
 
     pub fn new(mass: f64, radius: f64, radius_of_gyration: f64, position: Axes, velocity: Axes, spin: Axes) -> Particle {
         // Default effects: None
@@ -71,19 +78,32 @@ impl Particle {
         let dissipation_factor_scale = 0.;
         let love_number = 0.;
         // //add://///////////////////////////////////////////////////////////////////////////////////////////
-        // let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
-        // let real_part_love_number: [[f64;32];32] = [[0.;32];32];
-        // let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
-        // let num_datapoints: i32 = 0;
-        let love_number_excitation_frequency: f64 = 0.;
-        let real_part_love_number: f64 = 0.;
-        let imaginary_part_love_number: f64 = 0.;
+        // let love_number_excitation_frequency: LinkedList<f64> = LinkedList::new();
+        // let real_part_love_number: LinkedList<f64> = LinkedList::new();
+        // let imaginary_kaula_number: LinkedList<f64> = LinkedList::new();
+        // let num_datapoints: f64 = 0.;
+        let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
+        let real_part_love_number: [[f64;32];32] = [[0.;32];32];
+        let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
         let num_datapoints: f64 = 0.;
+        // let love_number_excitation_frequency: f64 = 0.;
+        // let real_part_love_number: f64 = 0.;
+        // let imaginary_part_love_number: f64 = 0.;
+        // let num_datapoints: f64 = 0.; //§§§§usize
+        // if Tides::CTLCentralBody{
+        //     let tides = CTLCentralBody::new(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64);
+        // }
+        // if Tides::CTLOrbitingBody{
+        //     let tides = CTLOrbitingBody::new(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64);
+        // }
+        // if Tides::KCOrbitingBody{
+        //     let tides = KCOrbitingBody::new(love_number_excitation_frequency: f64, real_part_love_number: f64, imaginary_part_love_number: f64, num_datapoints: f64);
+        // }
+        // let tides = Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number);
+        let tides = Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number, love_number_excitation_frequency, real_part_love_number, imaginary_part_love_number, num_datapoints);
         // ///////////////////////////////////////////////////////////////////////////////////////////////////
         let k_factor = 0.;
         let rotation_saturation = 0.;
-        //let tides = Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number);
-        let tides = Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number, love_number_excitation_frequency, real_part_love_number, imaginary_part_love_number, num_datapoints);
         let rotational_flattening = RotationalFlattening::new(RotationalFlatteningEffect::Disabled, love_number);
         let general_relativity = GeneralRelativity::new(GeneralRelativityEffect::Disabled);
         let wind = Wind::new(WindEffect::Disabled, k_factor, rotation_saturation);
@@ -127,14 +147,27 @@ impl Particle {
         let dissipation_factor_scale = 0.;
         let love_number = 0.;
         // //add:////////////////////////////////////////////////////////////////////////////////////
-        // let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
-        // let real_part_love_number: [[f64;32];32] = [[0.;32];32];
-        // let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
-        // let num_datapoints: i32 = 0;
-        let love_number_excitation_frequency: f64 = 0.;
-        let real_part_love_number: f64 = 0.;
-        let imaginary_part_love_number: f64 = 0.;
+        // let love_number_excitation_frequency: LinkedList<f64> = LinkedList::new();
+        // let real_part_love_number: LinkedList<f64> = LinkedList::new();
+        // let imaginary_kaula_number: LinkedList<f64> = LinkedList::new();
+        // let num_datapoints: f64 = 0.;
+        let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
+        let real_part_love_number: [[f64;32];32] = [[0.;32];32];
+        let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
         let num_datapoints: f64 = 0.;
+        // let love_number_excitation_frequency: f64 = 0.;
+        // let real_part_love_number: f64 = 0.;
+        // let imaginary_part_love_number: f64 = 0.;
+        // let num_datapoints: f64 = 0.;
+        // if Tides::CTLCentralBody{
+        //     let tides = CTLCentralBody::new(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64);
+        // }
+        // if Tides::CTLOrbitingBody{
+        //     let tides = CTLOrbitingBody::new(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64);
+        // }
+        // if Tides::KaulaCoplanarOrbitingBody{
+        //     tides = KaulaCoplanarOrbitingBody::new(love_number_excitation_frequency: f64, real_part_love_number: f64, imaginary_part_love_number: f64, num_datapoints: f64);
+        // } 
         // /////////////////////////////////////////////////////////////////////////////////////////
         let k_factor = 0.;
         let rotation_saturation = 0.;
@@ -163,6 +196,7 @@ impl Particle {
             reference: Reference::MostMassiveParticle,
             //tides: Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number),
             tides: Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number, love_number_excitation_frequency, real_part_love_number, imaginary_part_love_number, num_datapoints),
+            //tides: tides,
             rotational_flattening: RotationalFlattening::new(RotationalFlatteningEffect::Disabled, love_number),
             general_relativity: GeneralRelativity::new(GeneralRelativityEffect::Disabled),
             wind: Wind::new(WindEffect::Disabled, k_factor, rotation_saturation),

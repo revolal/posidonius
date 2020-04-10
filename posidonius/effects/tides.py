@@ -26,10 +26,10 @@ class Tides(object):
                     #     "love_number": 0.0,
                     # },
                     "kaula_coplanar_tides_input_parameters": {
-                        "love_number_excitation_frequency": 0.0,
-                        "imaginary_part_love_number": 0.0,
-                        "real_part_love_number": 0.0,
-                        "num_datapoints": 0.0,
+                        "love_number_excitation_frequency": np.zeros((32,32)).tolist(), #[[0.]*32]*32,
+                        "imaginary_part_love_number": np.zeros((32,32)).tolist(),
+                        "real_part_love_number": np.zeros((32,32)).tolist(),
+                        "num_datapoints": 0,
                     },
                 },
  ############################################################################################
@@ -58,48 +58,9 @@ class Tides(object):
         }
 
 
-
-        if variant in ("CentralBody", "OrbitingBody", "KaulaCoplanarCentralBody","KaulaCoplanarOrbitingBody"):
-            self._data["effect"] = variant
-            print("Hello there")
-            # Update default values, ignore non-recognised keys
-            for key, value in six.iteritems(input_parameters):
-
-                if key in self._data["parameters"]["input"]:
-                    #self._data["parameters"]["input"][key] = float(value)
-                    self._data["parameters"]["input"][key] = value
-                elif key in self._data["parameters"]["input"]["kaula_coplanar_tides_input_parameters"]:
-                    self._data["parameters"]["input"]["kaula_coplanar_tides_input_parameters"][key] = value
-                else:
-                    print("Ignored parameter: {}".format(key))
-
-            self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["dissipation_factor"] * self._data["parameters"]["input"]["dissipation_factor_scale"]
-
-        # elif variant in ("KaulaCoplanarCentralBody","KaulaCoplanarOrbitingBody"):
+        # if variant in ("CentralBody", "OrbitingBody"):
         #     self._data["effect"] = variant
-        #     for key, value in six.iteritems(input_parameters):
-        #         if key in self._data["parameters"]["input"]["kaula_coplanar_tides_input_parameters"]:
-        #             self._data["parameters"]["input"]["kaula_coplanar_tides_input_parameters"][key] = value
-        #         else:
-        #             print("Ignored parameter: {}".format(key))
-        #     print("KaulaCoplanarCentral-Orbiting in tides.py")
-
-       
-        elif variant in ("Disabled", ):
-            self._data["effect"] = variant
-        else:
-            raise Exception("Unknown variant '{}'".format(variant))
-
-    def get(self):
-        if type(self._data) == str:
-            return self._data
-        else:
-            return self._data.copy()
-
-
-        # if variant in ("CentralBody"):
-        #     self._data["effect"] = variant
-
+        #     print("Hello there")
         #     # Update default values, ignore non-recognised keys
         #     for key, value in six.iteritems(input_parameters):
 
@@ -110,6 +71,21 @@ class Tides(object):
         #             print("Ignored parameter: {}".format(key))
 
         #     self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["dissipation_factor"] * self._data["parameters"]["input"]["dissipation_factor_scale"]
+
+        if variant in ("CentralBody"):
+            print("CentralBody in tides.py")
+            self._data["effect"] = variant
+
+            # Update default values, ignore non-recognised keys
+            for key, value in six.iteritems(input_parameters):
+
+                if key in self._data["parameters"]["input"]:
+                    #self._data["parameters"]["input"][key] = float(value)
+                    self._data["parameters"]["input"][key] = value
+                else:
+                    print("Ignored parameter: {}".format(key))
+
+            self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["dissipation_factor"] * self._data["parameters"]["input"]["dissipation_factor_scale"]
 
         # elif variant in ("ConstTimeLagCentralBody", "ConstTimeLagOrbitingBody"):
         #     self._data["effect"] = variant
@@ -124,6 +100,30 @@ class Tides(object):
 
         #     self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["ConstantTimeLag"]["dissipation_factor"] * self._data["parameters"]["input"]["ConstantTimeLag"]["dissipation_factor_scale"] 
         
+        elif variant in ("KaulaCoplanarCentralBody","KaulaCoplanarOrbitingBody"):
+            print("KaulaCoplanarCentral-Orbiting in tides.py")
+            self._data["effect"] = variant
+            for key, value in six.iteritems(input_parameters):
+                if key in self._data["parameters"]["input"]:
+                    #self._data["parameters"]["input"][key] = float(value)
+                    self._data["parameters"]["input"][key] = value
+                elif key in self._data["parameters"]["input"]["kaula_coplanar_tides_input_parameters"]:
+                    self._data["parameters"]["input"]["kaula_coplanar_tides_input_parameters"][key] = value
+
+                else:
+                    print("Ignored parameter: {}".format(key))
+                   
+        elif variant in ("Disabled", ):
+            self._data["effect"] = variant
+        else:
+            raise Exception("Unknown variant '{}'".format(variant))
+
+
+    def get(self):
+        if type(self._data) == str:
+            return self._data
+        else:
+            return self._data.copy()
 
 
 

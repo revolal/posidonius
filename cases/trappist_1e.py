@@ -132,6 +132,14 @@ if __name__ == "__main__":
         Tab_ReK2[k, i-k*Tab_size] = ReK2[i]
         Tab_ImK2[k, i-k*Tab_size] = ImK2[i]
 
+    freq_lmpq = []
+    realK2 = []
+    imagK2 = []
+
+    freq_lmpq.append(Tab_w_lmpq)
+    realK2.append(Tab_ReK2)
+    imagK2.append(Tab_ImK2)
+
     ############################################################################
     #Trappist 1e only:
     # Radiuses in R_EARTH
@@ -204,27 +212,22 @@ if __name__ == "__main__":
         # "num_datapoints": 0.96,
     }
 
-    # planet_tides_parameters_love_number_kaula = {
-    #     "love_number_excitation_frequency": w_lmpq.tolist(),
-    #     "imaginary_part_love_number": ImK2.tolist(),
-    #     "real_part_love_number": ReK2.tolist(),
-    #     "num_datapoints": size,
-    # }
-
-    # planet_tides_parameters_love_number_kaula = {
-    #     "love_number_excitation_frequency": Tab_w_lmpq.tolist(), #syntaxe tab [[32]32]
-    #     "imaginary_part_love_number": Tab_ImK2.tolist(),
-    #     "real_part_love_number": Tab_ReK2.tolist(),
-    #     "num_datapoints": size,
-    # }
     planet_tides_parameters_love_number_kaula = {
         "dissipation_factor_scale": 1.0,
         "dissipation_factor": 2. * posidonius.constants.K2 * k2pdelta/(3. * np.power(planet_radius, 5)),
         "love_number": 0.299,
-        "love_number_excitation_frequency": 0.99,
-        "imaginary_part_love_number": 0.98,
-        "real_part_love_number": 0.97,
-        "num_datapoints": 0.96,
+        # "love_number_excitation_frequency": freq_lmpq,
+        # "imaginary_part_love_number": imagK2,
+        # "real_part_love_number": realK2,
+        # "num_datapoints": size,
+        "love_number_excitation_frequency": Tab_w_lmpq.tolist(), #syntaxe tab [[32]32]
+        "imaginary_part_love_number": Tab_ImK2.tolist(),
+        "real_part_love_number": Tab_ReK2.tolist(),
+        "num_datapoints": size,
+        # "love_number_excitation_frequency": 0.99,
+        # "imaginary_part_love_number": 0.98,
+        # "real_part_love_number": 0.97,
+        # "num_datapoints": 0.96,
     }
 
     #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_parameters)
