@@ -188,8 +188,10 @@ class Universe(object):
                 found_tides_central_body = True
             elif "OrbitingBody" in particle['tides']['effect']:
                 found_tides_orbiting_body = True
-            # elif "ConstTimeLagOrbitingBody" in particle['tides']['effect']:
-            #     found_tides_orbiting_body = True
+            elif "KaulaCoplanarCentralBody" in particle['tides']['effect']:
+                found_tides_central_body = True
+            elif "KaulaCoplanarOrbitingBody" in particle['tides']['effect']:
+                found_tides_orbiting_body = True
             elif "CentralBody" in particle['rotational_flattening']['effect']:
                 found_rotational_flattening_central_body = True
             elif "OrbitingBody" in particle['rotational_flattening']['effect']:

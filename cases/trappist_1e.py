@@ -17,7 +17,7 @@ if __name__ == "__main__":
     #time_step = 0.05 # days
     #time_limit   = 4*time_step # days
     #time_limit   = 365.25 * 1.0e8 # days
-    time_limit   = 365.25 * 1.0e3 # days
+    time_limit   = 365.25 * 1.0e6 # days
     historic_snapshot_period = 100.*365.25 # days
     recovery_snapshot_period = 100.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
@@ -49,9 +49,9 @@ if __name__ == "__main__":
         "love_number": 0.307,
     }
     
-    #star_tides = posidonius.effects.tides.CentralBody(star_tides_parameters)
+    star_tides = posidonius.effects.tides.CentralBody(star_tides_parameters)
     #star_tides = posidonius.effects.tides.OrbitingBody(star_tides_parameters)
-    star_tides = posidonius.effects.tides.Disabled()
+    #star_tides = posidonius.effects.tides.Disabled()
     #
 
     #star_rotational_flattening_parameters = {"love_number": star_tides_parameters["love_number"] }
@@ -239,9 +239,7 @@ if __name__ == "__main__":
 
     #planet_tides = posidonius.effects.tides.KaulaCoplanarCentralBody(planet_tides_parameters_love_number_kaula)
 
-    planet_tides = posidonius.effects.tides.KaulaCoplanarOrbitingBody(planet_tides_parameters_love_number_kaula)
-    #planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_parameters_love_number_kaula)
-    
+    planet_tides = posidonius.effects.tides.KaulaCoplanarOrbitingBody(planet_tides_parameters_love_number_kaula)    
 
     planet_rotational_flattening_parameters = {"love_number": 0.9532}
     #planet_rotational_flattening = posidonius.effects.rotational_flattening.CentralBody(planet_rotational_flattening_parameters)

@@ -413,7 +413,6 @@ impl Universe {
                             rotational_flattening::calculate_orthogonal_component_of_the_force_induced_by_rotational_flattening(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
                         }
                     }
-
                     if dangular_momentum_dt_per_moment_of_inertia && (self.consider_effects.tides || self.consider_effects.rotational_flattening) {
                         // Not needed for additional accelerations
                         {

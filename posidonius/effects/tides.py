@@ -58,24 +58,10 @@ class Tides(object):
         }
 
 
-        # if variant in ("CentralBody", "OrbitingBody"):
-        #     self._data["effect"] = variant
-        #     print("Hello there")
-        #     # Update default values, ignore non-recognised keys
-        #     for key, value in six.iteritems(input_parameters):
-
-        #         if key in self._data["parameters"]["input"]:
-        #             #self._data["parameters"]["input"][key] = float(value)
-        #             self._data["parameters"]["input"][key] = value
-        #         else:
-        #             print("Ignored parameter: {}".format(key))
-
-        #     self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["dissipation_factor"] * self._data["parameters"]["input"]["dissipation_factor_scale"]
-
-        if variant in ("CentralBody"):
-            print("CentralBody in tides.py")
+        if variant in ("CentralBody", "OrbitingBody"):
+            print("Central-Orbiting in tides.py")
             self._data["effect"] = variant
-
+            print("Hello there")
             # Update default values, ignore non-recognised keys
             for key, value in six.iteritems(input_parameters):
 
@@ -86,6 +72,21 @@ class Tides(object):
                     print("Ignored parameter: {}".format(key))
 
             self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["dissipation_factor"] * self._data["parameters"]["input"]["dissipation_factor_scale"]
+
+        # if variant in ("CentralBody"):
+        #     print("CentralBody in tides.py")
+        #     self._data["effect"] = variant
+
+        #     # Update default values, ignore non-recognised keys
+        #     for key, value in six.iteritems(input_parameters):
+
+        #         if key in self._data["parameters"]["input"]:
+        #             #self._data["parameters"]["input"][key] = float(value)
+        #             self._data["parameters"]["input"][key] = value
+        #         else:
+        #             print("Ignored parameter: {}".format(key))
+
+        #     self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["dissipation_factor"] * self._data["parameters"]["input"]["dissipation_factor_scale"]
 
         # elif variant in ("ConstTimeLagCentralBody", "ConstTimeLagOrbitingBody"):
         #     self._data["effect"] = variant
