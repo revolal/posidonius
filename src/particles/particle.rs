@@ -6,8 +6,11 @@ use super::super::{TidesEffect, RotationalFlatteningEffect, GeneralRelativityEff
 //use super::super::{RotationalFlatteningEffect, GeneralRelativityEffect, DiskEffect, WindEffect};
 use time;
 
-//use crate::effects::tides::KaulaCoplanarTides;
-//use super::super::{KCOrbitingBody, CTLOrbitingBody, CTLCentralBody};
+// use crate::effects::tides::KaulaCoplanarTides;
+// use super::super::{KCOrbitingBody, CTLOrbitingBody, CTLCentralBody};
+// use crate::effects::tides::KCOrbitingBody;
+// use crate::effects::tides::CTLCentralBody;
+// use crate::effects::tides::CTLOrbitingBody;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Reference {
@@ -62,6 +65,7 @@ pub struct Particle {
     pub wind: Wind,
     pub disk: Disk,
     pub evolution: EvolutionType,
+    // pub nmbre:f64,
 }
 
 impl Particle {
@@ -78,25 +82,18 @@ impl Particle {
         let dissipation_factor_scale = 0.;
         let love_number = 0.;
         // //add://///////////////////////////////////////////////////////////////////////////////////////////
-        // let love_number_excitation_frequency: LinkedList<f64> = LinkedList::new();
-        // let real_part_love_number: LinkedList<f64> = LinkedList::new();
-        // let imaginary_kaula_number: LinkedList<f64> = LinkedList::new();
-        // let num_datapoints: f64 = 0.;
         let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
         let real_part_love_number: [[f64;32];32] = [[0.;32];32];
         let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
-        let num_datapoints: f64 = 0.;
-        // let love_number_excitation_frequency: f64 = 0.;
-        // let real_part_love_number: f64 = 0.;
-        // let imaginary_part_love_number: f64 = 0.;
-        // let num_datapoints: f64 = 0.; //§§§§usize
-        // if Tides::CTLCentralBody{
+        let num_datapoints: f64 = 0.; //§§§§usize
+        // let mut nmbre: f64=0.;
+        // if TidesEffect::CentralBody{
         //     let tides = CTLCentralBody::new(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64);
         // }
-        // if Tides::CTLOrbitingBody{
+        // if TidesEffect::OrbitingBody{
         //     let tides = CTLOrbitingBody::new(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64);
         // }
-        // if Tides::KCOrbitingBody{
+        // if TidesEffect::KaulaCoplanarOrbitingBody{
         //     let tides = KCOrbitingBody::new(love_number_excitation_frequency: f64, real_part_love_number: f64, imaginary_part_love_number: f64, num_datapoints: f64);
         // }
         // let tides = Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number);
@@ -110,6 +107,7 @@ impl Particle {
         let disk = Disk::new(DiskEffect::Disabled);
         let evolution = EvolutionType::NonEvolving;
         let radius_of_gyration_2 = radius_of_gyration.powi(2);
+        // let mut nmbre:f64=0.;
         Particle { 
             id: 0, // Unique internal identifier, to be set by the universe
             mass: mass,
@@ -139,6 +137,7 @@ impl Particle {
             wind: wind,
             disk: disk,
             evolution: evolution,
+            // nmbre: nmbre,
         }
     }
 
@@ -147,30 +146,23 @@ impl Particle {
         let dissipation_factor_scale = 0.;
         let love_number = 0.;
         // //add:////////////////////////////////////////////////////////////////////////////////////
-        // let love_number_excitation_frequency: LinkedList<f64> = LinkedList::new();
-        // let real_part_love_number: LinkedList<f64> = LinkedList::new();
-        // let imaginary_kaula_number: LinkedList<f64> = LinkedList::new();
-        // let num_datapoints: f64 = 0.;
         let love_number_excitation_frequency: [[f64;32];32] = [[0.;32];32];
         let real_part_love_number: [[f64;32];32] = [[0.;32];32];
         let imaginary_part_love_number: [[f64;32];32] = [[0.;32];32];
         let num_datapoints: f64 = 0.;
-        // let love_number_excitation_frequency: f64 = 0.;
-        // let real_part_love_number: f64 = 0.;
-        // let imaginary_part_love_number: f64 = 0.;
-        // let num_datapoints: f64 = 0.;
         // if Tides::CTLCentralBody{
         //     let tides = CTLCentralBody::new(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64);
         // }
         // if Tides::CTLOrbitingBody{
         //     let tides = CTLOrbitingBody::new(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64);
         // }
-        // if Tides::KaulaCoplanarOrbitingBody{
-        //     tides = KaulaCoplanarOrbitingBody::new(love_number_excitation_frequency: f64, real_part_love_number: f64, imaginary_part_love_number: f64, num_datapoints: f64);
+        // if Tides::KCOrbitingBody{
+        //     tides = KCOrbitingBody::new(love_number_excitation_frequency: f64, real_part_love_number: f64, imaginary_part_love_number: f64, num_datapoints: f64);
         // } 
         // /////////////////////////////////////////////////////////////////////////////////////////
         let k_factor = 0.;
         let rotation_saturation = 0.;
+        // let mut nmbre:f64=0.;
         Particle { 
             id: 0,
             mass: 0.,
@@ -196,12 +188,13 @@ impl Particle {
             reference: Reference::MostMassiveParticle,
             //tides: Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number),
             tides: Tides::new(TidesEffect::Disabled, dissipation_factor, dissipation_factor_scale, love_number, love_number_excitation_frequency, real_part_love_number, imaginary_part_love_number, num_datapoints),
-            //tides: tides,
+            // tides: tides,
             rotational_flattening: RotationalFlattening::new(RotationalFlatteningEffect::Disabled, love_number),
             general_relativity: GeneralRelativity::new(GeneralRelativityEffect::Disabled),
             wind: Wind::new(WindEffect::Disabled, k_factor, rotation_saturation),
             disk: Disk::new(DiskEffect::Disabled),
             evolution: EvolutionType::NonEvolving,
+            // nmbre: nmbre,
         }
     }
 

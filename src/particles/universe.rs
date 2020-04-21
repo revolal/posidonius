@@ -420,7 +420,11 @@ impl Universe {
                             let central_body = true;
 
                             if self.consider_effects.tides {
+                                // particles_left.nmbre += 1.;
+                                // println!("\n\nle nombre de boucles\n\n {}", particles_left.nmbre);
+                                // println!("///Calculate_torque_due_to_tides - CentralBody///");
                                 tides::calculate_torque_due_to_tides(&mut tidal_host_particle, &mut particles_left, &mut particles_right, central_body);
+                                // println!("///calculate_torque_due_to_tides - !CentralBody///");
                                 tides::calculate_torque_due_to_tides(&mut tidal_host_particle, &mut particles_left, &mut particles_right, !central_body);
                             }
 
@@ -433,6 +437,7 @@ impl Universe {
 
                     if accelerations && (self.consider_effects.tides || self.consider_effects.rotational_flattening) {
                         if self.consider_effects.tides {
+                            // println!("///Calculate_radial_component_of_the_tidal_force///");
                             tides::calculate_radial_component_of_the_tidal_force(&mut tidal_host_particle, &mut particles_left, &mut particles_right, &mut self.star_planet_dependent_dissipation_factors);  // Needed for calculate_tidal_acceleration
                             tides::calculate_tidal_acceleration(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
                         }

@@ -6,11 +6,10 @@ use super::super::{Axes};
 use super::{EvolutionType};
 
 
-use crate::constants::G;
-use crate::constants::PI;
+use crate::constants::{G,PI,TWO_PI, DAY};
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////MY MODIFICATION
-// use std::collections::LinkedList;
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 // pub enum Tides {
 //     // CTLCentralBody(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64),
 //     // CTLOrbitingBody(dissipation_factor: f64, dissipation_factor_scale: f64, love_number: f64),
@@ -20,18 +19,20 @@ use crate::constants::PI;
 //     KaulaCoplanarOrbitingBody(f64, f64, f64, f64),
 //     Disabled,
 // }
-
-// struct CTLCentralBody{
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// pub struct CTLCentralBody{
 //     pub effect: TidesEffect,
 //     pub parameters: TidesParticleParameters,
 //     pub coordinates: TidesParticleCoordinates,
 // }
-// struct CTLOrbitingBody{
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// pub struct CTLOrbitingBody{
 //     pub effect: TidesEffect,
 //     pub parameters: TidesParticleParameters,
 //     pub coordinates: TidesParticleCoordinates,
 // }
-// struct KCOrbitingBody{
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// pub struct KCOrbitingBody{
 //     pub effect: TidesEffect,
 //     pub parameters: KaulaCoplanarTidesInputParticleParameters,
 //     pub coordinates: TidesParticleCoordinates,
@@ -46,18 +47,19 @@ use crate::constants::PI;
 //     Disabled,
 // }
 // ///////
+// // #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+// // pub struct KaulaCoplanarTidesParticleParameters {
+// //     pub input: KaulaCoplanarTidesInputParticleParameters,
+// //     pub output: TidesParticleOutputParameters,
+// // }
 // #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
-// pub struct KaulaCoplanarTidesParticleParameters {
-//     pub input: KaulaCoplanarTidesInputParticleParameters,
-//     pub output: TidesParticleOutputParameters,
-// }
 // pub struct KaulaCoplanarTidesInputParticleParameters{
-//     // pub love_number_excitation_frequency: [[f64;32];32],
-//     // pub real_part_love_number: [[f64;32];32],
-//     // pub imaginary_part_love_number: [[f64;32];32],
-//     pub love_number_excitation_frequency: f64,
-//     pub real_part_love_number: f64,
-//     pub imaginary_part_love_number: f64,
+//     pub love_number_excitation_frequency: [[f64;32];32],
+//     pub real_part_love_number: [[f64;32];32],
+//     pub imaginary_part_love_number: [[f64;32];32],
+//     // pub love_number_excitation_frequency: f64,
+//     // pub real_part_love_number: f64,
+//     // pub imaginary_part_love_number: f64,
 //     pub num_datapoints: f64,
 // }
 // //
@@ -67,6 +69,7 @@ use crate::constants::PI;
 //     pub internal: TidesParticleInternalParameters,
 //     pub output: TidesParticleOutputParameters,
 // }
+// #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 // pub struct TidesParticleInputParameters {
 //     pub dissipation_factor: f64,
 //     pub dissipation_factor_scale: f64, // to scale the dissipation factor (multiply)
@@ -171,7 +174,7 @@ use crate::constants::PI;
 //     }
 // }
 // impl KCOrbitingBody {
-//     pub fn new(love_number_excitation_frequency: [[f64;32];32], real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], num_datapoints: i32) -> KaulaCoplanarOrbitingBody{
+//     pub fn new(love_number_excitation_frequency: [[f64;32];32], real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], num_datapoints: i32) -> KCOrbitingBody{
 //         KCOrbitingBody{
 //             parameters: KaulaCoplanarTidesInputParticleParameters {
 //                 love_number_excitation_frequency: love_number_excitation_frequency,
@@ -332,6 +335,7 @@ impl Tides {
         }
     }
 }
+/////////////////////////:
 
 pub fn initialize(host_particle: &mut Particle, particles: &mut [Particle], more_particles: &mut [Particle]) {
     if let TidesEffect::CentralBody = host_particle.tides.effect {
@@ -360,6 +364,20 @@ pub fn initialize(host_particle: &mut Particle, particles: &mut [Particle], more
                 particle.tides.parameters.output.dangular_momentum_dt.y = 0.;
                 particle.tides.parameters.output.dangular_momentum_dt.z = 0.;
             }
+            if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
+                    particle.tides.parameters.internal.scalar_product_of_vector_position_with_stellar_spin = particle.tides.coordinates.position.x * host_particle.spin.x 
+                                    + particle.tides.coordinates.position.y * host_particle.spin.y
+                                    + particle.tides.coordinates.position.z * host_particle.spin.z;
+                    particle.tides.parameters.internal.scalar_product_of_vector_position_with_planetary_spin = particle.tides.coordinates.position.x * particle.spin.x 
+                                    + particle.tides.coordinates.position.y * particle.spin.y
+                                    + particle.tides.coordinates.position.z * particle.spin.z;
+                    particle.tides.parameters.output.acceleration.x = 0.;
+                    particle.tides.parameters.output.acceleration.y = 0.;
+                    particle.tides.parameters.output.acceleration.z = 0.;
+                    particle.tides.parameters.output.dangular_momentum_dt.x = 0.;
+                    particle.tides.parameters.output.dangular_momentum_dt.y = 0.;
+                    particle.tides.parameters.output.dangular_momentum_dt.z = 0.;
+                }
         }
     }
 }
@@ -392,6 +410,20 @@ pub fn inertial_to_heliocentric_coordinates(host_particle: &mut Particle, partic
                                                                         particle.tides.coordinates.position.y*particle.tides.coordinates.velocity.y +
                                                                         particle.tides.coordinates.position.z*particle.tides.coordinates.velocity.z) / particle.tides.parameters.internal.distance;
             }
+            if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
+                    particle.tides.coordinates.position.x = particle.inertial_position.x - host_particle.inertial_position.x;
+                    particle.tides.coordinates.position.y = particle.inertial_position.y - host_particle.inertial_position.y;
+                    particle.tides.coordinates.position.z = particle.inertial_position.z - host_particle.inertial_position.z;
+                    particle.tides.coordinates.velocity.x = particle.inertial_velocity.x - host_particle.inertial_velocity.x;
+                    particle.tides.coordinates.velocity.y = particle.inertial_velocity.y - host_particle.inertial_velocity.y;
+                    particle.tides.coordinates.velocity.z = particle.inertial_velocity.z - host_particle.inertial_velocity.z;
+                    particle.tides.parameters.internal.distance = (particle.tides.coordinates.position.x.powi(2) 
+                                                                    + particle.tides.coordinates.position.y.powi(2)
+                                                                    + particle.tides.coordinates.position.z.powi(2)).sqrt();
+                    particle.tides.parameters.internal.radial_velocity = (particle.tides.coordinates.position.x*particle.tides.coordinates.velocity.x +
+                                                                            particle.tides.coordinates.position.y*particle.tides.coordinates.velocity.y +
+                                                                            particle.tides.coordinates.position.z*particle.tides.coordinates.velocity.z) / particle.tides.parameters.internal.distance;
+                }
         }
     }
 }
@@ -411,6 +443,12 @@ pub fn copy_heliocentric_coordinates(host_particle: &mut Particle, particles: &m
                 particle.tides.parameters.internal.distance = particle.heliocentric_distance;
                 particle.tides.parameters.internal.radial_velocity = particle.heliocentric_radial_velocity;
             }
+            if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
+                    particle.tides.coordinates.position = particle.heliocentric_position;
+                    particle.tides.coordinates.velocity = particle.heliocentric_velocity;
+                    particle.tides.parameters.internal.distance = particle.heliocentric_distance;
+                    particle.tides.parameters.internal.radial_velocity = particle.heliocentric_radial_velocity;
+                }
         }
     }
 }
@@ -481,6 +519,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
 
     for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
         if let TidesEffect::OrbitingBody = particle.tides.effect {
+            // println!("Troque due to tides, OrbitingBody");
         //if let Tides::CTLOrbitingBody = particle.tides.effect {
         //if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
             if !central_body {
@@ -525,14 +564,14 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
         //if mon stuff 
         
         if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
-            
+
             let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
             //it return (a, q, eccentricity, i, p, n, l, orbital_period)
             let semi_major_axis = orbital_elements.0;
             let eccentricity = orbital_elements.2;
             let orbital_period = orbital_elements.7;
-            let orbital_frequency = (2.*PI) / (orbital_period *24.*60.*60.); // in 1/s
-            let spin = particle.norm_spin_vector_2.sqrt();
+            let orbital_frequency = (2.*PI) / (orbital_period *DAY); // in 1/s
+            let spin = particle.norm_spin_vector_2.sqrt() / (DAY);
 
             let mut tidal_torque_kaula_coplanar = [0.;3];
 
@@ -544,16 +583,21 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             //let mut e = 0.1;
 
             let eccentricity_function = eccentricty_function_g(eccentricity);
-
+            let mut excitative_frequency: f64;
             let mut sum_g_im_k2_over_q = 0.;
             let mut q = -2.;
-
+            // println!("\nTroque due to tides, KaulaCoplanarOrbitingBody:");
             for x in 0..5{
-                let excitative_frequency = 2.*(spin - orbital_frequency) + (q)*spin ;
-                let imaginary_kaula_number = kaula_number(excitative_frequency, nm_data, re_k2, im_k2, w_lmpq);
-                sum_g_im_k2_over_q = sum_g_im_k2_over_q + ( eccentricity_function[0][x].powf(2.) * imaginary_kaula_number.1 );
+
+                excitative_frequency = sigma_2mpq(2., 0., q, spin, orbital_frequency);
+                let im_kaula_number = kaula_number(excitative_frequency, nm_data, re_k2, im_k2, w_lmpq);
+                // println!("\tThe excitative frequ {} give the im_Kauma_num {}", excitative_frequency, im_kaula_number.1);
+                sum_g_im_k2_over_q = sum_g_im_k2_over_q + ( eccentricity_function[0][x].powf(2.) * im_kaula_number.1 );
+                // println!("\tThe sum_G*im_k2: {} \t the im_Kaula {}, \t the ecc_function_G {} \n", sum_g_im_k2_over_q, im_kaula_number.1, eccentricity_function[0][x]);
                 q+=1.;
             }
+            // println!("\t\nThe Total  sum_over_q into TidalTorque {} \n", sum_g_im_k2_over_q );
+
 
             //tidal_torque_Kaula_coplanar[2] = (3./2.)*(G* tidal_host_particle.mass.powf(2.)* particle.radius.powf(5.))*( eccentricity_function[0][0] +eccentricity_function[0][1] +eccentricity_function[0][2] +eccentricity_function[0][3] +eccentricity_function[0][4]);
             tidal_torque_kaula_coplanar[2] = (3./2.)*((G* tidal_host_particle.mass.powf(2.)* particle.radius.powf(5.))/semi_major_axis.powf(6.)) *sum_g_im_k2_over_q;
@@ -568,7 +612,6 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
                 particle.tides.parameters.output.dangular_momentum_dt.y = factor * tidal_torque_kaula_coplanar[1];
                 particle.tides.parameters.output.dangular_momentum_dt.z = factor * tidal_torque_kaula_coplanar[2];
             }
-            // println!("Heho connard?");
         }
     }
 
@@ -596,6 +639,7 @@ pub fn calculate_orthogonal_component_of_the_tidal_force(tidal_host_particle: &m
 fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tidal_host_particle: &mut Particle, particles: &mut [Particle], more_particles: &mut [Particle], star_planet_dependent_dissipation_factors: &mut HashMap<usize, f64>) {
     for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
         if let TidesEffect::OrbitingBody = particle.tides.effect {
+            // println!("The CTL TidesForce on Orbiting Body");
         //if let Tides::CTLOrbitingBody = particle.tides.effect {
         //if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
             //// Only calculate tides if planet is not in disk
@@ -644,12 +688,12 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
            if !central_body{
                 
                 let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
-                //it return (a, q, eccentricity, i, p, n, l, orbital_period)
+                //keplerian element return (a, q, eccentricity, i, p, n, l, orbital_period)
                 let semi_major_axis = orbital_elements.0;
                 let eccentricity = orbital_elements.2;
                 let orbital_period = orbital_elements.7;
-                let orbital_frequency = (2.*PI) / (orbital_period *24.*60.*60.); // in 1/s
-                let spin = particle.norm_spin_vector_2.sqrt();
+                let orbital_frequency = TWO_PI / (orbital_period *24.*60.*60.); // in 1/s
+                let spin = particle.norm_spin_vector_2.sqrt() / (24.*60.*60.); //in 1/s
 
                 let imaginary_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.imaginary_part_love_number;
                 let real_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
@@ -658,19 +702,20 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
                 // num_datapoint is f64
                 let eccentricity_function = eccentricty_function_g(eccentricity);
                 let mut excitative_frequency: f64;
-                let mut sum_over_q = (3./2.)*(G* tidal_host_particle.mass.powf(2.)* particle.radius.powf(5.)) / (semi_major_axis.powf(6.) * particle.heliocentric_distance);
+                let mut sum_over_q = 0.;
                 let mut q = -2.;
-
+                // println!("\nInto Ortho tidal force:");
                 for x in 0..5{
                 
-                    // sum_over_q = sum_over_q -(3./4.) ( eccentricity_function[1][x].powf(2.) * real_part_love_number(nm_data, re_k2, w_lmpq, q, orbital_frequency, spin) );
                     excitative_frequency = sigma_2mpq(2., 0., q, spin, orbital_frequency);
                     let im_kaula_number = kaula_number(excitative_frequency, nm_data, real_k2, imaginary_k2, w_lmpq);
-                    sum_over_q = sum_over_q -( eccentricity_function[0][x].powf(2.) * im_kaula_number.1 );
-                    
+                    // println!("\tThe excitative frequ {} give the im_Kauma_num {}", excitative_frequency, im_kaula_number.1);
+                    sum_over_q = sum_over_q +( eccentricity_function[0][x].powf(2.) * im_kaula_number.1 );
+                    // println!("\tThe sum_over_q: {} \t the im_Kaula {}, \t the ecc_function_G {} \n", sum_over_q, im_kaula_number.1, eccentricity_function[0][x]);
                     q+=1.;
                 }
-                particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = sum_over_q
+                // println!("\t\nThe Total  sum_over_q into Ortho tidal force {} \n",sum_over_q );
+                particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = ( (3./2.)*(G* tidal_host_particle.mass.powf(2.)* particle.radius.powf(5.)) / (semi_major_axis.powf(6.) * particle.heliocentric_distance) )* sum_over_q
 
             }
         }
@@ -712,13 +757,14 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
 
         if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
             // println!("calculate_radial_component_of_the_tidal_force");
+
             let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
-            //it return (a, q, eccentricity, i, p, n, l, orbital_period)
+            //calculate keplerian el return (a, q, eccentricity, i, p, n, l, orbital_period)
             let semi_major_axis = orbital_elements.0;
             let eccentricity = orbital_elements.2;
             let orbital_period = orbital_elements.7;
-            let orbital_frequency = (2.*PI) / (orbital_period *24.*60.*60.); // in 1/s
-            let spin = particle.norm_spin_vector_2.sqrt();
+            let orbital_frequency = TWO_PI / (orbital_period *24.*60.*60.); // in 1/s
+            let spin = particle.norm_spin_vector_2.sqrt() / (24.*60.*60.); // in 1/s
 
             let imaginary_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.imaginary_part_love_number;
             let real_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
@@ -730,21 +776,26 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
             let mut sum_over_q = 0.;
             let mut q = -2.;
             let mut _j = -2.;
-
+            // println!("\nInto Radial tidal force:");
             for x in 0..5{
                 
-                // sum_over_q = sum_over_q -(3./4.) ( eccentricity_function[1][x].powf(2.) * real_part_love_number(nm_data, re_k2, w_lmpq, q, orbital_frequency, spin) );
                 excitative_frequency = sigma_2mpq(0., 1., q, spin, orbital_frequency);
                 let mut real_kaula_number = kaula_number(excitative_frequency, nm_data, real_k2, imaginary_k2, w_lmpq);
+                // println!("\tThe sigma201q_excit_frequ {} give the real_Kauma_num {}", excitative_frequency, real_kaula_number.0);
+
                 sum_over_q = sum_over_q -(3./4.)*( eccentricity_function[1][x].powf(2.) * real_kaula_number.0 );
                 
                 excitative_frequency = sigma_2mpq(2., 0., q, spin, orbital_frequency);
                 real_kaula_number = kaula_number( excitative_frequency, nm_data, real_k2, imaginary_k2, w_lmpq );
+                // println!("\tThe sigma220q_excit_frequ {} give the real_Kaula_num {}", excitative_frequency, real_kaula_number.0);
+
                 sum_over_q = sum_over_q -(9./4.)*( eccentricity_function[0][x].powf(2.) * real_kaula_number.0 );
-                
+                // println!("\tThe sum_over_q {} \t the Re_Kaula {}, \t the ecc_function_g {} \n ", sum_over_q, real_kaula_number.0, eccentricity_function[0][x]);
                 q+=1.;
             }
-            particle.tides.parameters.internal.radial_component_of_the_tidal_force = (G* tidal_host_particle.mass.powf(2.)* particle.radius.powf(5.)) / (semi_major_axis.powf(6.) * particle.heliocentric_distance);
+            // println!("\t\nThe Total sum_over_q into Radial tidal force {} \n",sum_over_q );
+
+            particle.tides.parameters.internal.radial_component_of_the_tidal_force = ( (G* tidal_host_particle.mass.powf(2.)* particle.radius.powf(5.)) / (semi_major_axis.powf(6.) * particle.heliocentric_distance) ) * sum_over_q;
             
         }
     }
@@ -768,6 +819,20 @@ pub fn calculate_denergy_dt(particles: &mut [Particle], more_particles: &mut [Pa
                         + (particle.spin.x*particle.tides.coordinates.position.y - particle.spin.y*particle.tides.coordinates.position.x - particle.tides.coordinates.velocity.z) * particle.tides.coordinates.velocity.z))
                         - (particle.tides.parameters.output.dangular_momentum_dt.x*particle.spin.x + particle.tides.parameters.output.dangular_momentum_dt.y*particle.spin.y + particle.tides.parameters.output.dangular_momentum_dt.z*particle.spin.z);
         }
+        if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
+                // - Equation 32 from Bolmont et al. 2015
+                //// Instantaneous energy loss dE/dt due to tides
+                //// in Msun.AU^2.day^(-3)
+                //radial_tidal_force_for_energy_loss_calculation = factor1 * term2; // Ftidr_diss
+                let factor2 = particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide / particle.tides.parameters.internal.distance;
+                particle.tides.parameters.internal.denergy_dt = -((1.0 / particle.tides.parameters.internal.distance * (particle.tides.parameters.internal.radial_component_of_the_tidal_force_dissipative_part_when_star_as_point_mass + factor2 * particle.tides.parameters.internal.radial_velocity))
+                            * (particle.tides.coordinates.position.x*particle.tides.coordinates.velocity.x + particle.tides.coordinates.position.y*particle.tides.coordinates.velocity.y + particle.tides.coordinates.position.z*particle.tides.coordinates.velocity.z)
+                            + factor2 
+                            * ((particle.spin.y*particle.tides.coordinates.position.z - particle.spin.z*particle.tides.coordinates.position.y - particle.tides.coordinates.velocity.x) * particle.tides.coordinates.velocity.x
+                            + (particle.spin.z*particle.tides.coordinates.position.x - particle.spin.x*particle.tides.coordinates.position.z - particle.tides.coordinates.velocity.y) * particle.tides.coordinates.velocity.y
+                            + (particle.spin.x*particle.tides.coordinates.position.y - particle.spin.y*particle.tides.coordinates.position.x - particle.tides.coordinates.velocity.z) * particle.tides.coordinates.velocity.z))
+                            - (particle.tides.parameters.output.dangular_momentum_dt.x*particle.spin.x + particle.tides.parameters.output.dangular_momentum_dt.y*particle.spin.y + particle.tides.parameters.output.dangular_momentum_dt.z*particle.spin.z);
+            }
     }
 }
 
@@ -817,6 +882,40 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
             particle.tides.parameters.output.acceleration.y = factor1 * total_tidal_force_y;
             particle.tides.parameters.output.acceleration.z = factor1 * total_tidal_force_z;
         }
+        if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect {
+                let factor1 = 1. / particle.mass;
+    
+                // - Equation 6 from Bolmont et al. 2015
+                let factor3 = particle.tides.parameters.internal.radial_component_of_the_tidal_force
+                                + (particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_stellar_tide + particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide) * particle.tides.parameters.internal.radial_velocity / particle.tides.parameters.internal.distance;
+                let total_tidal_force_x = factor3 * particle.tides.coordinates.position.x / particle.tides.parameters.internal.distance
+                                        + particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_stellar_tide / particle.tides.parameters.internal.distance
+                                            * (tidal_host_particle.spin.y * particle.tides.coordinates.position.z  - tidal_host_particle.spin.z * particle.tides.coordinates.position.y - particle.tides.coordinates.velocity.x)
+                                        + particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide / particle.tides.parameters.internal.distance 
+                                            * (particle.spin.y * particle.tides.coordinates.position.z  - particle.spin.z * particle.tides.coordinates.position.y - particle.tides.coordinates.velocity.x);
+                let total_tidal_force_y = factor3 * particle.tides.coordinates.position.y / particle.tides.parameters.internal.distance
+                                        + particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_stellar_tide / particle.tides.parameters.internal.distance 
+                                            * (tidal_host_particle.spin.z * particle.tides.coordinates.position.x  - tidal_host_particle.spin.x * particle.tides.coordinates.position.z - particle.tides.coordinates.velocity.y)
+                                        + particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide / particle.tides.parameters.internal.distance 
+                                            * (particle.spin.z * particle.tides.coordinates.position.x  - particle.spin.x * particle.tides.coordinates.position.z - particle.tides.coordinates.velocity.y);
+                let total_tidal_force_z = factor3 * particle.tides.coordinates.position.z / particle.tides.parameters.internal.distance
+                                        + particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_stellar_tide / particle.tides.parameters.internal.distance 
+                                            * (tidal_host_particle.spin.x * particle.tides.coordinates.position.y  - tidal_host_particle.spin.y * particle.tides.coordinates.position.x - particle.tides.coordinates.velocity.z)
+                                        + particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide / particle.tides.parameters.internal.distance 
+                                            * (particle.spin.x * particle.tides.coordinates.position.y  - particle.spin.y * particle.tides.coordinates.position.x - particle.tides.coordinates.velocity.z);
+                //println!("factor3 {:e} {:e} {:e}", particle.tides.parameters.internal.radial_component_of_the_tidal_force, particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_stellar_tide, particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide);
+                //println!("d {:e} vrad {:e}", particle.tides.parameters.internal., particle.tides.parameters.internal.radial_velocity);
+                //println!("total {:e} {:e} {:e}", total_tidal_force_x, total_tidal_force_y, total_tidal_force_z);
+    
+                sum_total_tidal_force.x += total_tidal_force_x;
+                sum_total_tidal_force.y += total_tidal_force_y;
+                sum_total_tidal_force.z += total_tidal_force_z;
+    
+                // - Equation 19 from Bolmont et al. 2015 (first term)
+                particle.tides.parameters.output.acceleration.x = factor1 * total_tidal_force_x; 
+                particle.tides.parameters.output.acceleration.y = factor1 * total_tidal_force_y;
+                particle.tides.parameters.output.acceleration.z = factor1 * total_tidal_force_z;
+            }
     }
 
     // - Equation 19 from Bolmont et al. 2015 (second term)
@@ -883,13 +982,11 @@ pub fn _inclination_function_f(inclination: f64) -> [[f64; 3]; 3]{
 
 pub fn kaula_number(w_k2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], imaginary_part_love_number: [[f64;32];32], love_number_excitation_frequency: [[f64;32];32] ) -> (f64,f64){
 
-    // let w_k2 = 36.4;
     let mut re_k2 = 0.;
     let mut im_k2 = 0.;
     let mut x = 0.;
     let mut y = 0.;
     let mut ctrl = true; 
-    //print!("\n\tptrd{:?}\t", love_number_excitation_frequency);
 
     if w_k2 < love_number_excitation_frequency[0][0] {
         re_k2 = real_part_love_number[0][0];
@@ -912,6 +1009,7 @@ pub fn kaula_number(w_k2:f64, nm_data:f64, real_part_love_number: [[f64;32];32],
                             else if ctrl { 
                                 im_k2 = imaginary_part_love_number[frequency1][frequency2-1] + (imaginary_part_love_number[frequency1][frequency2] - imaginary_part_love_number[frequency1][frequency2-1])/2.;
                                 // println!("\n \n Find {}, with {} - {} /2 ", im_k2, imaginary_part_love_number[frequency1][frequency2], imaginary_part_love_number[frequency1][frequency2-1]);
+                                // panic!("The stuff");
                                 ctrl = false;
                             }
                         }
@@ -928,11 +1026,12 @@ pub fn kaula_number(w_k2:f64, nm_data:f64, real_part_love_number: [[f64;32];32],
 
         }
     }
-
+    // println!("The two number {} {}", re_k2, im_k2);
     return (re_k2, im_k2)
 }
 
 
 pub fn sigma_2mpq(m:f64, p:f64, q:f64, spin:f64, orbital_frequency: f64) -> f64{
-    return (2. -2.*p + q)*spin -m*orbital_frequency;
+    // println!("\tsigma_calulation: the orbital_frequ {} and spin {}  give the sigma excit_frequ {}, the integer m {}, p {}, q {},  ", orbital_frequency, spin, (2. -2.*p + q)*orbital_frequency -m*spin, m, p, q );
+    return (2. -2.*p + q)*orbital_frequency -m*spin;
 }
