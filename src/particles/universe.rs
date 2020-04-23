@@ -9,6 +9,8 @@ use super::super::effects::{tides, rotational_flattening, general_relativity, ev
 use super::super::{TidesEffect, RotationalFlatteningEffect, DiskEffect, WindEffect};
 use super::super::{GeneralRelativityImplementation, GeneralRelativityEffect};
 
+use super::super::tools;
+
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct HostIndices {
@@ -420,12 +422,13 @@ impl Universe {
                             let central_body = true;
 
                             if self.consider_effects.tides {
+
                                 // particles_left.nmbre += 1.;
-                                // println!("\n\nle nombre de boucles\n\n {}", particles_left.nmbre);
+                                // println!("\n\nle nombre de boucles\n\n {}", current_time);
                                 // println!("///Calculate_torque_due_to_tides - CentralBody///");
-                                tides::calculate_torque_due_to_tides(&mut tidal_host_particle, &mut particles_left, &mut particles_right, central_body);
+                                tides::calculate_torque_due_to_tides(&mut tidal_host_particle, &mut particles_left, &mut particles_right, central_body, current_time );
                                 // println!("///calculate_torque_due_to_tides - !CentralBody///");
-                                tides::calculate_torque_due_to_tides(&mut tidal_host_particle, &mut particles_left, &mut particles_right, !central_body);
+                                tides::calculate_torque_due_to_tides(&mut tidal_host_particle, &mut particles_left, &mut particles_right, !central_body, current_time );
                             }
 
                             if self.consider_effects.rotational_flattening {
@@ -878,6 +881,12 @@ fn find_indices(particles: &Vec<Particle>, consider_effects: &ConsiderEffects) -
                     tidal_host_particle_index = i;
                 } else {
                     panic!("Only one central body is allowed for tidal effects!");
+                }
+            }
+            if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect{
+                let orbital_element = tools::calculate_keplerian_orbital_elements( particle.mass_g, particle.inertial_position, particle.inertial_velocity);
+                if orbital_element.3 !=0.0 {
+                    panic!("Only Coplanar configuration is allowed with the Kaula Coplanar model!")
                 }
             }
         }

@@ -149,13 +149,17 @@ if __name__ == "__main__":
     # Semi-major axis in AU
     planet_a = 0.02817
     # Inclination in degrees
-    planet_i = 0. #0.140000
+    # planet_i = 0.140000
     # Mean anomaly in degrees
     planet_l = 165.724187804
 
 
     # ############################################################################
-
+    planet_i = 0.0
+    planet_inclination = 0.0
+    planet_obliquity = 0.0
+    e = 0.5
+    planet_angular_frequency = posidonius.constants.TWO_PI/(5/12) #10 hours periods in day
 
     # ############################################################################
     # # Radiuses in R_EARTH
@@ -182,7 +186,7 @@ if __name__ == "__main__":
     #////////// Specify initial position and velocity for a stable orbit
     #////// Keplerian orbital elements, in the `asteroidal' format of Mercury code
     #a = 0.01111;                             # semi-major axis (in AU)
-    e = 0.5 #0.0000010;                              # eccentricity
+    # e = 0.0000010;                              # eccentricity
     i = i * posidonius.constants.DEG2RAD;                      # inclination (degrees)
     p = 0. * posidonius.constants.DEG2RAD;                                # argument of pericentre (degrees)
     n = 0. * posidonius.constants.DEG2RAD;                      # longitude of the ascending node (degrees)
@@ -192,14 +196,12 @@ if __name__ == "__main__":
     planet_position, planet_velocity = posidonius.calculate_cartesian_coordinates(planet_mass, q, e, i, p, n, l, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
 
     #////// Initialization of planetary spin
-    planet_obliquity = 1.0e-4 # rad
+    # planet_obliquity = 1.0e-4 # rad
     # Pseudo-synchronization period
     # planet_pseudo_synchronization_period = posidonius.calculate_pseudo_synchronization_period(a, e, star_mass, planet_mass) # days
-    planet_pseudo_synchronization_period = 1 #days
-    planet_angular_frequency = posidonius.constants.TWO_PI/(planet_pseudo_synchronization_period) # days^-1
+    # planet_angular_frequency = posidonius.constants.TWO_PI/(planet_pseudo_synchronization_period) # days^-1
     planet_keplerian_orbital_elements = posidonius.calculate_keplerian_orbital_elements(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
     # planet_inclination = planet_keplerian_orbital_elements[3]
-    planet_inclination = 0.0
     planet_spin = posidonius.calculate_spin(planet_angular_frequency, planet_inclination, planet_obliquity)
 
     k2pdelta = 2.465278e-3 # Terrestrial planets (no gas)

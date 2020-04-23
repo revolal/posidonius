@@ -121,6 +121,7 @@ pub fn write_historic_snapshot<T: Write>(universe_history_writer: &mut BufWriter
                         particle.tides.parameters.internal.lag_angle,
                         particle.tides.parameters.internal.denergy_dt,                // Msun.AU^2.day^-3
                         particle.disk.parameters.internal.migration_timescale,
+                        // particle.tides.parameters.internal.sigma_excitative_frequency,
                     );
         bincode::serialize_into(universe_history_writer, &output, bincode::Infinite).unwrap();
 

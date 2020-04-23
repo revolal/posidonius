@@ -45,6 +45,7 @@ class Tides(object):
                     "scalar_product_of_vector_position_with_planetary_spin": 0.0,
                     "scalar_product_of_vector_position_with_stellar_spin": 0.0,
                     "scaled_dissipation_factor": 0.0,
+                    # "sigma_excitative_frequency":0.0,
                 },
                 "output": {
                     "acceleration": Axes(0.0, 0.0, 0.0).get(),

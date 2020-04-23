@@ -217,7 +217,7 @@ impl Integrator for WHFast {
             self.n_historic_snapshots += 1;
             let current_time_years = self.current_time/365.25;
             if ! silent_mode {
-                print!("Year: {:0.0} ({:0.1e}) | Time step: {:0.3} days                    \r", current_time_years, current_time_years, self.time_step);
+                print!("Year: {:0.0} ({:0.1e}) | Time step: {:0.3} days         {}           \r", current_time_years, current_time_years, self.time_step, self.current_time);
                 let _ = std::io::stdout().flush();
             }
         }

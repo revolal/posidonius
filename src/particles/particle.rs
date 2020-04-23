@@ -58,7 +58,6 @@ pub struct Particle {
     pub tides: Tides,
     /////////////////////////////////////////////////////////////
     //pub kaula_coplanar_tides: KaulaCoplanarTides,
-    //pub tides_types: MAchin,
     /////////////////////////////////////////////////////////////
     pub rotational_flattening: RotationalFlattening,
     pub general_relativity: GeneralRelativity,
