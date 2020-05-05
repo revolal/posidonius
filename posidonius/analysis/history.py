@@ -18,7 +18,8 @@ def read(filename):
     if not os.path.exists(filename):
         raise Exception("File does not exists!")
 
-    fields = ('current_time', 'time_step', 'particle', 'position_x', 'position_y', 'position_z', 'spin_x', 'spin_y', 'spin_z', 'velocity_x', 'velocity_y', 'velocity_z', 'mass', 'radius', 'radius_of_gyration_2', 'love_number', 'scaled_dissipation_factor', 'lag_angle', 'denergy_dt', 'migration_timescale', )
+    # fields = ('current_time', 'time_step', 'particle', 'position_x', 'position_y', 'position_z', 'spin_x', 'spin_y', 'spin_z', 'velocity_x', 'velocity_y', 'velocity_z', 'mass', 'radius', 'radius_of_gyration_2', 'love_number', 'scaled_dissipation_factor', 'lag_angle', 'denergy_dt', 'migration_timescale', 'sigma_excitative_frequency', )
+    fields = ('current_time', 'time_step', 'particle', 'position_x', 'position_y', 'position_z', 'spin_x', 'spin_y', 'spin_z', 'velocity_x', 'velocity_y', 'velocity_z', 'mass', 'radius', 'radius_of_gyration_2', 'love_number', 'scaled_dissipation_factor', 'lag_angle', 'denergy_dt', 'migration_timescale', 'a', 'spin', 'orbital_frequency', 'sigma220_2_excitative_frequency', 'sigma220_1_excitative_frequency', 'sigma2200_excitative_frequency', 'sigma2201_excitative_frequency', 'sigma2202_excitative_frequency', )
 
     data = []
     while True:

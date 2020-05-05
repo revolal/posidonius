@@ -110,15 +110,28 @@ if __name__ == "__main__":
 
         e = planet_data['eccentricity']
         non_zero = e != 0
-        alpha = np.ones(len(e)) # equ 42 ou 43 par approx Hut 1981 pseudo period fction ecc
+        alpha = np.ones(len(e))
         alpha[non_zero] = (1.+15./2.*e[non_zero]**2+45./8.*e[non_zero]**4+5./16.*e[non_zero]**6)*1./(1.+3.*e[non_zero]**2+3./8.*e[non_zero]**4)*1./(1.-e[non_zero]**2)**1.5
-        pseudo_rot = alpha * np.sqrt(posidonius.constants.G_SI*posidonius.constants.M_SUN*(star_mass+planet_mass))
-        #pseudo_synchronization_period  = 2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*AU)**(-3./2.) * posidonius.constants.HOUR) # Hours
-        pseudo_synchronization_period  = 2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY) # Days
-        pseudo_synchronization_period[non_zero] = np.nan
-        planet_computed_data['pseudo_synchronization_period'] = pseudo_synchronization_period
+        # pseudo_rot = alpha * np.sqrt(posidonius.constants.G_SI*posidonius.constants.M_SUN*(star_mass+planet_mass))
+        # #pseudo_synchronization_period  = 2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*AU)**(-3./2.) * posidonius.constants.HOUR) # Hours
+        # pseudo_synchronization_period  = 2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY) # Days
+        # pseudo_synchronization_period[non_zero] = np.nan
+        # planet_computed_data['pseudo_synchronization_period'] = pseudo_synchronization_period
 
-        if universe_integrator_json['universe']['consider_effects']['tides']:           
+        planet_pseudo_synchronization_period = posidonius.calculate_pseudo_synchronization_period(planet_data['semi-major_axis'], e, star_mass, planet_mass) # days
+        planet_angular_frequency_pseudo_rot = posidonius.constants.TWO_PI/(planet_pseudo_synchronization_period) # days^-1
+
+        if universe_integrator_json['universe']['consider_effects']['tides']:
+
+            planet_computed_data['spin'] = planet_data['spin']
+            planet_computed_data['orbital_frequency'] = planet_data['orbital_frequency']
+
+            planet_computed_data['sigma220_2_excitative_frequency'] = planet_data['sigma220_2_excitative_frequency']
+            planet_computed_data['sigma220_1_excitative_frequency'] = planet_data['sigma220_1_excitative_frequency']
+            planet_computed_data['sigma2200_excitative_frequency'] = planet_data['sigma2200_excitative_frequency']
+            planet_computed_data['sigma2201_excitative_frequency'] = planet_data['sigma2201_excitative_frequency']
+            planet_computed_data['sigma2202_excitative_frequency'] = planet_data['sigma2202_excitative_frequency']
+            
             ### Calculation of energydot and tidal flux, in W/m2
             # Gravitationl energy lost of the system due to dissipation
             # Masses in kg
@@ -180,9 +193,21 @@ if __name__ == "__main__":
         #AU        =  1.49598e11               # m
         #Msun      =  1.98892e30               # kg
         planet_orbital_period = 2*np.pi*np.sqrt(np.power(planet_data['semi-major_axis']*posidonius.constants.AU, 3)/(posidonius.constants.G_SI*posidonius.constants.M_SUN*(star_data['mass']+planet_data['mass'])))
+        # planet_orbital_period = 2*np.pi*np.sqrt(np.power(planet_data['semi-major_axis']*posidonius.constants.AU, 3)/(posidonius.constants.G_SI*posidonius.constants.M_SUN*(star_data['mass'])))
         planet_computed_data['orbital_period'] = planet_orbital_period/(posidonius.constants.DAY) # days
         ################################################################################
-        
+
+        planet_orbital_frequ = 2*np.pi / ( planet_orbital_period )
+        planet_rotation_frequ = planet_norm_spin /(posidonius.constants.DAY)
+
+        # planet_computed_data['sigma_excitative_frequency_calculated'] = 2.0*( planet_orbital_frequ -planet_rotation_frequ) + 1.0*planet_orbital_frequ
+
+        planet_computed_data['sigma220_2_excitative_frequency_calculated'] = 2.0*( planet_orbital_frequ -planet_rotation_frequ) - 2.0*planet_orbital_frequ
+        planet_computed_data['sigma220_1_excitative_frequency_calculated'] = 2.0*( planet_orbital_frequ -planet_rotation_frequ) - 1.0*planet_orbital_frequ
+        planet_computed_data['sigma2200_excitative_frequency_calculated'] = 2.0*( planet_orbital_frequ -planet_rotation_frequ)
+        planet_computed_data['sigma2201_excitative_frequency_calculated'] = 2.0*( planet_orbital_frequ -planet_rotation_frequ) + 1.0*planet_orbital_frequ
+        planet_computed_data['sigma2202_excitative_frequency_calculated'] = 2.0*( planet_orbital_frequ -planet_rotation_frequ) + 2.0*planet_orbital_frequ
+
         ################################################################################
         ## Sum over all the planets values:
         planet_angular_momentum_x = planet_data['radius_of_gyration_2'][0] * (planet_data['mass'][0]) * np.power(planet_data['radius'][0], 2) * planet_data['spin_x']
@@ -261,205 +286,123 @@ if __name__ == "__main__":
 
 
     print("Preparing plot...")
-    fig = plt.figure(figsize=(16, 10))
-    ax = fig.add_subplot(5,3,1)
-    field = 'semi-major_axis'
+    fig = plt.figure(figsize=(20, 15))
+
+    ax = fig.add_subplot(5,2,1)
+    field = '-2*Spin'
     for key in planets_keys:
         planet_data = planets_data[key]
         # line, = ax.plot(planet_data['current_time'], planet_data[field], label=key)
-        ax.plot(planet_data['current_time'], planet_data['semi-major_axis'], label=key, color = 'g')
-        ax.plot(planet_data['current_time'], planet_data['a'], label=key, color ='r', ls='--')
-        # ax.plot(planet_data['current_time'], planets_computed_data[key]['corotation_radius'], label=None, ls="--", c=line.get_color()) # corotation
+        # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma220_2_excitative_frequency'], label=key)
+        ax.plot(planet_data['current_time'], planet_computed_data['sigma220_2_excitative_frequency_calculated'], label=None, ls="--", )
     ax.set_ylabel(field+" (AU)")
     #ax.set_ylim([0.005, 0.028])
-    # ax.set_xscale('log')
+    # # ax.set_xscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-    ax = fig.add_subplot(5,3,2, sharex=ax)
-    # field = 'planet_obliquity'
-    field = 'semi-major_axis'
+    ax = fig.add_subplot(5,2,2, sharex=ax)
+    field = 'Orbital_freq -2*Spin'
     for key in planets_keys:
         planet_data = planets_data[key]
-        # ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_obliquity'], label=key)
-        ax.plot(planet_data['current_time'], planet_data['semi-major_axis'], label=key)
-        # line, = ax.plot(planet_data['current_time'], planet_data[field], label=key)
-    ax.set_ylabel(field+' (AU)')
+        # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma220_1_excitative_frequency'], label=key)
+        ax.plot(planet_data['current_time'], planet_computed_data['sigma220_1_excitative_frequency_calculated'], label=None, ls="--", )
+    ax.set_ylabel(field)
     # ax.set_ylim([-0.00031, -0.00029])
-    # ax.set_xscale('log')
+    # # ax.set_xscale('log')
     # ax.set_yscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-    ax = fig.add_subplot(5,3,3, sharex=ax)
-    field = 'eccentricity'
+    ax = fig.add_subplot(5,2,3, sharex=ax)
+    field = '2*( Orbital_frequ - Spin )'
     for key in planets_keys:
         planet_data = planets_data[key]
-        ax.plot(planet_data['current_time'], planet_data[field], label=key)
+        # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma2200_excitative_frequency'], label=key)
+        ax.plot(planet_data['current_time'], planet_computed_data['sigma2200_excitative_frequency_calculated'], label=None, ls="--", )
     ax.set_ylabel(field)
-    #ax.set_ylim([0.001, 1.000])
-    ax.set_xscale('log')
-    ax.set_yscale('log')
+    # ax.set_ylim([-0.00031, -0.00029])
+    # # ax.set_xscale('log')
+    # ax.set_yscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
 
-    ax = fig.add_subplot(5,3,4, sharex=ax)
-    field = 'inclination'
+    ax = fig.add_subplot(5,2,4, sharex=ax)
+    # field = 'sigma2201_excitative_frequency'
+    field = '3*Orbital_freq -2*Spin'
     for key in planets_keys:
         planet_data = planets_data[key]
-        ax.plot(planet_data['current_time'], planet_data[field] * (180 / np.pi), label=key) # From rad to degrees
-    ax.set_ylabel('planet '+field+ " (deg)")
-    #ax.set_ylim([0.5, 5.5])
-    ax.set_xscale('log')
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-    ax = fig.add_subplot(5,3,5, sharex=ax)
-    # Energy loss dE/dt due to tides per planet surface
-    #field = 'Energy lost\ndue to tides (W/m^2)'
-    field = 'Tidal heat\nflux (W/m^2)'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['inst_tidal_flux'], label=key) # Instantaneous energy loss
-        ax.plot(planet_data['current_time'], planets_computed_data[key]['mean_tidal_flux'], label=None, ls="--", c=line.get_color()) # Mean energy loss
+        # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma2201_excitative_frequency'], label=key)
+        ax.plot(planet_data['current_time'], planet_computed_data['sigma2201_excitative_frequency_calculated'], label=None, ls="--", )
     ax.set_ylabel(field)
-    #ax.set_ylim([1e-2, 1e5])
-    ax.set_xscale('log')
-    ax.set_yscale('log')
+    # ax.set_ylim([-0.00031, -0.00029])
+    # # ax.set_xscale('log')
+    # ax.set_yscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-    ax = fig.add_subplot(5,3,6, sharex=ax)
+    ax = fig.add_subplot(5,2,5, sharex=ax)
+    field = '2*( 2*Orbital_frequ -Spin )'
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma2202_excitative_frequency'], label=key)
+        ax.plot(planet_data['current_time'], planet_computed_data['sigma2202_excitative_frequency_calculated'], label=None, ls="--", )
+    ax.set_ylabel(field)
+    # ax.set_ylim([-0.00031, -0.00029])
+    # # ax.set_xscale('log')
+    # ax.set_yscale('log')
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+    ax = fig.add_subplot(5,2,6, sharex=ax)
+    field = 'spin'
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        # ax.plot(planet_data['current_time'], planet_data['spin'], label=key) # planet_data['spin']  planets_computed_data[key]['spin']
+        ax.plot(planet_data['current_time'], planet_norm_spin/posidonius.constants.DAY, label=None, ls="--", ) #planet_norm_spin  planet_rotation_frequ
+    ax.set_ylabel(field)
+    # ax.set_ylim([-0.00031, -0.00029])
+    # # ax.set_xscale('log')
+    # ax.set_yscale('log')
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+    ax = fig.add_subplot(5,2,7, sharex=ax)
+    field = 'orbital_frequency'
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        # ax.plot(planet_data['current_time'], planet_data['orbital_frequency'], label=key)
+        ax.plot(planet_data['current_time'], planet_orbital_frequ, label=None, ls="--", )
+    ax.set_ylabel(field)
+    # ax.set_ylim([-0.00031, -0.00029])
+    # # ax.set_xscale('log')
+    # ax.set_yscale('log')
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+    ax = fig.add_subplot(5,2,8, sharex=ax)
     #field = 'planet_rotation_period\n(hr)'
     field = 'planet_rotation_period\n(days)'
     for key in planets_keys:
         planet_data = planets_data[key]
         #line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period']*24., label=key)
-        line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period'], label=key)
-        ax.plot(planet_data['current_time'], planets_computed_data[key]['pseudo_synchronization_period'], label=None, ls="--", c=line.get_color()) # Pseudo-sync
+        ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period'], label=key)
+        # ax.plot(planet_data['current_time'], planets_computed_data[key]['pseudo_synchronization_period'], label=None, ls="--", ) # Pseudo-sync
+        # ax.plot(planet_data['current_time'], planet_pseudo_synchronization_period, label=None, ls="--", ) # Pseudo-sync
     ax.set_ylabel(field)
     #ax.set_ylim([40, 160.0])
-    ax.set_xscale('log')
+    # ax.set_xscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-    ax = fig.add_subplot(5,3,7, sharex=ax)
-    field = '$\Delta L/L_{0}$'
-    ax.plot(planet_data['current_time'], conservation_of_angular_momentum)
-    ax.set_ylabel(field)
-    #ax.set_ylim([0., 0.000007])
-    ax.set_xscale('log')
-    ax.set_yscale('log')
 
-    #ax = fig.add_subplot(5,3,8, sharex=ax)
-    ## Energy loss dE/dt due to tides
-    #field = 'Energy lost\ndue to tides (W)'
-    ##ax.plot(planet_data['current_time'], planet_data[field])
-    #for key in planets_keys:
-        #planet_data = planets_data[key]
-        #line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['denergy_dt'], label=key) # Instantaneous energy loss
-        #ax.plot(planet_data['current_time'], planets_computed_data[key]['gravitational_energy_lost'], label=None, ls="--", c=line.get_color()) # Mean energy loss
-    #ax.set_ylabel(field)
-    ##ax.set_ylim([1e12, 1e19])
-    #ax.set_xscale('log')
-    #ax.set_yscale('symlog')
-    #ax.legend(loc=0, prop={'size':8})
-    #ax = fig.add_subplot(5,3,8, sharex=ax)
-
-    ax = fig.add_subplot(5,3,8, sharex=ax)
-    # Planet orbital period
-    field = 'Orbital period\n(days)'
-    #ax.plot(planet_data['current_time'], planet_data[field])
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        ax.plot(planet_data['current_time'], planets_computed_data[key]['orbital_period'], label=key) #
-    ax.set_ylabel(field)
-    #ax.set_ylim([1e12, 1e19])
-    ax.set_xscale('log')
-    #ax.set_yscale('symlog')
-    ax.legend(loc=0, prop={'size':8})
-
-    ax = fig.add_subplot(5,3,9, sharex=ax)
-    # field = 'star_rotation_period\n(days)'
-    field = 'Rotation frequency\n(s^-1)'
-    ax.plot(planet_data['current_time'], 2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))
-    ax.plot(planet_data['current_time'], 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY), label=key) 
-    ax.plot(planet_data['current_time'], 2.*np.pi/ (2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY)*posidonius.constants.DAY), label=key)
-    ax.set_ylabel(field)
-    #ax.set_ylim([2.915, 2.92])
-    ax.set_xscale('log')
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-    ax = fig.add_subplot(5,3,10, sharex=ax)
-    field = 'star_obliquity (deg)'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        ax.plot(planet_data['current_time'], planets_computed_data[key]['star_obliquity'], label=key)
-    ax.set_ylabel(field)
-    #ax.set_ylim([0.5, 5.5])
-    ax.set_xscale('log')
-    #ax.set_yscale('symlog')
-    ax.legend(loc=0, prop={'size':8})
-
-    ax = fig.add_subplot(5,3,11, sharex=ax)
-    field = 'planet_precession_angle\n(deg)'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_precession_angle'], label=key)
-    ax.set_ylabel(field)
-    #ax.set_ylim([80., 100.])
-    ax.set_xscale('log')
-    #ax.set_yscale('symlog')
-    ax.legend(loc=0, prop={'size':8})
-
-    # conservation of energy (kinetic+potential)
-    star_e_kin = 0.5 * star_data['mass'] * (np.power(star_data['velocity_x'], 2) + \
-                                            np.power(star_data['velocity_y'], 2) + \
-                                            np.power(star_data['velocity_z'], 2))
-    planet_e_kin = 0.5 * planet_data['mass'] * (np.power(planet_data['velocity_x'], 2) + \
-                                            np.power(planet_data['velocity_y'], 2) + \
-                                            np.power(planet_data['velocity_z'], 2))
-    e_kin = star_e_kin + planet_e_kin
-    dx = planet_data['position_x'] - star_data['position_x']
-    dy = planet_data['position_y'] - star_data['position_y']
-    dz = planet_data['position_z'] - star_data['position_z']
-    e_pot = (-1. * posidonius.constants.K2 * (planet_data['mass']) * (star_data['mass']))  / np.sqrt(np.power(dx, 2) + np.power(dy, 2) + np.power(dz, 2))
-    e_offset = 0. # Energy offset due to collisions and ejections
-    total_energy = e_kin + e_pot + e_offset
-    relative_energy_error = (total_energy - total_energy[0]) / total_energy[0]
-
-    ax = fig.add_subplot(5,3,12, sharex=ax)
-    field = '$\Delta E/E_{0}$'
-    ax.plot(planet_data['current_time'], relative_energy_error)
-    ax.set_ylabel(field)
-    #ax.set_ylim([-0.35, 0.05])
-    ax.set_xscale('log')
-    #ax.set_yscale('symlog')
-
-    ax = fig.add_subplot(5,3,13, sharex=ax)
-    field = 'Star radius (AU)'
-    ax.plot(star_data['current_time'], star_data['radius'])
-    ax.set_ylabel(field)
-    ax.set_xscale('log')
-
-    ax = fig.add_subplot(5,3,14, sharex=ax)
-    field = 'Star radius of\ngyration 2'
-    ax.plot(star_data['current_time'], star_data['radius_of_gyration_2'])
-    ax.set_ylabel(field)
-    ax.set_xscale('log')
-
-    ax = fig.add_subplot(5,3,15, sharex=ax)
-    field = 'Star love number'
-    ax.plot(star_data['current_time'], star_data['love_number'])
-    ax.set_ylabel(field)
-    ax.set_xscale('log')
 
     #ax.set_xlim([100.0, .0e8])
     plt.tight_layout()
 
     output_figure_dirname = os.path.dirname(filename)
-    output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + ".png")
+    output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "frequency.png")
     plt.savefig(output_figure_filename)
     #plt.show()
     print("> Output figure file written to: {}".format(output_figure_filename))
@@ -478,7 +421,9 @@ if __name__ == "__main__":
         # data['inclination_deg'] = planet_data['inclination'] * (180 / np.pi)
         # data['energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['inst_tidal_flux']
         # data['mean_energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['mean_tidal_flux']
-        # data['planet_rotation_period_hours'] = planets_computed_data[key]['planet_rotation_period']*24
+        data['planet_rotation_period_hours'] = planets_computed_data[key]['planet_rotation_period']*24
+        data['planet_Pseudo_rotation_period_hours'] = planet_pseudo_synchronization_period
+
         # data['planet_pseudo_synchronization_period'] = planets_computed_data[key]['pseudo_synchronization_period']
         # data['energy_lost_due_to_tides_W'] = planets_computed_data[key]['denergy_dt']
         # data['mean_energy_lost_due_to_tides_W'] = planets_computed_data[key]['gravitational_energy_lost']
@@ -487,21 +432,36 @@ if __name__ == "__main__":
         # data['conservation_of_angular_momentum'] = conservation_of_angular_momentum
         # data['star_rotation_period_days'] = star_rotation_period
         # data['conservation_of_energy'] = relative_energy_error
-        data['planet_rotation_frequ'] = 2.*np.pi/(planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY)
-        data['planet_orbital_period'] = 2.*np.pi/(planets_computed_data[key]['orbital_period']*posidonius.constants.DAY)
-        # data['planet_pseudo_syncho'] = 2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY) #planet_data['semi-major_axis'] #pseudo_rot# pseudo_synchronization_period #2.*np.pi/(pseudo_synchronization_period*posidonius.constants.DAY)
+        data['sigma220_2_excitative_frequency'] = planet_computed_data['sigma220_2_excitative_frequency']
+        data['sigma220_2_excitative_frequency_calculated'] = planet_computed_data['sigma220_2_excitative_frequency_calculated']
 
-    
+        data['sigma220_1_excitative_frequency'] = planet_computed_data['sigma220_1_excitative_frequency']
+        data['sigma220_1_excitative_frequency_calculated'] = planet_computed_data['sigma220_1_excitative_frequency_calculated']
+
+        data['sigma2200_excitative_frequency'] = planet_computed_data['sigma2200_excitative_frequency']
+        data['sigma2200_excitative_frequency_calculated'] = planet_computed_data['sigma2200_excitative_frequency_calculated']
+
+        data['sigma2201_excitative_frequency'] = planet_computed_data['sigma2201_excitative_frequency']
+        data['sigma2201_excitative_frequency_calculated'] = planet_computed_data['sigma2201_excitative_frequency_calculated']
+
+        data['sigma2202_excitative_frequency'] = planet_computed_data['sigma2202_excitative_frequency']
+        data['sigma2202_excitative_frequency_calculated'] = planet_computed_data['sigma2202_excitative_frequency_calculated']
+
+        data['spin'] = planet_computed_data['spin']
+        data['spin_calculated'] = planet_rotation_frequ
+
+        data['orbital_frequency'] = planet_data['orbital_frequency']
+        data['orbital_frequency_calculated'] = planet_orbital_frequ
+
         if all_data is None:
             all_data = data
         else:
             all_data = pd.concat((all_data, data))
 
     output_text_dirname = os.path.dirname(filename)
-    output_text_filename = os.path.join(output_text_dirname, os.path.splitext(os.path.basename(filename))[0] + ".txt")
+    output_text_filename = os.path.join(output_text_dirname, os.path.splitext(os.path.basename(filename))[0] + "frequency.txt")
     all_data.to_csv(output_text_filename, sep="\t", index=False)
 
     print("> Output data written to plain text file: {}".format(output_text_filename))
-    # print("Ctrl",planet_data['semi-major_axis'] )
 
 

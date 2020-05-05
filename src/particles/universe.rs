@@ -440,9 +440,10 @@ impl Universe {
 
                     if accelerations && (self.consider_effects.tides || self.consider_effects.rotational_flattening) {
                         if self.consider_effects.tides {
-                            // println!("///Calculate_radial_component_of_the_tidal_force///");
+                            // println!("///TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT///");
                             tides::calculate_radial_component_of_the_tidal_force(&mut tidal_host_particle, &mut particles_left, &mut particles_right, &mut self.star_planet_dependent_dissipation_factors);  // Needed for calculate_tidal_acceleration
                             tides::calculate_tidal_acceleration(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
+                            // println!("///TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT///");
                         }
 
                         if self.consider_effects.rotational_flattening {
@@ -454,6 +455,7 @@ impl Universe {
                     }
                 }
             }
+
         }
         if accelerations && self.consider_effects.general_relativity {
             let (mut particles_left, particles_right) = particles.split_at_mut(self.hosts.index.general_relativity);
@@ -886,7 +888,7 @@ fn find_indices(particles: &Vec<Particle>, consider_effects: &ConsiderEffects) -
             if let TidesEffect::KaulaCoplanarOrbitingBody = particle.tides.effect{
                 let orbital_element = tools::calculate_keplerian_orbital_elements( particle.mass_g, particle.inertial_position, particle.inertial_velocity);
                 if orbital_element.3 !=0.0 {
-                    panic!("Only Coplanar configuration is allowed with the Kaula Coplanar model!")
+                    panic!("Only Coplanar configuration is allowed with the Kaula Coplanar model!")//obliquite on planet Inclna on
                 }
             }
         }

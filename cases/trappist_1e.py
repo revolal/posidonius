@@ -17,8 +17,8 @@ if __name__ == "__main__":
     #time_step = 0.05 # days
     #time_limit   = 4*time_step # days
     #time_limit   = 365.25 * 1.0e8 # days
-    time_limit   = 365.25 * 1.0e6 # days
-    historic_snapshot_period = 100.*365.25 # days
+    time_limit   =  365.25 * 1e4 #365.25 * 1.0e6 # days
+    historic_snapshot_period = 100.*365.25 #100.*365.25 # days
     recovery_snapshot_period = 100.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
@@ -29,16 +29,20 @@ if __name__ == "__main__":
         "evolution": False,
     })
     universe = posidonius.Universe(initial_time, time_limit, time_step, recovery_snapshot_period, historic_snapshot_period, consider_effects)
-
+    # THE SUN https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html
     star_mass = 0.08 # Solar masses
+    # star_mass = 1.0
     star_radius_factor = 0.117
+    # star_radius_factor = 1.0
     star_radius = star_radius_factor * posidonius.constants.R_SUN
     star_radius_of_gyration = 4.47e-01 # Brown dwarf
+    # star_radius_of_gyration = 0.070 #The sun
     star_position = posidonius.Axes(0., 0., 0.)
     star_velocity = posidonius.Axes(0., 0., 0.)
 
     # Initialization of stellar spin
-    star_rotation_period = 3.3*24 # hours
+    star_rotation_period = 3.3*24 # hours HERE For T1-e
+    # star_rotation_period = 609.12 # The sun in hours
     #star_rotation_period = 19.0*24 # hours
     star_angular_frequency = posidonius.constants.TWO_PI/(star_rotation_period/24.) # days^-1
     star_spin = posidonius.Axes(0., 0., star_angular_frequency)
@@ -141,26 +145,46 @@ if __name__ == "__main__":
     imagK2.append(Tab_ImK2)
 
     ############################################################################
-    #Trappist 1e only:
-    # Radiuses in R_EARTH
-    planet_radiuses = 0.918e0
-    # Masses in M_SUN
-    planet_masses = 1.8850689e-06
-    # Semi-major axis in AU
-    planet_a = 0.02817
-    # Inclination in degrees
+    # #Trappist 1e only:
+    # #Radiuses in R_EARTH
+    # planet_radiuses = 0.918e0
+    # #Masses in M_SUN
+    # planet_masses = 1.8850689e-06
+    # #Semi-major axis in AU
+    # planet_a = 0.02817
+    # #Inclination in degrees
     # planet_i = 0.140000
-    # Mean anomaly in degrees
-    planet_l = 165.724187804
+    # #Mean anomaly in degrees
+    # planet_l = 165.724187804
 
 
     # ############################################################################
+    # https://nssdc.gsfc.nasa.gov/planetary/factsheet/
+    #MERCURY
+    # planet_radiuses = 4879. / 6378. #in R_EARTH
+    # planet_i = 0.0
+    # planet_inclination = 0.0
+    # planet_obliquity = 0.0
+    # e = 0.205
+    # planet_a = 0.387 #AU
+    # planet_masses = 0.330e24/posidonius.constants.M_SUN # Mearth in  Msol
+    # planet_angular_frequency = posidonius.constants.TWO_PI/(10.) # 1. Days
+    # planet_l = 165.724187804
+    ##############################################################################
+    planet_l = 165.724187804
+    planet_radiuses = 0.4e0
     planet_i = 0.0
     planet_inclination = 0.0
     planet_obliquity = 0.0
-    e = 0.5
-    planet_angular_frequency = posidonius.constants.TWO_PI/(5/12) #10 hours periods in day
-
+    e = 0.07
+    planet_a = 0.015 #AU
+    planet_masses = 2.98e-6 # Mearth in  Msol
+    planet_angular_frequency = posidonius.constants.TWO_PI/(1.) #TEST 1. Days#(5/12) #10 hours periods in day
+    # #Verification
+    # periode_orbital = posidonius.constants.TWO_PI * pow( planet_a*posidonius.constants.AU, 3./2.) / np.sqrt(posidonius.constants.G_SI*( star_mass )*posidonius.constants.M_SUN ) 
+    # print("The Orbital period calculated", periode_orbital/posidonius.constants.DAY)
+    # masse_planete = (pow(posidonius.constants.TWO_PI,2)*pow(planet_a*posidonius.constants.AU,3))/(posidonius.constants.G_SI* pow(6.09*posidonius.constants.DAY,2)) - star_mass*posidonius.constants.M_SUN
+    # print("masse planet", masse_planete)
     # ############################################################################
     # # Radiuses in R_EARTH
     # planet_radiuses = (1.086e0, 1.056e0, 0.772e0, 0.918e0, 1.045e0, 1.127e0, 0.755e0)
@@ -202,6 +226,8 @@ if __name__ == "__main__":
     # planet_angular_frequency = posidonius.constants.TWO_PI/(planet_pseudo_synchronization_period) # days^-1
     planet_keplerian_orbital_elements = posidonius.calculate_keplerian_orbital_elements(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
     # planet_inclination = planet_keplerian_orbital_elements[3]
+    # planet_spin = posidonius.calculate_spin(planet_angular_frequency, planet_inclination, planet_obliquity)
+
     planet_spin = posidonius.calculate_spin(planet_angular_frequency, planet_inclination, planet_obliquity)
 
     k2pdelta = 2.465278e-3 # Terrestrial planets (no gas)
@@ -235,15 +261,13 @@ if __name__ == "__main__":
     }
 
     #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_parameters)
-    #planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_parameters)
+    # planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_parameters)
+    planet_tides = posidonius.effects.tides.KaulaCoplanarOrbitingBody(planet_tides_parameters_love_number_kaula)    
     #planet_tides = posidonius.effects.tides.Disabled()
 
     #planet_tides = posidonius.effects.tides.ConstTimeLagCentralBody(planet_tides_parameters)
     #planet_tides = posidonius.effects.tides.ConstTimeLagOrbitingBody(planet_tides_parameters)
 
-    #planet_tides = posidonius.effects.tides.KaulaCoplanarCentralBody(planet_tides_parameters_love_number_kaula)
-
-    planet_tides = posidonius.effects.tides.KaulaCoplanarOrbitingBody(planet_tides_parameters_love_number_kaula)    
 
     planet_rotational_flattening_parameters = {"love_number": 0.9532}
     #planet_rotational_flattening = posidonius.effects.rotational_flattening.CentralBody(planet_rotational_flattening_parameters)
