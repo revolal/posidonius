@@ -50,9 +50,6 @@ class Tides(object):
                     "spin": 0.,
                     "orbital_frequency": 0.,
 
-                    # "im_love_number":0.,
-                    # "re_love_number":0.,
-
                     "sigma220_2_excitative_frequency":0.,
                     "sigma220_1_excitative_frequency":0.,
                     "sigma2200_excitative_frequency":0.,

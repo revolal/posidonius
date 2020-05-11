@@ -1080,9 +1080,6 @@ pub fn kaula_number(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], 
                                 ctrl = false;
                             }
                         }
-                        // //println!("\nEND THE BOUCLE X -- {}", x);
-                        x = x +1.;
-                        if x==nm_data{ctrl=false;}
                         if !ctrl {break;}
                     }
                 }
