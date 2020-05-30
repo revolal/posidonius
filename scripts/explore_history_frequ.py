@@ -20,6 +20,10 @@ if __name__ == "__main__":
 
     filename = args.historic_snapshot_filename
     n_particles, data = posidonius.analysis.history.read(filename)
+
+    print("IM220_2", data["im_love_number_sigma220_2"][:50])
+    print("Sigma220_2", data["sigma220_2_excitative_frequency"][:50])
+
     most_massive_particle_index = universe_integrator_json['universe']['hosts']['index']['most_massive']
     print("Transforming positions/velocities to heliocentric coordinates using the most masssive particle at index '{}'...".format(most_massive_particle_index))
     star_data, planets_data, planets_keys = posidonius.analysis.history.classify(n_particles, data, reference_particle_index=most_massive_particle_index, discard_first_hundred_years=False)
@@ -131,6 +135,18 @@ if __name__ == "__main__":
             planet_computed_data['sigma2200_excitative_frequency'] = planet_data['sigma2200_excitative_frequency']
             planet_computed_data['sigma2201_excitative_frequency'] = planet_data['sigma2201_excitative_frequency']
             planet_computed_data['sigma2202_excitative_frequency'] = planet_data['sigma2202_excitative_frequency']
+
+            planet_computed_data['im_love_number_sigma220_2'] = planet_data['im_love_number_sigma220_2']
+            planet_computed_data['im_love_number_sigma220_1'] = planet_data['im_love_number_sigma220_1']
+            planet_computed_data['im_love_number_sigma2200'] = planet_data['im_love_number_sigma2200']
+            planet_computed_data['im_love_number_sigma2201'] = planet_data['im_love_number_sigma2201']
+            planet_computed_data['im_love_number_sigma2202'] = planet_data['im_love_number_sigma2202']
+
+            planet_computed_data['re_love_number_sigma220_2'] = planet_data['re_love_number_sigma220_2']
+            planet_computed_data['re_love_number_sigma220_1'] = planet_data['re_love_number_sigma220_1']
+            planet_computed_data['re_love_number_sigma2200'] = planet_data['re_love_number_sigma2200']
+            planet_computed_data['re_love_number_sigma2201'] = planet_data['re_love_number_sigma2201']
+            planet_computed_data['re_love_number_sigma2202'] = planet_data['re_love_number_sigma2202']
             
             ### Calculation of energydot and tidal flux, in W/m2
             # Gravitationl energy lost of the system due to dissipation
@@ -406,6 +422,206 @@ if __name__ == "__main__":
     plt.savefig(output_figure_filename)
     #plt.show()
     print("> Output figure file written to: {}".format(output_figure_filename))
+    #######################################################################################################
+    print("Recover Love number")
+    # planet_data = np.loadtxt('Results_Trappist_1e_05.0_150_freq_Imk2_posidonius.txt',comments='#')
+    # //Display
+    planet_data = np.loadtxt('Results_Trappist_1e_00.0_138_freq_Imk2_posidonius.txt',comments='#')
+    planet_mass, planet_radius, planet_gyration_radius = planet_data[0,:] 
+
+    w_lmpq = planet_data [1:,0]
+    ImK2 = planet_data [1:,1]
+    ReK2 = planet_data [1:,2]
+    size = np.size(w_lmpq)
+    print("nmbre", size)
+    Tab_size = 32
+    Tab_w_lmpq = np.zeros((Tab_size,Tab_size))
+    Tab_ImK2 = np.zeros((Tab_size,Tab_size))
+    Tab_ReK2 = np.zeros((Tab_size,Tab_size))
+    k = 0
+
+    for i in range(0,int(size/Tab_size)):
+            Tab_w_lmpq[i,:] = w_lmpq[i*Tab_size : (1+i)*Tab_size]
+            Tab_ReK2[i,:] = ReK2[i*Tab_size : (1+i)*Tab_size]
+            Tab_ImK2[i,:] = ImK2[i*Tab_size : (1+i)*Tab_size]
+            k+=1
+
+    for i in range (k*Tab_size, size):
+            Tab_w_lmpq[k, i-k*Tab_size] = w_lmpq[i]
+            Tab_ReK2[k, i-k*Tab_size] = ReK2[i]
+            Tab_ImK2[k, i-k*Tab_size] = ImK2[i]
+
+
+    # planet_computed_data['spin'] = planet_data['spin']
+    # planet_computed_data['orbital_frequency'] = planet_data['orbital_frequency']
+
+    # sigma220_2 = planet_data['sigma220_2_excitative_frequency']
+    # sigma220_1 = planet_data['sigma220_1_excitative_frequency']
+    # sigma2200 = planet_data['sigma2200_excitative_frequency']
+    # sigma2201 = planet_data['sigma2201_excitative_frequency']
+    # sigma2202 = planet_data['sigma2202_excitative_frequency']
+
+    # re_220_2 = planet_data['re_love_number_sigma220_2']
+    # re_220_1 = planet_data['re_love_number_sigma220_1']
+    # re_2200 = planet_data['re_love_number_sigma2200']
+    # re_2201 = planet_data['re_love_number_sigma2201']
+    # re_2202 = planet_data['re_love_number_sigma2202']
+
+    # im_220_2 = planet_data['im_love_number_sigma220_2']
+    # im_220_1 = planet_data['im_love_number_sigma220_1']
+    # im_2200 = planet_data['im_love_number_sigma2200']
+    # im_2201 = planet_data['im_love_number_sigma2201']
+    # im_2202 = planet_data['im_love_number_sigma2202']
+
+    # sigma = {}
+    # re_ = {}
+    # im_ = {}
+
+    # sigma['220_2'] = planet_data['sigma220_2_excitative_frequency']
+    # sigma['220_1'] = planet_data['sigma220_1_excitative_frequency']
+    # sigma['2200 '] = planet_data['sigma2200_excitative_frequency']
+    # sigma['2201 '] = planet_data['sigma2201_excitative_frequency']
+    # sigma['2202 '] = planet_data['sigma2202_excitative_frequency']
+
+    # re_['220_2'] = planet_data['re_love_number_sigma220_2']
+    # re_['220_1'] = planet_data['re_love_number_sigma220_1']
+    # re_['2200 '] = planet_data['re_love_number_sigma2200']
+    # re_['2201 '] = planet_data['re_love_number_sigma2201']
+    # re_['2202 '] = planet_data['re_love_number_sigma2202']
+
+    # im_['220_2'] = planet_data['im_love_number_sigma220_2']
+    # im_['220_1'] = planet_data['im_love_number_sigma220_1']
+    # im_['2200 '] = planet_data['im_love_number_sigma2200']
+    # im_['2201 '] = planet_data['im_love_number_sigma2201']
+    # im_['2202 '] = planet_data['im_love_number_sigma2202']
+
+
+    # fig, (ax1, ax2) = plt.subplots(1,2)
+    fig = plt.figure(figsize=(20, 15))
+
+    ax = fig.add_subplot(3,2,1)
+    field = 'IMk2'
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ImK2, c='b', ls='-', label="Imaginary part Love number")
+        # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
+        # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
+        # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
+        # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
+        # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
+    ax.set_xscale('log')
+    ax.set_xlabel("excitation frequency")
+    ax.set_ylabel("imaginary part love number")
+    ax.set_title("Imaginary part Love number")
+
+    ax = fig.add_subplot(3,2,2)
+    # field = 'REk2'
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot( data['sigma220_2_excitative_frequency'], data['im_love_number_sigma220_2'], ls='-', )
+        # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
+        # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
+        # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
+        # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
+    ax.set_xscale('log')
+    ax.set_xlabel(" sigma220_2 excitation frequency")
+    ax.set_ylabel("im part love number")
+    # ax.set_title("Real part Love number")
+
+    ax = fig.add_subplot(3,2,3)
+    # field = 'REk2'
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
+        ax.plot( data['sigma220_1_excitative_frequency'], data['im_love_number_sigma220_1'], ls='-', )
+        # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
+        # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
+        # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
+    ax.set_xscale('log')
+    ax.set_xlabel(" sigma220_1 excitation frequency")
+    ax.set_ylabel("im part love number")
+    # ax.set_title("Real part Love number")
+
+    ax = fig.add_subplot(3,2,4)
+    # field = 'REk2'
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
+        # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
+        ax.plot( data['sigma2200_excitative_frequency'], data['im_love_number_sigma2200'], ls='-', )
+        # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
+        # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
+    ax.set_xscale('log')
+    ax.set_xlabel(" sigma2200 excitation frequency")
+    ax.set_ylabel("im part love number")
+    # ax.set_title("Real part Love number")
+
+    ax = fig.add_subplot(3,2,5)
+    # field = 'freq'
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
+        # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
+        # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
+        ax.plot( data['sigma2201_excitative_frequency'], data['im_love_number_sigma2201'], ls='-', )
+        # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
+    ax.set_xscale('log')
+    ax.set_xlabel(" sigma2201 excitation frequency")
+    ax.set_ylabel("im part love number")
+    # ax.set_title("Real part Love number")
+
+    ax = fig.add_subplot(3,2,6)
+    # field = 'REk2'
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
+        # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
+        # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
+        # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
+        ax.plot( data['sigma2202_excitative_frequency'], data['im_love_number_sigma2202'], ls='-', )
+    ax.set_xscale('log')
+    ax.set_xlabel("sigma2201 excitation frequency")
+    ax.set_ylabel("im part love number")
+    # ax.set_title("Real part Love number")
+
+
+    # ax = fig.add_subplot(1,2,2)
+    # field = 'REk2'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     ax.plot(w_lmpq, ReK2, c='b', ls='-', label="Real part Love number")
+    # ax.set_xscale('log')
+    # ax.set_xlabel("excitation frequency")
+    # ax.set_ylabel("real part love number")
+    # ax.set_title("Real part Love number")
+
+    # ax1.plot(w_lmpq, ImK2, c='b', ls='-', label="Imaginary part Love number")
+    # ax1.plot(sigma['220_2'], im_['220_2'], ls='-', label="ImK2 220_2")
+    # ax1.plot(sigma['220_1'], im_['220_1'], ls='-', label="ImK2 220_1")
+    # ax1.plot(sigma['2200 '], im_['2200 '], ls='-', label="ImK2 2200")
+    # ax1.plot(sigma['2201 '], im_['2201 '], ls='-', label="ImK2 2201")
+    # ax1.plot(sigma['2202 '], im_['2201 '], ls='-', label="ImK2 2202")
+
+    # ax1.set_xscale('log')
+    # ax1.set_xlabel("excitation frequency")
+    # ax1.set_ylabel("imaginary part love number")
+    # ax1.set_title("Imaginary part Love number")
+
+    # ax2.plot(w_lmpq, ReK2, c='b', ls='-', label="Real part Love number")
+    # ax2.set_xscale('log')
+    # ax2.set_xlabel("excitation frequency")
+    # ax2.set_ylabel("real part love number")
+    # ax2.set_title("Real part Love number")
+
+    # plt.show()
+    plt.tight_layout()
+
+    output_figure_dirname = os.path.dirname(filename)
+    output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "lovenumber.png")
+    plt.savefig(output_figure_filename)
+
+######################################################################################################################
+
 
 
     print("Preparing text output...")
@@ -468,3 +684,60 @@ if __name__ == "__main__":
     print("> Output data written to plain text file: {}".format(output_text_filename))
 
 
+
+# def kaula_number(wk2=0., nm_data=0., real_part_love_number = np.zeros((32,32)), imaginary_part_love_number = np.zeros((32,32)), love_number_excitation_frequency = np.zeros((32,32)) ):
+#     w_k2 = wk2
+#     re_k2 = 0.
+#     im_k2 = 0.
+#     x = 0.
+#     y = 0.
+#     ctrl = True
+#     parity = False 
+#     # // //println!("\nSearch K2 for w_k2 {}",w_k2);
+#     if (w_k2 < 0.0):
+#         w_k2 = abs(w_k2)
+#         parity = True
+#         # // //println!("\tThe new wk2 {}", w_k2);
+    
+#     # // //println!("Ctrl de ses mort:\n IM  First {} End {} \n RE First {} End {} \n Frequ First {} End {}",imaginary_part_love_number[0][0], imaginary_part_love_number[14][11], real_part_love_number[0][0], real_part_love_number[14][11], love_number_excitation_frequency[0][0], love_number_excitation_frequency[14][11] );
+#     if (w_k2 < love_number_excitation_frequency[0][0]): 
+#         re_k2 = real_part_love_number[0][0]
+#         im_k2 = imaginary_part_love_number[0][0]
+    
+#     elif (w_k2 > love_number_excitation_frequency[31][31]):
+#        re_k2 = real_part_love_number[31][31]
+#        im_k2 = imaginary_part_love_number[31][31]
+#     else :
+#         for frequency1 in range(0,32):
+#             if (ctrl and love_number_excitation_frequency[frequency1][31] > w_k2):
+#                 if (ctrl and love_number_excitation_frequency[frequency1][0] > w_k2):
+#                     re_k2 = real_part_love_number[frequency1][0] + (real_part_love_number[frequency1][0] - real_part_love_number[frequency1 -1][31] )/2.
+#                     im_k2 = imaginary_part_love_number[frequency1][0] + (imaginary_part_love_number[frequency1][0] - imaginary_part_love_number[frequency1 -1][31] )/2.
+#                 elif (ctrl):
+#                     for frequency2 in range (0,32):
+#                         if (ctrl and love_number_excitation_frequency[frequency1][frequency2] >= w_k2): 
+#                             if  (love_number_excitation_frequency[frequency1][frequency2] == w_k2):
+#                                 re_k2 = real_part_love_number[frequency1][frequency2]
+#                                 im_k2 = imaginary_part_love_number[frequency1][frequency2]
+#                                 ctrl = False
+#                             elif (ctrl): 
+#                                 re_k2 = real_part_love_number[frequency1][frequency2-1] + (real_part_love_number[frequency1][frequency2] - real_part_love_number[frequency1][frequency2-1])/2.
+#                                 im_k2 = imaginary_part_love_number[frequency1][frequency2-1] + (imaginary_part_love_number[frequency1][frequency2] - imaginary_part_love_number[frequency1][frequency2-1])/2.
+#                                 # // //println!("\n \n Find {}, with {} - {} /2 ", im_k2, imaginary_part_love_number[frequency1][frequency2], imaginary_part_love_number[frequency1][frequency2-1]);
+#                                 # // panic!("The stuff")
+#                                 ctrl = False
+#                         # // //println!("\nEND THE BOUCLE X -- {}", x)
+#                         x = x +1.
+#                         if (x==nm_data):
+#                             ctrl = False
+#                         if (not ctrl):
+#                             break
+#             # // //println!("\nEND THE BOUCLE Y -{}", y)
+#             y = y +1.
+#             if (not ctrl):
+#                 break
+
+#     if (parity):
+#         im_k2 = -im_k2
+#     # // //println!("The two number {} {}\n", re_k2, im_k2)
+#     return (re_k2, im_k2)

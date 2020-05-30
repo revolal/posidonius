@@ -56,6 +56,33 @@ class Tides(object):
                     "sigma2201_excitative_frequency":0.,
                     "sigma2202_excitative_frequency":0.,
 
+                    "im_love_number_sigma220_2": 0.,
+                    "im_love_number_sigma220_1": 0.,
+                    "im_love_number_sigma2200": 0.,
+                    "im_love_number_sigma2201": 0.,
+                    "im_love_number_sigma2202": 0.,
+                
+                    "re_love_number_sigma220_2": 0.,
+                    "re_love_number_sigma220_1": 0.,
+                    "re_love_number_sigma2200": 0.,
+                    "re_love_number_sigma2201": 0.,
+                    "re_love_number_sigma2202": 0.,
+                    
+                    "check_excitative_frequ":0.,
+
+                    "excitative_frequ_sigma220q": np.zeros(5).tolist(),
+                    "re_love_number_sigma220q": np.zeros(5).tolist(),
+                    "im_love_number_sigma220q": np.zeros(5).tolist(),
+
+                    "excitative_frequ_sigma201q": np.zeros(5).tolist(),
+                    "re_love_number_sigma201q": np.zeros(5).tolist(),
+                    "im_love_number_sigma201q": np.zeros(5).tolist(),
+
+                    "force_by_tides": Axes(0.0, 0.0, 0.0).get(),
+                    "dangular_momentum_dt_by_tides": Axes(0.0, 0.0, 0.0).get(),
+
+                    # "im_love_number":0.,
+                    # "re_love_number":0.,
                 },
                 "output": {
                     "acceleration": Axes(0.0, 0.0, 0.0).get(),

@@ -118,7 +118,8 @@ if __name__ == "__main__":
         pseudo_synchronization_period[non_zero] = np.nan
         planet_computed_data['pseudo_synchronization_period'] = pseudo_synchronization_period
 
-        if universe_integrator_json['universe']['consider_effects']['tides']:           
+        if universe_integrator_json['universe']['consider_effects']['tides']:  
+
             ### Calculation of energydot and tidal flux, in W/m2
             # Gravitationl energy lost of the system due to dissipation
             # Masses in kg
@@ -259,11 +260,12 @@ if __name__ == "__main__":
         conservation_of_angular_momentum[0] = conservation_of_angular_momentum[1]
 
 
-
     print("Preparing plot...")
 
-    fig = plt.figure(figsize=(16, 10))
-    ax = fig.add_subplot(5,3,1)
+    fig = plt.figure(figsize=(20, 10))
+    ligne = 3
+    colonne = 3
+    ax = fig.add_subplot(ligne,colonne,1)
     field = 'semi-major_axis'
     for key in planets_keys:
         planet_data = planets_data[key]
@@ -277,7 +279,7 @@ if __name__ == "__main__":
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-    ax = fig.add_subplot(5,3,2, sharex=ax)
+    ax = fig.add_subplot(ligne,colonne,2, sharex=ax)
     # field = 'planet_obliquity'
     field = 'semi-major_axis'
     for key in planets_keys:
@@ -292,7 +294,7 @@ if __name__ == "__main__":
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-    ax = fig.add_subplot(5,3,3, sharex=ax)
+    ax = fig.add_subplot(ligne,colonne,3, sharex=ax)
     field = 'eccentricity'
     for key in planets_keys:
         planet_data = planets_data[key]
@@ -304,7 +306,7 @@ if __name__ == "__main__":
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-    ax = fig.add_subplot(5,3,4, sharex=ax)
+    ax = fig.add_subplot(ligne,colonne,4, sharex=ax)
     #field = 'planet_rotation_period\n(hr)'
     field = 'planet_rotation_period\n(days)'
     for key in planets_keys:
@@ -318,7 +320,7 @@ if __name__ == "__main__":
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-    ax = fig.add_subplot(5,3,5, sharex=ax)
+    ax = fig.add_subplot(ligne,colonne,5, sharex=ax)
     field = '$\Delta L/L_{0}$'
     ax.plot(planet_data['current_time'], conservation_of_angular_momentum)
     ax.set_ylabel(field)
@@ -326,7 +328,7 @@ if __name__ == "__main__":
     ax.set_xscale('log')
     ax.set_yscale('log')
 
-    ax = fig.add_subplot(5,3,6, sharex=ax)
+    ax = fig.add_subplot(ligne,colonne,6, sharex=ax)
     # Planet orbital period
     field = 'Orbital period\n(days)'
     #ax.plot(planet_data['current_time'], planet_data[field])
@@ -339,7 +341,7 @@ if __name__ == "__main__":
     #ax.set_yscale('symlog')
     ax.legend(loc=0, prop={'size':8})
 
-    ax = fig.add_subplot(5,3,7, sharex=ax)
+    ax = fig.add_subplot(ligne,colonne,7, sharex=ax)
     # field = 'star_rotation_period\n(days)'
     field = 'Rotation frequency\n(s^-1)'
     ax.plot(planet_data['current_time'], 2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))
@@ -350,11 +352,11 @@ if __name__ == "__main__":
     ax.set_xscale('log')
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-    ax = fig.add_subplot(5,3,8, sharex=ax)
+    ax = fig.add_subplot(ligne,colonne,8, sharex=ax)
     field = 'Omega/n'
     for key in planets_keys:
         planet_data = planets_data[key]
-        ax.plot(planet_data['current_time'], (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))/ planets_computed_data[key]['orbital_period'] )
+        ax.plot(planet_data['current_time'], (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))/ ( 2.*np.pi/(planets_computed_data[key]['orbital_period']*posidonius.constants.DAY) ) )
     ax.set_ylabel(field)
     #ax.set_ylim([0.5, 5.5])
     ax.set_xscale('log')
@@ -377,7 +379,7 @@ if __name__ == "__main__":
     total_energy = e_kin + e_pot + e_offset
     relative_energy_error = (total_energy - total_energy[0]) / total_energy[0]
 
-    ax = fig.add_subplot(5,3,9, sharex=ax)
+    ax = fig.add_subplot(ligne,colonne,9, sharex=ax)
     field = '$\Delta E/E_{0}$'
     ax.plot(planet_data['current_time'], relative_energy_error)
     ax.set_ylabel(field)
@@ -389,7 +391,7 @@ if __name__ == "__main__":
     plt.tight_layout()
 
     output_figure_dirname = os.path.dirname(filename)
-    output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + ".png")
+    output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_1e.png")
     plt.savefig(output_figure_filename)
     #plt.show()
     print("> Output figure file written to: {}".format(output_figure_filename))
@@ -419,6 +421,7 @@ if __name__ == "__main__":
         # data['conservation_of_energy'] = relative_energy_error
         data['planet_rotation_frequ'] = 2.*np.pi/(planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY)
         data['planet_orbital_period'] = 2.*np.pi/(planets_computed_data[key]['orbital_period']*posidonius.constants.DAY)
+        data['syncrho'] = (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))/ ( 2.*np.pi/(planets_computed_data[key]['orbital_period']*posidonius.constants.DAY) )
         # data['planet_pseudo_syncho'] = 2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY) #planet_data['semi-major_axis'] #pseudo_rot# pseudo_synchronization_period #2.*np.pi/(pseudo_synchronization_period*posidonius.constants.DAY)
 
     
