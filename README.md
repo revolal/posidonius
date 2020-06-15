@@ -89,6 +89,7 @@ python scripts/explore_history.py target/case3.json   target/case3_history.bin
 python scripts/explore_history.py target/case4.json   target/case4_history.bin
 python scripts/explore_history.py target/case7.json   target/case7_history.bin
 python scripts/explore_history.py target/example.json target/example_history.bin
+python scripts/explore_history_1e.py target/trappist_1e.json   target/trappist_1e_history.bin
 ```
 
 To explore what possible resonances might be present in the system:

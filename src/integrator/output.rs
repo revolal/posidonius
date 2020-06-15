@@ -56,7 +56,7 @@ pub fn write_recovery_snapshot<I: Serialize>(snapshot_path: &Path, universe_inte
 pub fn n_bytes_per_particle_in_historic_snapshot() -> u64 {
     // let n_stored_fields : u64 = 20;
     // let n_stored_fields : u64 = 25;
-    let n_stored_fields : u64 = 29;
+    let n_stored_fields : u64 = 31;
     let n_bytes_per_particle = 8+8+4+8*(n_stored_fields-3);
     n_bytes_per_particle
 }
@@ -137,15 +137,21 @@ pub fn write_historic_snapshot<T: Write>(universe_history_writer: &mut BufWriter
                     );
         bincode::serialize_into(universe_history_writer, &output, bincode::Infinite).unwrap();
         let output = (
+                        particle.tides.parameters.internal.force_by_tides.x,
+                        particle.tides.parameters.internal.force_by_tides.y,
+                        particle.tides.parameters.internal.force_by_tides.z,
+                        particle.tides.parameters.internal.dangular_momentum_dt_by_tides.x,
+                        particle.tides.parameters.internal.dangular_momentum_dt_by_tides.y,
+                        particle.tides.parameters.internal.dangular_momentum_dt_by_tides.z,
                         // particle.tides.parameters.internal.sigma220_2_excitative_frequency,
                         // particle.tides.parameters.internal.sigma220_1_excitative_frequency,
-                        // particle.tides.parameters.internal.sigma2200_excitative_frequency,
+                        particle.tides.parameters.internal.sigma2200_excitative_frequency,
                         // particle.tides.parameters.internal.sigma2201_excitative_frequency,
                         // particle.tides.parameters.internal.sigma2202_excitative_frequency,
 
                         // particle.tides.parameters.internal.im_love_number_sigma220_2,
                         // particle.tides.parameters.internal.im_love_number_sigma220_1,
-                        // particle.tides.parameters.internal.im_love_number_sigma2200,
+                        particle.tides.parameters.internal.im_love_number_sigma2200,
                         // particle.tides.parameters.internal.im_love_number_sigma2201,
                         // particle.tides.parameters.internal.im_love_number_sigma2202,
 
@@ -163,12 +169,7 @@ pub fn write_historic_snapshot<T: Write>(universe_history_writer: &mut BufWriter
                         // particle.tides.parameters.output.acceleration.y,
                         // particle.tides.parameters.output.acceleration.z,
 
-                        particle.tides.parameters.internal.force_by_tides.x,
-                        particle.tides.parameters.internal.force_by_tides.y,
-                        particle.tides.parameters.internal.force_by_tides.z,
-                        particle.tides.parameters.internal.dangular_momentum_dt_by_tides.x,
-                        particle.tides.parameters.internal.dangular_momentum_dt_by_tides.y,
-                        particle.tides.parameters.internal.dangular_momentum_dt_by_tides.z,
+
                     );
         bincode::serialize_into(universe_history_writer, &output, bincode::Infinite).unwrap();
 

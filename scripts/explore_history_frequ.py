@@ -21,8 +21,8 @@ if __name__ == "__main__":
     filename = args.historic_snapshot_filename
     n_particles, data = posidonius.analysis.history.read(filename)
 
-    print("IM220_2", data["im_love_number_sigma220_2"][:50])
-    print("Sigma220_2", data["sigma220_2_excitative_frequency"][:50])
+    print("IM220_2", data["im_love_number_sigma2200"][:50])
+    print("Sigma220_2", data["sigma2200_excitative_frequency"][:50])
 
     most_massive_particle_index = universe_integrator_json['universe']['hosts']['index']['most_massive']
     print("Transforming positions/velocities to heliocentric coordinates using the most masssive particle at index '{}'...".format(most_massive_particle_index))
@@ -130,23 +130,23 @@ if __name__ == "__main__":
             planet_computed_data['spin'] = planet_data['spin']
             planet_computed_data['orbital_frequency'] = planet_data['orbital_frequency']
 
-            planet_computed_data['sigma220_2_excitative_frequency'] = planet_data['sigma220_2_excitative_frequency']
-            planet_computed_data['sigma220_1_excitative_frequency'] = planet_data['sigma220_1_excitative_frequency']
+            # planet_computed_data['sigma220_2_excitative_frequency'] = planet_data['sigma220_2_excitative_frequency']
+            # planet_computed_data['sigma220_1_excitative_frequency'] = planet_data['sigma220_1_excitative_frequency']
             planet_computed_data['sigma2200_excitative_frequency'] = planet_data['sigma2200_excitative_frequency']
-            planet_computed_data['sigma2201_excitative_frequency'] = planet_data['sigma2201_excitative_frequency']
-            planet_computed_data['sigma2202_excitative_frequency'] = planet_data['sigma2202_excitative_frequency']
+            # planet_computed_data['sigma2201_excitative_frequency'] = planet_data['sigma2201_excitative_frequency']
+            # planet_computed_data['sigma2202_excitative_frequency'] = planet_data['sigma2202_excitative_frequency']
 
-            planet_computed_data['im_love_number_sigma220_2'] = planet_data['im_love_number_sigma220_2']
-            planet_computed_data['im_love_number_sigma220_1'] = planet_data['im_love_number_sigma220_1']
+            # planet_computed_data['im_love_number_sigma220_2'] = planet_data['im_love_number_sigma220_2']
+            # planet_computed_data['im_love_number_sigma220_1'] = planet_data['im_love_number_sigma220_1']
             planet_computed_data['im_love_number_sigma2200'] = planet_data['im_love_number_sigma2200']
-            planet_computed_data['im_love_number_sigma2201'] = planet_data['im_love_number_sigma2201']
-            planet_computed_data['im_love_number_sigma2202'] = planet_data['im_love_number_sigma2202']
+            # planet_computed_data['im_love_number_sigma2201'] = planet_data['im_love_number_sigma2201']
+            # planet_computed_data['im_love_number_sigma2202'] = planet_data['im_love_number_sigma2202']
 
-            planet_computed_data['re_love_number_sigma220_2'] = planet_data['re_love_number_sigma220_2']
-            planet_computed_data['re_love_number_sigma220_1'] = planet_data['re_love_number_sigma220_1']
-            planet_computed_data['re_love_number_sigma2200'] = planet_data['re_love_number_sigma2200']
-            planet_computed_data['re_love_number_sigma2201'] = planet_data['re_love_number_sigma2201']
-            planet_computed_data['re_love_number_sigma2202'] = planet_data['re_love_number_sigma2202']
+            # planet_computed_data['re_love_number_sigma220_2'] = planet_data['re_love_number_sigma220_2']
+            # planet_computed_data['re_love_number_sigma220_1'] = planet_data['re_love_number_sigma220_1']
+            # planet_computed_data['re_love_number_sigma2200'] = planet_data['re_love_number_sigma2200']
+            # planet_computed_data['re_love_number_sigma2201'] = planet_data['re_love_number_sigma2201']
+            # planet_computed_data['re_love_number_sigma2202'] = planet_data['re_love_number_sigma2202']
             
             ### Calculation of energydot and tidal flux, in W/m2
             # Gravitationl energy lost of the system due to dissipation
@@ -301,127 +301,127 @@ if __name__ == "__main__":
 
 
 
-    print("Preparing plot...")
-    fig = plt.figure(figsize=(20, 15))
+    # print("Preparing plot...")
+    # fig = plt.figure(figsize=(20, 15))
 
-    ax = fig.add_subplot(5,2,1)
-    field = '-2*Spin'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        # line, = ax.plot(planet_data['current_time'], planet_data[field], label=key)
-        # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma220_2_excitative_frequency'], label=key)
-        ax.plot(planet_data['current_time'], planet_computed_data['sigma220_2_excitative_frequency_calculated'], label=None, ls="--", )
-    ax.set_ylabel(field+" (AU)")
-    #ax.set_ylim([0.005, 0.028])
+    # ax = fig.add_subplot(5,2,1)
+    # field = '-2*Spin'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     # line, = ax.plot(planet_data['current_time'], planet_data[field], label=key)
+    #     # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma220_2_excitative_frequency'], label=key)
+    #     ax.plot(planet_data['current_time'], planet_computed_data['sigma220_2_excitative_frequency_calculated'], label=None, ls="--", )
+    # ax.set_ylabel(field+" (AU)")
+    # #ax.set_ylim([0.005, 0.028])
+    # # # ax.set_xscale('log')
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+
+    # ax = fig.add_subplot(5,2,2, sharex=ax)
+    # field = 'Orbital_freq -2*Spin'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma220_1_excitative_frequency'], label=key)
+    #     ax.plot(planet_data['current_time'], planet_computed_data['sigma220_1_excitative_frequency_calculated'], label=None, ls="--", )
+    # ax.set_ylabel(field)
+    # # ax.set_ylim([-0.00031, -0.00029])
+    # # # ax.set_xscale('log')
+    # # ax.set_yscale('log')
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+
+    # ax = fig.add_subplot(5,2,3, sharex=ax)
+    # field = '2*( Orbital_frequ - Spin )'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma2200_excitative_frequency'], label=key)
+    #     ax.plot(planet_data['current_time'], planet_computed_data['sigma2200_excitative_frequency_calculated'], label=None, ls="--", )
+    # ax.set_ylabel(field)
+    # # ax.set_ylim([-0.00031, -0.00029])
+    # # # ax.set_xscale('log')
+    # # ax.set_yscale('log')
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+
+
+    # ax = fig.add_subplot(5,2,4, sharex=ax)
+    # # field = 'sigma2201_excitative_frequency'
+    # field = '3*Orbital_freq -2*Spin'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma2201_excitative_frequency'], label=key)
+    #     ax.plot(planet_data['current_time'], planet_computed_data['sigma2201_excitative_frequency_calculated'], label=None, ls="--", )
+    # ax.set_ylabel(field)
+    # # ax.set_ylim([-0.00031, -0.00029])
+    # # # ax.set_xscale('log')
+    # # ax.set_yscale('log')
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+
+    # ax = fig.add_subplot(5,2,5, sharex=ax)
+    # field = '2*( 2*Orbital_frequ -Spin )'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma2202_excitative_frequency'], label=key)
+    #     ax.plot(planet_data['current_time'], planet_computed_data['sigma2202_excitative_frequency_calculated'], label=None, ls="--", )
+    # ax.set_ylabel(field)
+    # # ax.set_ylim([-0.00031, -0.00029])
+    # # # ax.set_xscale('log')
+    # # ax.set_yscale('log')
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+
+    # ax = fig.add_subplot(5,2,6, sharex=ax)
+    # field = 'spin'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     # ax.plot(planet_data['current_time'], planet_data['spin'], label=key) # planet_data['spin']  planets_computed_data[key]['spin']
+    #     ax.plot(planet_data['current_time'], planet_norm_spin/posidonius.constants.DAY, label=None, ls="--", ) #planet_norm_spin  planet_rotation_frequ
+    # ax.set_ylabel(field)
+    # # ax.set_ylim([-0.00031, -0.00029])
+    # # # ax.set_xscale('log')
+    # # ax.set_yscale('log')
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+
+    # ax = fig.add_subplot(5,2,7, sharex=ax)
+    # field = 'orbital_frequency'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     # ax.plot(planet_data['current_time'], planet_data['orbital_frequency'], label=key)
+    #     ax.plot(planet_data['current_time'], planet_orbital_frequ, label=None, ls="--", )
+    # ax.set_ylabel(field)
+    # # ax.set_ylim([-0.00031, -0.00029])
+    # # # ax.set_xscale('log')
+    # # ax.set_yscale('log')
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+
+    # ax = fig.add_subplot(5,2,8, sharex=ax)
+    # #field = 'planet_rotation_period\n(hr)'
+    # field = 'planet_rotation_period\n(days)'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     #line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period']*24., label=key)
+    #     ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period'], label=key)
+    #     # ax.plot(planet_data['current_time'], planets_computed_data[key]['pseudo_synchronization_period'], label=None, ls="--", ) # Pseudo-sync
+    #     # ax.plot(planet_data['current_time'], planet_pseudo_synchronization_period, label=None, ls="--", ) # Pseudo-sync
+    # ax.set_ylabel(field)
+    # #ax.set_ylim([40, 160.0])
     # # ax.set_xscale('log')
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-    ax = fig.add_subplot(5,2,2, sharex=ax)
-    field = 'Orbital_freq -2*Spin'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma220_1_excitative_frequency'], label=key)
-        ax.plot(planet_data['current_time'], planet_computed_data['sigma220_1_excitative_frequency_calculated'], label=None, ls="--", )
-    ax.set_ylabel(field)
-    # ax.set_ylim([-0.00031, -0.00029])
-    # # ax.set_xscale('log')
-    # ax.set_yscale('log')
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-    ax = fig.add_subplot(5,2,3, sharex=ax)
-    field = '2*( Orbital_frequ - Spin )'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma2200_excitative_frequency'], label=key)
-        ax.plot(planet_data['current_time'], planet_computed_data['sigma2200_excitative_frequency_calculated'], label=None, ls="--", )
-    ax.set_ylabel(field)
-    # ax.set_ylim([-0.00031, -0.00029])
-    # # ax.set_xscale('log')
-    # ax.set_yscale('log')
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-
-    ax = fig.add_subplot(5,2,4, sharex=ax)
-    # field = 'sigma2201_excitative_frequency'
-    field = '3*Orbital_freq -2*Spin'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma2201_excitative_frequency'], label=key)
-        ax.plot(planet_data['current_time'], planet_computed_data['sigma2201_excitative_frequency_calculated'], label=None, ls="--", )
-    ax.set_ylabel(field)
-    # ax.set_ylim([-0.00031, -0.00029])
-    # # ax.set_xscale('log')
-    # ax.set_yscale('log')
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-    ax = fig.add_subplot(5,2,5, sharex=ax)
-    field = '2*( 2*Orbital_frequ -Spin )'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        # ax.plot(planet_data['current_time'], planets_computed_data[key]['sigma2202_excitative_frequency'], label=key)
-        ax.plot(planet_data['current_time'], planet_computed_data['sigma2202_excitative_frequency_calculated'], label=None, ls="--", )
-    ax.set_ylabel(field)
-    # ax.set_ylim([-0.00031, -0.00029])
-    # # ax.set_xscale('log')
-    # ax.set_yscale('log')
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-    ax = fig.add_subplot(5,2,6, sharex=ax)
-    field = 'spin'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        # ax.plot(planet_data['current_time'], planet_data['spin'], label=key) # planet_data['spin']  planets_computed_data[key]['spin']
-        ax.plot(planet_data['current_time'], planet_norm_spin/posidonius.constants.DAY, label=None, ls="--", ) #planet_norm_spin  planet_rotation_frequ
-    ax.set_ylabel(field)
-    # ax.set_ylim([-0.00031, -0.00029])
-    # # ax.set_xscale('log')
-    # ax.set_yscale('log')
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-    ax = fig.add_subplot(5,2,7, sharex=ax)
-    field = 'orbital_frequency'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        # ax.plot(planet_data['current_time'], planet_data['orbital_frequency'], label=key)
-        ax.plot(planet_data['current_time'], planet_orbital_frequ, label=None, ls="--", )
-    ax.set_ylabel(field)
-    # ax.set_ylim([-0.00031, -0.00029])
-    # # ax.set_xscale('log')
-    # ax.set_yscale('log')
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-    ax = fig.add_subplot(5,2,8, sharex=ax)
-    #field = 'planet_rotation_period\n(hr)'
-    field = 'planet_rotation_period\n(days)'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        #line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period']*24., label=key)
-        ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period'], label=key)
-        # ax.plot(planet_data['current_time'], planets_computed_data[key]['pseudo_synchronization_period'], label=None, ls="--", ) # Pseudo-sync
-        # ax.plot(planet_data['current_time'], planet_pseudo_synchronization_period, label=None, ls="--", ) # Pseudo-sync
-    ax.set_ylabel(field)
-    #ax.set_ylim([40, 160.0])
-    # ax.set_xscale('log')
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
 
 
 
-    #ax.set_xlim([100.0, .0e8])
-    plt.tight_layout()
+    # #ax.set_xlim([100.0, .0e8])
+    # plt.tight_layout()
 
-    output_figure_dirname = os.path.dirname(filename)
-    output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "frequency.png")
-    plt.savefig(output_figure_filename)
-    #plt.show()
-    print("> Output figure file written to: {}".format(output_figure_filename))
+    # output_figure_dirname = os.path.dirname(filename)
+    # output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "frequency.png")
+    # plt.savefig(output_figure_filename)
+    # #plt.show()
+    # print("> Output figure file written to: {}".format(output_figure_filename))
     #######################################################################################################
     print("Recover Love number")
     # planet_data = np.loadtxt('Results_Trappist_1e_05.0_150_freq_Imk2_posidonius.txt',comments='#')
@@ -496,93 +496,118 @@ if __name__ == "__main__":
     # im_['2202 '] = planet_data['im_love_number_sigma2202']
 
 
-    # fig, (ax1, ax2) = plt.subplots(1,2)
-    fig = plt.figure(figsize=(20, 15))
+    fig = plt.figure(figsize=(14, 30))
+    ligne = 1
+    colonne = 1
+    i = 0 
 
-    ax = fig.add_subplot(3,2,1)
-    field = 'IMk2'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        ax.plot(w_lmpq, ImK2, c='b', ls='-', label="Imaginary part Love number")
-        # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
-        # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
-        # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
-        # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
-        # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = 'Im Love Number'
+    # ax.plot(Time, SemiMajor , label=field, color = 'b')
+    # ax.plot(planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], c='b', )
+    # ax.plot(planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], c='b', )
+    ax.plot(planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], c='b', )
+    # ax.plot(planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], c='b', )
+    # ax.plot(planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], c='b', )
+    ax.set_ylabel(field+" (AU)")
     ax.set_xscale('log')
-    ax.set_xlabel("excitation frequency")
-    ax.set_ylabel("imaginary part love number")
-    ax.set_title("Imaginary part Love number")
+    ax.set_xlim(left=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
 
-    ax = fig.add_subplot(3,2,2)
-    # field = 'REk2'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        ax.plot( data['sigma220_2_excitative_frequency'], data['im_love_number_sigma220_2'], ls='-', )
-        # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
-        # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
-        # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
-        # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
-    ax.set_xscale('log')
-    ax.set_xlabel(" sigma220_2 excitation frequency")
-    ax.set_ylabel("im part love number")
-    # ax.set_title("Real part Love number")
+    # # fig, (ax1, ax2) = plt.subplots(1,2)
+    # fig = plt.figure(figsize=(20, 15))
 
-    ax = fig.add_subplot(3,2,3)
-    # field = 'REk2'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
-        ax.plot( data['sigma220_1_excitative_frequency'], data['im_love_number_sigma220_1'], ls='-', )
-        # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
-        # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
-        # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
-    ax.set_xscale('log')
-    ax.set_xlabel(" sigma220_1 excitation frequency")
-    ax.set_ylabel("im part love number")
-    # ax.set_title("Real part Love number")
+    # ax = fig.add_subplot(3,2,1)
+    # field = 'IMk2'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     ax.plot(planet_data['sigma220_2_excitative_frequency'], planet_data['im_love_number_sigma220_2'], c='b', ls='.')
+    #     ax.plot(planet_data['sigma220_1_excitative_frequency'], planet_data['im_love_number_sigma220_1'], c='b', ls='.')
+    #     ax.plot(planet_data['sigma2200_excitative_frequency'], planet_data['im_love_number_sigma2200'], c='b', ls='.')
+    #     ax.plot(planet_data['sigma2201_excitative_frequency'], planet_data['im_love_number_sigma2201'], c='b', ls='.')
+    #     ax.plot(planet_data['sigma2202_excitative_frequency'], planet_data['im_love_number_sigma2202'], c='b', ls='.')
+    #     # ax.plot(w_lmpq, ImK2, c='b', ls='-', label="Imaginary part Love number")
+    #     # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
+    #     # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
+    #     # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
+    #     # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
+    #     # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
+    # ax.set_xscale('log')
+    # ax.set_xlabel("excitation frequency")
+    # ax.set_ylabel("imaginary part love number")
+    # ax.set_title("Imaginary part Love number")
 
-    ax = fig.add_subplot(3,2,4)
-    # field = 'REk2'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
-        # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
-        ax.plot( data['sigma2200_excitative_frequency'], data['im_love_number_sigma2200'], ls='-', )
-        # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
-        # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
-    ax.set_xscale('log')
-    ax.set_xlabel(" sigma2200 excitation frequency")
-    ax.set_ylabel("im part love number")
-    # ax.set_title("Real part Love number")
+    # ax = fig.add_subplot(3,2,2)
+    # # field = 'REk2'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     ax.plot( data['sigma220_2_excitative_frequency'], data['im_love_number_sigma220_2'], ls='-', )
+    #     # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
+    #     # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
+    #     # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
+    #     # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
+    # ax.set_xscale('log')
+    # ax.set_xlabel(" sigma220_2 excitation frequency")
+    # ax.set_ylabel("im part love number")
+    # # ax.set_title("Real part Love number")
 
-    ax = fig.add_subplot(3,2,5)
-    # field = 'freq'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
-        # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
-        # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
-        ax.plot( data['sigma2201_excitative_frequency'], data['im_love_number_sigma2201'], ls='-', )
-        # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
-    ax.set_xscale('log')
-    ax.set_xlabel(" sigma2201 excitation frequency")
-    ax.set_ylabel("im part love number")
-    # ax.set_title("Real part Love number")
+    # ax = fig.add_subplot(3,2,3)
+    # # field = 'REk2'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
+    #     ax.plot( data['sigma220_1_excitative_frequency'], data['im_love_number_sigma220_1'], ls='-', )
+    #     # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
+    #     # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
+    #     # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
+    # ax.set_xscale('log')
+    # ax.set_xlabel(" sigma220_1 excitation frequency")
+    # ax.set_ylabel("im part love number")
+    # # ax.set_title("Real part Love number")
 
-    ax = fig.add_subplot(3,2,6)
-    # field = 'REk2'
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
-        # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
-        # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
-        # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
-        ax.plot( data['sigma2202_excitative_frequency'], data['im_love_number_sigma2202'], ls='-', )
-    ax.set_xscale('log')
-    ax.set_xlabel("sigma2201 excitation frequency")
-    ax.set_ylabel("im part love number")
-    # ax.set_title("Real part Love number")
+    # ax = fig.add_subplot(3,2,4)
+    # # field = 'REk2'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
+    #     # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
+    #     ax.plot( data['sigma2200_excitative_frequency'], data['im_love_number_sigma2200'], ls='-', )
+    #     # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
+    #     # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
+    # ax.set_xscale('log')
+    # ax.set_xlabel(" sigma2200 excitation frequency")
+    # ax.set_ylabel("im part love number")
+    # # ax.set_title("Real part Love number")
+
+    # ax = fig.add_subplot(3,2,5)
+    # # field = 'freq'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
+    #     # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
+    #     # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
+    #     ax.plot( data['sigma2201_excitative_frequency'], data['im_love_number_sigma2201'], ls='-', )
+    #     # ax.plot( planet_computed_data['sigma2202_excitative_frequency'], planet_computed_data['im_love_number_sigma2202'], ls='-', label="ImK2 2202")
+    # ax.set_xscale('log')
+    # ax.set_xlabel(" sigma2201 excitation frequency")
+    # ax.set_ylabel("im part love number")
+    # # ax.set_title("Real part Love number")
+
+    # ax = fig.add_subplot(3,2,6)
+    # # field = 'REk2'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     # ax.plot( planet_computed_data['sigma220_2_excitative_frequency'], planet_computed_data['im_love_number_sigma220_2'], ls='dotted', label="ImK2 220_2")
+    #     # ax.plot( planet_computed_data['sigma220_1_excitative_frequency'], planet_computed_data['im_love_number_sigma220_1'], ls='-', label="ImK2 220_1")
+    #     # ax.plot( planet_computed_data['sigma2200_excitative_frequency'], planet_computed_data['im_love_number_sigma2200'], ls='-', label="ImK2 2200")
+    #     # ax.plot( planet_computed_data['sigma2201_excitative_frequency'], planet_computed_data['im_love_number_sigma2201'], ls='-', label="ImK2 2201")
+    #     ax.plot( data['sigma2202_excitative_frequency'], data['im_love_number_sigma2202'], ls='-', )
+    # ax.set_xscale('log')
+    # ax.set_xlabel("sigma2201 excitation frequency")
+    # ax.set_ylabel("im part love number")
+    # # ax.set_title("Real part Love number")
 
 
     # ax = fig.add_subplot(1,2,2)
@@ -624,64 +649,64 @@ if __name__ == "__main__":
 
 
 
-    print("Preparing text output...")
-    all_data = None
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        data = pd.DataFrame(planet_data['current_time'], columns=['current_time'])
-        data['planet_rotation_frequ'] = 2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY)
-        data ['planet_orbital_frequ'] = 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY)
-        data ['pseudo_synchro_frequ'] = 2.*np.pi/ (2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY)*posidonius.constants.DAY)
-        # data['planet'] = key
-        # data['semi-major_axis_AU'] = planet_data['semi-major_axis']
-        # data['corotation_radius_AU'] = planets_computed_data[key]['corotation_radius']
-        # data['planet_obliquity_deg'] = planets_computed_data[key]['planet_obliquity']
-        # data['eccentricity'] = planet_data['eccentricity']
-        # data['inclination_deg'] = planet_data['inclination'] * (180 / np.pi)
-        # data['energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['inst_tidal_flux']
-        # data['mean_energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['mean_tidal_flux']
-        # data['planet_rotation_period_hours'] = planets_computed_data[key]['planet_rotation_period']*24
-        # data['planet_Pseudo_rotation_period_hours'] = planet_pseudo_synchronization_period
+    # print("Preparing text output...")
+    # all_data = None
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     data = pd.DataFrame(planet_data['current_time'], columns=['current_time'])
+    #     data['planet_rotation_frequ'] = 2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY)
+    #     data ['planet_orbital_frequ'] = 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY)
+    #     data ['pseudo_synchro_frequ'] = 2.*np.pi/ (2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY)*posidonius.constants.DAY)
+    #     # data['planet'] = key
+    #     # data['semi-major_axis_AU'] = planet_data['semi-major_axis']
+    #     # data['corotation_radius_AU'] = planets_computed_data[key]['corotation_radius']
+    #     # data['planet_obliquity_deg'] = planets_computed_data[key]['planet_obliquity']
+    #     # data['eccentricity'] = planet_data['eccentricity']
+    #     # data['inclination_deg'] = planet_data['inclination'] * (180 / np.pi)
+    #     # data['energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['inst_tidal_flux']
+    #     # data['mean_energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['mean_tidal_flux']
+    #     # data['planet_rotation_period_hours'] = planets_computed_data[key]['planet_rotation_period']*24
+    #     # data['planet_Pseudo_rotation_period_hours'] = planet_pseudo_synchronization_period
 
-        # data['planet_pseudo_synchronization_period'] = planets_computed_data[key]['pseudo_synchronization_period']
-        # data['energy_lost_due_to_tides_W'] = planets_computed_data[key]['denergy_dt']
-        # data['mean_energy_lost_due_to_tides_W'] = planets_computed_data[key]['gravitational_energy_lost']
-        # data['star_obliquity_deg'] = planets_computed_data[key]['star_obliquity']
-        # data['planet_precession_angle_deg'] = planets_computed_data[key]['planet_precession_angle']
-        # data['conservation_of_angular_momentum'] = conservation_of_angular_momentum
-        # data['star_rotation_period_days'] = star_rotation_period
-        # data['conservation_of_energy'] = relative_energy_error
-        # data['sigma220_2_excitative_frequency'] = planet_computed_data['sigma220_2_excitative_frequency']
-        # data['sigma220_2_excitative_frequency_calculated'] = planet_computed_data['sigma220_2_excitative_frequency_calculated']
+    #     # data['planet_pseudo_synchronization_period'] = planets_computed_data[key]['pseudo_synchronization_period']
+    #     # data['energy_lost_due_to_tides_W'] = planets_computed_data[key]['denergy_dt']
+    #     # data['mean_energy_lost_due_to_tides_W'] = planets_computed_data[key]['gravitational_energy_lost']
+    #     # data['star_obliquity_deg'] = planets_computed_data[key]['star_obliquity']
+    #     # data['planet_precession_angle_deg'] = planets_computed_data[key]['planet_precession_angle']
+    #     # data['conservation_of_angular_momentum'] = conservation_of_angular_momentum
+    #     # data['star_rotation_period_days'] = star_rotation_period
+    #     # data['conservation_of_energy'] = relative_energy_error
+    #     # data['sigma220_2_excitative_frequency'] = planet_computed_data['sigma220_2_excitative_frequency']
+    #     # data['sigma220_2_excitative_frequency_calculated'] = planet_computed_data['sigma220_2_excitative_frequency_calculated']
 
-        # data['sigma220_1_excitative_frequency'] = planet_computed_data['sigma220_1_excitative_frequency']
-        # data['sigma220_1_excitative_frequency_calculated'] = planet_computed_data['sigma220_1_excitative_frequency_calculated']
+    #     # data['sigma220_1_excitative_frequency'] = planet_computed_data['sigma220_1_excitative_frequency']
+    #     # data['sigma220_1_excitative_frequency_calculated'] = planet_computed_data['sigma220_1_excitative_frequency_calculated']
 
-        # data['sigma2200_excitative_frequency'] = planet_computed_data['sigma2200_excitative_frequency']
-        # data['sigma2200_excitative_frequency_calculated'] = planet_computed_data['sigma2200_excitative_frequency_calculated']
+    #     # data['sigma2200_excitative_frequency'] = planet_computed_data['sigma2200_excitative_frequency']
+    #     # data['sigma2200_excitative_frequency_calculated'] = planet_computed_data['sigma2200_excitative_frequency_calculated']
 
-        # data['sigma2201_excitative_frequency'] = planet_computed_data['sigma2201_excitative_frequency']
-        # data['sigma2201_excitative_frequency_calculated'] = planet_computed_data['sigma2201_excitative_frequency_calculated']
+    #     # data['sigma2201_excitative_frequency'] = planet_computed_data['sigma2201_excitative_frequency']
+    #     # data['sigma2201_excitative_frequency_calculated'] = planet_computed_data['sigma2201_excitative_frequency_calculated']
 
-        # data['sigma2202_excitative_frequency'] = planet_computed_data['sigma2202_excitative_frequency']
-        # data['sigma2202_excitative_frequency_calculated'] = planet_computed_data['sigma2202_excitative_frequency_calculated']
+    #     # data['sigma2202_excitative_frequency'] = planet_computed_data['sigma2202_excitative_frequency']
+    #     # data['sigma2202_excitative_frequency_calculated'] = planet_computed_data['sigma2202_excitative_frequency_calculated']
 
-        # data['spin'] = planet_computed_data['spin']
-        # data['spin_calculated'] = planet_rotation_frequ
+    #     # data['spin'] = planet_computed_data['spin']
+    #     # data['spin_calculated'] = planet_rotation_frequ
 
-        # data['orbital_frequency'] = planet_data['orbital_frequency']
-        # data['orbital_frequency_calculated'] = planet_orbital_frequ
+    #     # data['orbital_frequency'] = planet_data['orbital_frequency']
+    #     # data['orbital_frequency_calculated'] = planet_orbital_frequ
 
-        if all_data is None:
-            all_data = data
-        else:
-            all_data = pd.concat((all_data, data))
+    #     if all_data is None:
+    #         all_data = data
+    #     else:
+    #         all_data = pd.concat((all_data, data))
 
-    output_text_dirname = os.path.dirname(filename)
-    output_text_filename = os.path.join(output_text_dirname, os.path.splitext(os.path.basename(filename))[0] + "frequency.txt")
-    all_data.to_csv(output_text_filename, sep="\t", index=False)
+    # output_text_dirname = os.path.dirname(filename)
+    # output_text_filename = os.path.join(output_text_dirname, os.path.splitext(os.path.basename(filename))[0] + "frequency.txt")
+    # all_data.to_csv(output_text_filename, sep="\t", index=False)
 
-    print("> Output data written to plain text file: {}".format(output_text_filename))
+    # print("> Output data written to plain text file: {}".format(output_text_filename))
 
 
 

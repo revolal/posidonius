@@ -285,7 +285,7 @@ if __name__ == "__main__":
     for key in planets_keys:
         planet_data = planets_data[key]
         # ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_obliquity'], label=key)
-        ax.plot(planet_data['current_time'], planet_data['semi-major_axis'], label=key)
+        ax.plot(planet_data['current_time'], planet_data['semi-major_axis'], label="Semi-Maj axis")
         # line, = ax.plot(planet_data['current_time'], planet_data[field], label=key)
     ax.set_ylabel(field+' (AU)')
     # ax.set_ylim([-0.00031, -0.00029])
@@ -298,11 +298,11 @@ if __name__ == "__main__":
     field = 'eccentricity'
     for key in planets_keys:
         planet_data = planets_data[key]
-        ax.plot(planet_data['current_time'], planet_data[field], label=key)
+        ax.plot(planet_data['current_time'], planet_data[field], label="Eccentricity")
     ax.set_ylabel(field)
     #ax.set_ylim([0.001, 1.000])
     ax.set_xscale('log')
-    ax.set_yscale('log')
+    # ax.set_yscale('log')
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
@@ -312,8 +312,8 @@ if __name__ == "__main__":
     for key in planets_keys:
         planet_data = planets_data[key]
         #line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period']*24., label=key)
-        line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period'], label=key)
-        ax.plot(planet_data['current_time'], planets_computed_data[key]['pseudo_synchronization_period'], label=None, ls="--", c=line.get_color()) # Pseudo-sync
+        line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period'], label="Planet rot period")
+        # ax.plot(planet_data['current_time'], planets_computed_data[key]['pseudo_synchronization_period'], label="Pseudo-synchro", ls="--", c=line.get_color()) # Pseudo-sync
     ax.set_ylabel(field)
     #ax.set_ylim([40, 160.0])
     ax.set_xscale('log')
@@ -334,7 +334,7 @@ if __name__ == "__main__":
     #ax.plot(planet_data['current_time'], planet_data[field])
     for key in planets_keys:
         planet_data = planets_data[key]
-        ax.plot(planet_data['current_time'], planets_computed_data[key]['orbital_period'], label=key) #
+        ax.plot(planet_data['current_time'], planets_computed_data[key]['orbital_period'], label="orbital_period") #
     ax.set_ylabel(field)
     #ax.set_ylim([1e12, 1e19])
     ax.set_xscale('log')
@@ -344,9 +344,9 @@ if __name__ == "__main__":
     ax = fig.add_subplot(ligne,colonne,7, sharex=ax)
     # field = 'star_rotation_period\n(days)'
     field = 'Rotation frequency\n(s^-1)'
-    ax.plot(planet_data['current_time'], 2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))
+    ax.plot(planet_data['current_time'], 2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY), label="spin")
     ax.plot(planet_data['current_time'], 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY), label=key) 
-    ax.plot(planet_data['current_time'], 2.*np.pi/ (2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY)*posidonius.constants.DAY), label=key)
+    ax.plot(planet_data['current_time'], 2.*np.pi/ (2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY)*posidonius.constants.DAY), label="orbital frequ")
     ax.set_ylabel(field)
     #ax.set_ylim([2.915, 2.92])
     ax.set_xscale('log')
@@ -403,10 +403,10 @@ if __name__ == "__main__":
         planet_data = planets_data[key]
         data = pd.DataFrame(planet_data['current_time'], columns=['current_time'])
         # data['planet'] = key
-        # data['semi-major_axis_AU'] = planet_data['semi-major_axis']
+        data['semi-major_axis_AU'] = planet_data['semi-major_axis']
         # data['corotation_radius_AU'] = planets_computed_data[key]['corotation_radius']
         # data['planet_obliquity_deg'] = planets_computed_data[key]['planet_obliquity']
-        # data['eccentricity'] = planet_data['eccentricity']
+        data['eccentricity'] = planet_data['eccentricity']
         # data['inclination_deg'] = planet_data['inclination'] * (180 / np.pi)
         # data['energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['inst_tidal_flux']
         # data['mean_energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['mean_tidal_flux']

@@ -13,12 +13,12 @@ if __name__ == "__main__":
 
     #initial_time = 4.5e6*365.25 # time [days] where simulation starts
     initial_time = 1.2e6*365.25 # time [days] where simulation starts
-    time_step = 0.08 # days
+    time_step = 0.08 # 0.08 days
     #time_step = 0.05 # days
     #time_limit   = 4*time_step # days
     #time_limit   = 365.25 * 1.0e8 # days
     time_limit   =  365.25 * 1e10 #365.25 * 1.0e6 # days
-    historic_snapshot_period = 10.*365.25 #100.*365.25 # days
+    historic_snapshot_period = 10*365.25 #100.*365.25 # days
     recovery_snapshot_period = 100.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
@@ -30,8 +30,8 @@ if __name__ == "__main__":
     })
     universe = posidonius.Universe(initial_time, time_limit, time_step, recovery_snapshot_period, historic_snapshot_period, consider_effects)
     # THE SUN https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html
-    # star_mass = 0.08 # Solar masses
-    star_mass = 1.0
+    star_mass = 0.089 # Solar masses
+    # star_mass = 1.0
     star_radius_factor = 0.117
     # star_radius_factor = 1.0
     star_radius = star_radius_factor * posidonius.constants.R_SUN
@@ -186,15 +186,15 @@ if __name__ == "__main__":
     # i = planet_i
     # l = planet_l
     #################################################################################
-    planet_l = 165.724187804
-    planet_radiuses = 0.918e0 #0.4e0
+    planet_l = 0. #165.724187804
+    planet_radiuses = 0.91e0 #0.4e0 ==========================================================================================PlanetRaduis
     planet_i = 0.0
     planet_inclination = 0.0
     planet_obliquity = 0.0
-    e = 0.0 #0.07
-    planet_a = 0.05# 0.02817 #0.015 #0.02817 #AU
-    planet_masses = 1.898e27/1.989e30 #1.8850689e-06 #2.98e-6 # Mearth in  Msol
-    planet_angular_frequency = posidonius.constants.TWO_PI/(10.) #TEST 1. Days#(5/12) #10 hours periods in day
+    e = 0.0051 #0.07 #========================================================================================================ECC
+    planet_a = 0.02928# 0.02817 #0.015 #0.02817 #AU ==========================================================================SemiMaj 
+    planet_masses = 0.772 * 5.973e24/1.989e30 #1.898e27/1.989e30 #1.8850689e-06 #2.98e-6 # Mearth in  Msol ===================PLanetMass
+    planet_angular_frequency = posidonius.constants.TWO_PI/(5./12.) #TEST 1. Days#(5/12) #10 hours periods in day ===============PlanetSpin
 
     planet_mass = planet_masses # m # Solar masses (3.0e-6 solar masses = 1 earth mass)
     planet_radius_factor = planet_radiuses # r # R Earth
@@ -204,6 +204,8 @@ if __name__ == "__main__":
     i = planet_i
     l = planet_l
     # #Verification
+    print("Planet mass in Msol", planet_masses)
+    print("Planet radius in Rearth", planet_radiuses)
     # periode_orbital = posidonius.constants.TWO_PI * pow( planet_a*posidonius.constants.AU, 3./2.) / np.sqrt(posidonius.constants.G_SI*( star_mass )*posidonius.constants.M_SUN ) 
     # print("The Orbital period calculated", periode_orbital/posidonius.constants.DAY)
     # masse_planete = (pow(posidonius.constants.TWO_PI,2)*pow(planet_a*posidonius.constants.AU,3))/(posidonius.constants.G_SI* pow(6.09*posidonius.constants.DAY,2)) - star_mass*posidonius.constants.M_SUN
