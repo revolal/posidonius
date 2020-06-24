@@ -333,7 +333,7 @@ if __name__ == "__main__":
         planet_data = planets_data[key]
         #line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period']*24., label=key)
         line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_rotation_period'], label=key)
-        ax.plot(planet_data['current_time'], planets_computed_data[key]['pseudo_synchronization_period'], label=None, ls="--", c=line.get_color()) # Pseudo-sync
+        ax.plot(planet_data['current_time'], planets_computed_data[key]['pseudo_synchronization_period'], label='Pseudo-synchro', ls="--", c=line.get_color()) # Pseudo-sync
     ax.set_ylabel(field)
     #ax.set_ylim([40, 160.0])
     ax.set_xscale('log')
@@ -455,39 +455,39 @@ if __name__ == "__main__":
     output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + ".png")
     plt.savefig(output_figure_filename)
     #plt.show()
-    print("> Output figure file written to: {}".format(output_figure_filename))
+    # print("> Output figure file written to: {}".format(output_figure_filename))
 
 
-    print("Preparing text output...")
-    all_data = None
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        data = pd.DataFrame(planet_data['current_time'], columns=['current_time'])
-        data['planet'] = key
-        data['semi-major_axis_AU'] = planet_data['semi-major_axis']
-        # data['corotation_radius_AU'] = planets_computed_data[key]['corotation_radius']
-        # data['planet_obliquity_deg'] = planets_computed_data[key]['planet_obliquity']
-        # data['eccentricity'] = planet_data['eccentricity']
-        # data['inclination_deg'] = planet_data['inclination'] * (180 / np.pi)
-        # data['energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['inst_tidal_flux']
-        # data['mean_energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['mean_tidal_flux']
-        # data['planet_rotation_period_hours'] = planets_computed_data[key]['planet_rotation_period']*24
-        # data['planet_pseudo_synchronization_period'] = planets_computed_data[key]['pseudo_synchronization_period']
-        # data['energy_lost_due_to_tides_W'] = planets_computed_data[key]['denergy_dt']
-        # data['mean_energy_lost_due_to_tides_W'] = planets_computed_data[key]['gravitational_energy_lost']
-        # data['star_obliquity_deg'] = planets_computed_data[key]['star_obliquity']
-        # data['planet_precession_angle_deg'] = planets_computed_data[key]['planet_precession_angle']
-        # data['conservation_of_angular_momentum'] = conservation_of_angular_momentum
-        data['star_rotation_period_days'] = star_rotation_period
-        # data['conservation_of_energy'] = relative_energy_error
-        if all_data is None:
-            all_data = data
-        else:
-            all_data = pd.concat((all_data, data))
+    # print("Preparing text output...")
+    # all_data = None
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     data = pd.DataFrame(planet_data['current_time'], columns=['current_time'])
+    #     data['planet'] = key
+    #     data['semi-major_axis_AU'] = planet_data['semi-major_axis']
+    #     # data['corotation_radius_AU'] = planets_computed_data[key]['corotation_radius']
+    #     # data['planet_obliquity_deg'] = planets_computed_data[key]['planet_obliquity']
+    #     # data['eccentricity'] = planet_data['eccentricity']
+    #     # data['inclination_deg'] = planet_data['inclination'] * (180 / np.pi)
+    #     # data['energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['inst_tidal_flux']
+    #     # data['mean_energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['mean_tidal_flux']
+    #     # data['planet_rotation_period_hours'] = planets_computed_data[key]['planet_rotation_period']*24
+    #     # data['planet_pseudo_synchronization_period'] = planets_computed_data[key]['pseudo_synchronization_period']
+    #     # data['energy_lost_due_to_tides_W'] = planets_computed_data[key]['denergy_dt']
+    #     # data['mean_energy_lost_due_to_tides_W'] = planets_computed_data[key]['gravitational_energy_lost']
+    #     # data['star_obliquity_deg'] = planets_computed_data[key]['star_obliquity']
+    #     # data['planet_precession_angle_deg'] = planets_computed_data[key]['planet_precession_angle']
+    #     # data['conservation_of_angular_momentum'] = conservation_of_angular_momentum
+    #     # data['star_rotation_period_days'] = star_rotation_period
+    #     # data['conservation_of_energy'] = relative_energy_error
+    #     if all_data is None:
+    #         all_data = data
+    #     else:
+    #         all_data = pd.concat((all_data, data))
 
-    output_text_dirname = os.path.dirname(filename)
-    output_text_filename = os.path.join(output_text_dirname, os.path.splitext(os.path.basename(filename))[0] + ".txt")
-    all_data.to_csv(output_text_filename, sep="\t", index=False)
+    # output_text_dirname = os.path.dirname(filename)
+    # output_text_filename = os.path.join(output_text_dirname, os.path.splitext(os.path.basename(filename))[0] + ".txt")
+    # all_data.to_csv(output_text_filename, sep="\t", index=False)
 
-    print("> Output data written to plain text file: {}".format(output_text_filename))
+    # print("> Output data written to plain text file: {}".format(output_text_filename))
 

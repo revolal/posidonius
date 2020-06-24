@@ -5,7 +5,6 @@ use super::super::{Particle};
 use super::super::{Axes};
 use super::{EvolutionType};
 
-
 use crate::constants::{G,TWO_PI, DAY, AU};//, G_SI, AU, M_SUN};
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////MY MODIFICATION
@@ -231,11 +230,19 @@ pub struct TidesParticleInternalParameters {
     pub spin: f64,
     pub orbital_frequency: f64,
 
-    // pub im_love_number_sigma220_2: f64,
-    // pub im_love_number_sigma220_1: f64,
+    pub tidal_torque_z: f64,
+
+    pub sigma220_2_excitative_frequency: f64,
+    pub sigma220_1_excitative_frequency: f64,
+    pub sigma2200_excitative_frequency: f64,
+    pub sigma2201_excitative_frequency: f64,
+    pub sigma2202_excitative_frequency: f64,
+
+    pub im_love_number_sigma220_2: f64,
+    pub im_love_number_sigma220_1: f64,
     pub im_love_number_sigma2200: f64,
-    // pub im_love_number_sigma2201: f64,
-    // pub im_love_number_sigma2202: f64,
+    pub im_love_number_sigma2201: f64,
+    pub im_love_number_sigma2202: f64,
 
     // pub re_love_number_sigma220_2: f64,
     // pub re_love_number_sigma220_1: f64,
@@ -245,12 +252,6 @@ pub struct TidesParticleInternalParameters {
 
     // pub im_love_number:f64,
     // pub re_love_number:f64,
-
-    // pub sigma220_2_excitative_frequency: f64,
-    // pub sigma220_1_excitative_frequency: f64,
-    pub sigma2200_excitative_frequency: f64,
-    // pub sigma2201_excitative_frequency: f64,
-    // pub sigma2202_excitative_frequency: f64,
 
     pub check_excitative_frequ: f64,
 
@@ -345,17 +346,19 @@ impl Tides {
                     spin: 0.,
                     orbital_frequency: 0.,
 
-                    // sigma220_2_excitative_frequency:0.,
-                    // sigma220_1_excitative_frequency:0.,
-                    sigma2200_excitative_frequency:0.,
-                    // sigma2201_excitative_frequency:0.,
-                    // sigma2202_excitative_frequency:0.,
+                    tidal_torque_z: 0.,
 
-                    // im_love_number_sigma220_2: 0.,
-                    // im_love_number_sigma220_1: 0.,
+                    sigma220_2_excitative_frequency:0.,
+                    sigma220_1_excitative_frequency:0.,
+                    sigma2200_excitative_frequency:0.,
+                    sigma2201_excitative_frequency:0.,
+                    sigma2202_excitative_frequency:0.,
+
+                    im_love_number_sigma220_2: 0.,
+                    im_love_number_sigma220_1: 0.,
                     im_love_number_sigma2200: 0.,
-                    // im_love_number_sigma2201: 0.,
-                    // im_love_number_sigma2202: 0.,
+                    im_love_number_sigma2201: 0.,
+                    im_love_number_sigma2202: 0.,
                 
                     // re_love_number_sigma220_2: 0.,
                     // re_love_number_sigma220_1: 0.,
@@ -565,7 +568,7 @@ pub fn planet_dependent_dissipation_factor(star_planet_dependent_dissipation_fac
 
 //////////////////////////////////////////////////////////////////////////////
 //// TIDES
-pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particles: &mut [Particle], more_particles: &mut [Particle], central_body:bool, _current_time:f64) {
+pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particles: &mut [Particle], more_particles: &mut [Particle], central_body:bool, current_time:f64) {
     let mut dangular_momentum_dt = Axes{x: 0., y: 0., z:0.};
     let mut reference_spin = tidal_host_particle.spin.clone();
     let mut orthogonal_component_of_the_tidal_force: f64;
@@ -625,18 +628,21 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
             //it return (a, q, eccentricity, i, p, n, l, orbital_period)
             let semi_major_axis = orbital_elements.0;
-            let eccentricity = orbital_elements.2;
+            let eccentricity = 0.; // orbital_elements.2; ================================================================================================================================
 
-            let orbital_period = orbital_elements.7; //in [s]
+            let orbital_period = (TWO_PI/ (G*(tidal_host_particle.mass+particle.mass)).sqrt()) * semi_major_axis.powf(3./2.);
+            // let orbital_period = orbital_elements.7; //in [s]
             let orbital_frequency = TWO_PI / (orbital_period*DAY) ; // in [rad/s]
-            //////println!("a {}\t period [s] {}\t frequency [s^-1] {}\t ", semi_major_axis, orbital_period, orbital_frequency);
+            
             // let orbital_period = TWO_PI *( (semi_major_axis *AU).powi(3)/(G_SI*M_SUN*(tidal_host_particle.mass+particle.mass))).sqrt();
             // let orbital_frequency = TWO_PI / (orbital_period) ; // in [rad/s]
-            // //////println!("a {}\t period [s] {}\t frequency [s^-1] {}\t ", semi_major_axis, orbital_period, orbital_frequency);
+            
 
             // let spin = particle.norm_spin_vector_2.sqrt()/DAY; //this is [rad.s^-1]
-            let spin = ( particle.spin.x.powi(2) + particle.spin.y.powi(2) + particle.spin.z.powi(2) ).sqrt() / DAY; //this is [rad.s^-1]
-            //////println!("The Planetary Spin in [rad.s^-1]: {}\t Period in [s.rad^-1]: {}\t in [day]: {} Vector: {:?}", spin, 1.0/(spin), TWO_PI/(spin*DAY), particle.spin);
+            let mut spin = ( particle.spin.x.powi(2) + particle.spin.y.powi(2) + particle.spin.z.powi(2) ).sqrt() / DAY; //this is [rad.s^-1]
+
+
+
             let mut tidal_torque_kaula_coplanar = [0.;3];
 
             let im_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.imaginary_part_love_number;
@@ -646,64 +652,92 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
 
             let eccentricity_function = eccentricty_function_g_20q(eccentricity);
             let mut _excitative_frequency: f64;
-            // let mut sum_g_im_k2_over_q = 0.;
             let mut _q = -2.;
 
             particle.tides.parameters.internal.a = semi_major_axis;
+            // particle.tides.parameters.internal.spin = spin;
+
+            // if (1. -spin/orbital_frequency).abs()< 0.00001 {
+            //     // println!("CTRL {}", (1. -spin/orbital_frequency).abs());
+            //     spin = orbital_frequency;
+            // }
+            // println!("CTRL -  {}", (orbital_frequency - spin).abs());
+            // println!("CTRL  / {}", (1. -spin/orbital_frequency).abs());
+
             particle.tides.parameters.internal.spin = spin;
             particle.tides.parameters.internal.orbital_frequency = orbital_frequency;
+            // println!("orbit {} ",TWO_PI/orbital_frequency/24./60./60., );
+            // println!("Msol {}, {}", tidal_host_particle.mass, particle.mass);
+            // panic!("MERCO");
 
             //////println!("\nTroque due to tides, KaulaCoplanarOrbitingBody:");
             // //////println!("\n\nWELLL {}\n", orbital_frequency);
 
+            // println!("a {}\t period [s] {}\t frequency [s^-1] {}\t ", semi_major_axis, orbital_period, orbital_frequency);
+            // println!("The Planetary Spin in [rad.s^-1]: {}\t Period in [s.rad^-1]: {}\t in [day]: {} Vector: {:?}", spin, 1.0/(spin), TWO_PI/(spin*DAY), particle.spin);
+            // // panic!("STOP");
             // if current_time > 10000.*orbital_elements.7 {
             //     panic!("Seem it's working.");
             // }
 
             let mut do_calculation:bool=false;
-            if (1.- particle.tides.parameters.internal.check_excitative_frequ / sigma_2mpq(2., 0., -2., spin, orbital_frequency)).abs() > 0.001 {
-                // //println!("Excitative frequency Variation {}", (1.- particle.tides.parameters.internal.check_excitative_frequ / sigma_2mpq(2., 0., -2., spin, orbital_frequency)).abs() );
-                particle.tides.parameters.internal.check_excitative_frequ = sigma_2mpq(2., 0., -2., spin, orbital_frequency);
+            if (1.- particle.tides.parameters.internal.check_excitative_frequ / sigma_2mpq(2., 0., 0., spin, orbital_frequency)).abs() > 0.001 {
+                // //println!("Excitative frequency Variation {}", (1.- particle.tides.parameters.internal.check_excitative_frequ / sigma_2mpq(2., 0., 0., spin, orbital_frequency)).abs() );
+                particle.tides.parameters.internal.check_excitative_frequ = sigma_2mpq(2., 0., 0., spin, orbital_frequency);
                 do_calculation = true;
             }
+
+
             // do_calculation = true;
             if do_calculation {
+                // if (1. -spin/orbital_frequency).abs() < 0.00001 {
+                //     spin = orbital_frequency;
+                // }//===========================================================================================================================================================================
                 
-                // //println!("\n\tDO_CALCULATION");
-                // //println!("\nsigma220_2");
+                //======================================================================================================== Q = -2
+                // println!("\nsigma220_2");
                 particle.tides.parameters.internal.excitative_frequ_sigma220q[0] = sigma_2mpq(2., 0., -2., spin, orbital_frequency);
                 let kaula = kaula_number(particle.tides.parameters.internal.excitative_frequ_sigma220q[0], nm_data, re_k2, im_k2, w_lmpq );
                 particle.tides.parameters.internal.im_love_number_sigma220q[0] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma220q[0] = kaula.0 ;
-                // particle.tides.parameters.internal.im_love_number_sigma220_2 = kaula.1;
-                // //println!("\nsigma201_2");
+                //=============go to output
+                particle.tides.parameters.internal.im_love_number_sigma220_2 = kaula.1;
+                particle.tides.parameters.internal.sigma220_2_excitative_frequency = particle.tides.parameters.internal.excitative_frequ_sigma220q[0];
+                // println!("TIDES.RS");
+                // println!("ImK2 {} ", particle.tides.parameters.internal.im_love_number_sigma220_2, );
+                // println!("Freq {}", particle.tides.parameters.internal.sigma220_2_excitative_frequency);
+                // println!("\nsigma201_2");
                 particle.tides.parameters.internal.excitative_frequ_sigma201q[0] = sigma_2mpq(0., 1., -2., spin, orbital_frequency);
                 let kaula = kaula_number(particle.tides.parameters.internal.excitative_frequ_sigma201q[0], nm_data, re_k2, im_k2, w_lmpq );
                 particle.tides.parameters.internal.im_love_number_sigma201q[0] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma201q[0] = kaula.0 ;
 
                 // //println!("sigma220_2:{} \t Im:{} \t Re:{}", particle.tides.parameters.internal.sigma220_2_excitative_frequency, particle.tides.parameters.internal.im_love_number_sigma220_2, particle.tides.parameters.internal.re_love_number_sigma220_2);
-
-                // //println!("sigma220_1");
+                
+                //======================================================================================================== Q = -1
+                // println!("sigma220_1");
                 particle.tides.parameters.internal.excitative_frequ_sigma220q[1] = sigma_2mpq(2., 0., -1., spin, orbital_frequency);
                 let kaula = kaula_number(particle.tides.parameters.internal.excitative_frequ_sigma220q[1], nm_data, re_k2, im_k2, w_lmpq );
                 particle.tides.parameters.internal.im_love_number_sigma220q[1] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma220q[1] = kaula.0 ;
-                // particle.tides.parameters.internal.im_love_number_sigma220_1 = kaula.1;
-                // //println!("\nsigma201_1");
+                //=============go to output
+                particle.tides.parameters.internal.im_love_number_sigma220_1 = kaula.1;
+                particle.tides.parameters.internal.sigma220_1_excitative_frequency = particle.tides.parameters.internal.excitative_frequ_sigma220q[1];
+                // println!("\nsigma201_1");
                 particle.tides.parameters.internal.excitative_frequ_sigma201q[1] = sigma_2mpq(0., 1., -1., spin, orbital_frequency);
                 let kaula = kaula_number(particle.tides.parameters.internal.excitative_frequ_sigma201q[1], nm_data, re_k2, im_k2, w_lmpq );
                 particle.tides.parameters.internal.im_love_number_sigma201q[1] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma201q[1] = kaula.0 ;
 
+                //======================================================================================================== Q = 0
                 // println!("sigma2200");
                 particle.tides.parameters.internal.excitative_frequ_sigma220q[2] = sigma_2mpq(2., 0., 0., spin, orbital_frequency);
                 let kaula = kaula_number(particle.tides.parameters.internal.excitative_frequ_sigma220q[2], nm_data, re_k2, im_k2, w_lmpq );
                 particle.tides.parameters.internal.im_love_number_sigma220q[2] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma220q[2] = kaula.0 ;
-
+                //=============go to output
                 particle.tides.parameters.internal.im_love_number_sigma2200 = kaula.1;
-                particle.tides.parameters.internal.sigma2200_excitative_frequency = sigma_2mpq(2., 0., 0., spin, orbital_frequency);
+                particle.tides.parameters.internal.sigma2200_excitative_frequency = particle.tides.parameters.internal.excitative_frequ_sigma220q[2];
 
                 // println!("\nsigma2010");
                 particle.tides.parameters.internal.excitative_frequ_sigma201q[2] = sigma_2mpq(0., 1., 0., spin, orbital_frequency);
@@ -711,24 +745,30 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
                 particle.tides.parameters.internal.im_love_number_sigma201q[2] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma201q[2] = kaula.0 ;
 
+                //======================================================================================================== Q = 1
                 // println!("sigma2201");
                 particle.tides.parameters.internal.excitative_frequ_sigma220q[3] = sigma_2mpq(2., 0., 1., spin, orbital_frequency);
                 let kaula = kaula_number(particle.tides.parameters.internal.excitative_frequ_sigma220q[3], nm_data, re_k2, im_k2, w_lmpq );
                 particle.tides.parameters.internal.im_love_number_sigma220q[3] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma220q[3] = kaula.0 ;
-                // particle.tides.parameters.internal.im_love_number_sigma2201 = kaula.1;
+                //=============go to output
+                particle.tides.parameters.internal.im_love_number_sigma2201 = kaula.1;
+                particle.tides.parameters.internal.sigma2201_excitative_frequency = particle.tides.parameters.internal.excitative_frequ_sigma220q[3];
                 // println!("\nsigma2011");
                 particle.tides.parameters.internal.excitative_frequ_sigma201q[3] = sigma_2mpq(0., 1., 1., spin, orbital_frequency);
                 let kaula = kaula_number(particle.tides.parameters.internal.excitative_frequ_sigma201q[3], nm_data, re_k2, im_k2, w_lmpq );
                 particle.tides.parameters.internal.im_love_number_sigma201q[3] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma201q[3] = kaula.0 ;
 
+                //======================================================================================================== Q = 2
                 // println!("sigma2202");
                 particle.tides.parameters.internal.excitative_frequ_sigma220q[4] = sigma_2mpq(2., 0., 2., spin, orbital_frequency);
                 let kaula = kaula_number(particle.tides.parameters.internal.excitative_frequ_sigma220q[4], nm_data, re_k2, im_k2, w_lmpq );
                 particle.tides.parameters.internal.im_love_number_sigma220q[4] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma220q[4] = kaula.0 ;
-                // particle.tides.parameters.internal.im_love_number_sigma2202 = kaula.1;
+                //=============go to output
+                particle.tides.parameters.internal.im_love_number_sigma2202 = kaula.1;
+                particle.tides.parameters.internal.sigma2202_excitative_frequency = particle.tides.parameters.internal.excitative_frequ_sigma220q[4];
                 // println!("\nsigma2012");
                 particle.tides.parameters.internal.excitative_frequ_sigma201q[4] = sigma_2mpq(0., 1., 2., spin, orbital_frequency);
                 let kaula = kaula_number(particle.tides.parameters.internal.excitative_frequ_sigma201q[4], nm_data, re_k2, im_k2, w_lmpq );
@@ -740,10 +780,39 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
                 // }
             }
 
-            let mut sum_g_im_k2_over_q:f64=0.;
-            for x in 0..5{
-                sum_g_im_k2_over_q = sum_g_im_k2_over_q + eccentricity_function[x].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[x] ;
+            ///////////////////////////////////////////////////////////////////////////////////////
+            // let mut sum_g_im_k2_over_q:f64=0.;
+            // for x in 0..5{
+            //     sum_g_im_k2_over_q = sum_g_im_k2_over_q + ( eccentricity_function[x].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[x] ) ;
+            // }
+            ///////////////////////////////////////////////////////////////////////////////////////
+            let eccentricity_function_g_20q = eccentricty_function_g_20q(eccentricity);
+            let mut sum_g_im_k2_over_q:f64 = 0.;
+            let n = orbital_frequency;
+            let t = current_time;
+            let mut integer_q:f64 = -2.;
+            let mut integer_j:f64 = -2.;
+
+            // let im_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.imaginary_part_love_number;
+            // let re_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
+            // let w_lmpq = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;
+            // let nm_data = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
+
+            // println!("\n\tInto Ortho tidal force:");
+            // println!("Ecc {}, semi_maj_axis {} AU, orbital period {} Days", eccentricity, semi_major_axis, orbital_period);
+            // println!("The Star Mass {} Msol, The planet radius {} Rearth, ", tidal_host_particle.mass, particle.radius*AU/6.3781e6 );
+            // panic!("...");
+
+            for q in 0..5{
+                for j in 0..5{
+                    let phase_term =  (integer_q - integer_j)*n*t;
+                    sum_g_im_k2_over_q = sum_g_im_k2_over_q + eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
+                                           * ( phase_term.sin() * particle.tides.parameters.internal.re_love_number_sigma220q[q] + phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] ) ;
+                    integer_j = integer_j +1.;
+                }
+                integer_q = integer_q +1.;
             }
+            //////////////////////////////////////////////////////////////////////////////////
 
             // let sum_g_im_k2_over_q = eccentricity_function[0].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[0] +
             //                         eccentricity_function[1].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[1] +
@@ -751,28 +820,16 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             //                         eccentricity_function[3].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[3] +
             //                         eccentricity_function[4].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[4];
 
-            // for x in 0..5{
-            //     excitative_frequency = sigma_2mpq(2., 0., q, spin, orbital_frequency);
-            //     // excitative_frequency = 2.0* (orbital_frequency - spin) + q*orbital_frequency;
-
-            //     let im_kaula_number = kaula_number(excitative_frequency, nm_data, re_k2, im_k2, w_lmpq);
-            //     sum_g_im_k2_over_q = sum_g_im_k2_over_q + ( eccentricity_function[0][x].powi(2) * im_kaula_number.1 );
-
-            //     // ////println!("The Spin {} and Orbital frequency {} ", spin, orbital_frequency);
-            //     // ////println!("\tThe excitative frequ {} give the im_Kauma_num {}", excitative_frequency, im_kaula_number.1);
-            //     // ////println!("\tThe sum_G*im_k2: {} \t the im_Kaula {}, \t the ecc_function_G {} \n", sum_g_im_k2_over_q, im_kaula_number.1, eccentricity_function[0][x]);
-            //     q+=1.;
-            // }
-
-            //////println!("\t\nThe Total  sum_over_q into TidalTorque {} \n", sum_g_im_k2_over_q );
+            ///////////////////////////////////////////////////////////////////////////////////
 
             tidal_torque_kaula_coplanar[1] = - (3./2.)*( ( G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5) ) / semi_major_axis.powi(6) ) *sum_g_im_k2_over_q;
+
+            particle.tides.parameters.internal.tidal_torque_z = tidal_torque_kaula_coplanar[1];
 
             // println!("\n\tInto tidal Torque:");
             // println!("Ecc {}, semi_maj_axis {} AU, orbital period {} Days", eccentricity, semi_major_axis, orbital_period);
             // println!("The Star Mass {} Msol, The planet radius {} Rearth, ", tidal_host_particle.mass, particle.radius*AU/6.3781e6 );
             // panic!("...");
-
             //////println!("Star mass {}, particle radius {} semi_maj_axis {}",tidal_host_particle.mass, particle.radius, semi_major_axis );
             //////println!("Tidal torque [radial, ortho, azimuth] {:?}",tidal_torque_kaula_coplanar );
 
@@ -871,7 +928,7 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
                 let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
                 //keplerian element return (a, q, eccentricity, i, p, n, l, orbital_period)
                 let semi_major_axis = orbital_elements.0;
-                let eccentricity = orbital_elements.2;
+                let eccentricity = 0.; //orbital_elements.2;
                 let orbital_period = orbital_elements.7;
                 let orbital_frequency = TWO_PI / (orbital_period *DAY) ;
             
@@ -899,27 +956,16 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
                         let phase_term = (integer_q - integer_j)*n*t;
                         sum_over = sum_over + eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] 
                                                 * ( phase_term.sin() * particle.tides.parameters.internal.re_love_number_sigma220q[q] 
-                                                - phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
-
+                                                        - phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
                         integer_j = integer_j +1.;
                         // println!("n° {}     real {}   imaginary {}", q, particle.tides.parameters.internal.re_love_number_sigma220q[q], particle.tides.parameters.internal.im_love_number_sigma220q[q] );
                     }
                     integer_q = integer_q +1.;
                 }
                 particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - (3./2.) *( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
+
                 // println!("Ortho force {}", particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide);
-                // for q in 0..5 {
-                //     for j in 0..5{
-                //         let phase_term = (integer_q - integer_j)*n*t;
-                //         sum_over = eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] * 
-                //                                 ( -phase_term.sin() * particle.tides.parameters.internal.re_love_number_sigma220q[q] + phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
-
-                //         integer_j = integer_j +1.;
-                //     }
-                //     integer_q = integer_q +1.;
-                // }
-                // particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - (3./2.) *( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over
-
                 // let mut excitative_frequency: f64;
                 // let mut sum_over_q = 0.;
                 // let mut q = -2.;
@@ -931,16 +977,6 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
                 //                     eccentricity_function_g_20q[2].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[2]+
                 //                     eccentricity_function_g_20q[3].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[3]+
                 //                     eccentricity_function_g_20q[4].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[4];
-
-                // for x in 0..5{
-                //     excitative_frequency = sigma_2mpq(2., 0., q, spin, orbital_frequency);
-                //     let im_kaula_number = kaula_number(excitative_frequency, nm_data, real_k2, imaginary_k2, w_lmpq);
-                //     //////println!("\tThe excitative frequ {} give the im_Kauma_num {}", excitative_frequency, im_kaula_number.1);
-                //     sum_over_q = sum_over_q +( eccentricity_function[0][x].powf(2.) * im_kaula_number.1 );
-                //     //////println!("\tThe sum_over_q: {} \t the im_Kaula {}, \t the ecc_function_G {} \n", sum_over_q, im_kaula_number.1, eccentricity_function[0][x]);
-                //     q+=1.;
-                // }
-                // //println!("\t\nThe Total  sum_over_q into Ortho tidal force {} \n",sum_over );
 
                 // particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = 0.0; //ORTHO FORCE NULL
             }
@@ -986,7 +1022,7 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
             let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
             //calculate keplerian el return (a, q, eccentricity, i, p, n, l, orbital_period)
             let semi_major_axis = orbital_elements.0;
-            let eccentricity = orbital_elements.2;
+            let eccentricity = 0.; //orbital_elements.2;
 
             let orbital_period = orbital_elements.7;
             let orbital_frequency = TWO_PI / (orbital_period *DAY) ;
@@ -1022,30 +1058,31 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
                 for j in 0..5{
                     let phase_term =  (integer_q - integer_j)*n*t;
                     sum_over = sum_over + (3./4.) * eccentricity_function_g_21q[q] * eccentricity_function_g_21q[j]
-                                           * ( phase_term.cos() * particle.tides.parameters.internal.re_love_number_sigma201q[q] -  phase_term.sin() * particle.tides.parameters.internal.im_love_number_sigma201q[q] )
-                                + (9./4.) * eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
-                                           * ( phase_term.cos()*particle.tides.parameters.internal.re_love_number_sigma220q[q] -  phase_term.sin()*particle.tides.parameters.internal.im_love_number_sigma220q[q] ) ;
+                                           * ( phase_term.cos() * particle.tides.parameters.internal.re_love_number_sigma201q[q] 
+                                                        - phase_term.sin() * particle.tides.parameters.internal.im_love_number_sigma201q[q] )
+                                        + (9./4.) * eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
+                                           * ( phase_term.cos()*particle.tides.parameters.internal.re_love_number_sigma220q[q] 
+                                                        - phase_term.sin()*particle.tides.parameters.internal.im_love_number_sigma220q[q] ) ;
                     integer_j = integer_j +1.;
                 }
                 integer_q = integer_q +1.;
             }
             particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
-            // println!("Radial force {}", particle.tides.parameters.internal.radial_component_of_the_tidal_force);
 
 
             // for q in 0..5{
             //     for j in 0..5{
             //         let phase_term =  (integer_q - integer_j)*n*t;
-            //         let kaula = kaula_number(integer_q*n, nm_data, re_k2, im_k2, w_lmpq );
-            //         sum_over = -(3./4.) *(1./semi_major_axis.powi(3)) *eccentricity_function_g_21q[q]
-            //                                * ( (integer_q*n*t).cos() * kaula.0 + (integer_q*n*t).sin() * kaula.1 )
-            //                     - (9./4.) *(1./particle.heliocentric_distance.powi(3)) * eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
-            //                                * ( phase_term.cos()*particle.tides.parameters.internal.re_love_number_sigma220q[q] + phase_term.sin()*particle.tides.parameters.internal.im_love_number_sigma220q[q] ) ;
+            //         sum_over = sum_over + (3./4.) * eccentricity_function_g_21q[q] * eccentricity_function_g_21q[j]
+            //                                * (  - phase_term.sin() * particle.tides.parameters.internal.im_love_number_sigma201q[q] )
+            //                             + (9./4.) * eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
+            //                                * ( - phase_term.sin()*particle.tides.parameters.internal.im_love_number_sigma220q[q] ) ;
             //         integer_j = integer_j +1.;
             //     }
             //     integer_q = integer_q +1.;
             // }
-            // particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(3) * particle.heliocentric_distance) ) * sum_over;
+            // particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
 
             // let sum_over_q = - (3./4.)*( eccentricity_function_g_21q[0].powi(2) * particle.tides.parameters.internal.re_love_number_sigma220_2 +
             //                                 eccentricity_function_g_21q[1].powi(2) * particle.tides.parameters.internal.re_love_number_sigma220_1 +
@@ -1058,21 +1095,6 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
             //                                 eccentricity_function_g_20q[3].powi(2) * particle.tides.parameters.internal.re_love_number_sigma2201 +
             //                                 eccentricity_function_g_20q[4].powi(2) * particle.tides.parameters.internal.re_love_number_sigma2202 
             //                             );
-
-            // for x in 0..5{ 
-            //     excitative_frequency = sigma_2mpq(0., 1., q, spin, orbital_frequency);
-            //     let mut real_kaula_number = kaula_number(excitative_frequency, nm_data, real_k2, imaginary_k2, w_lmpq);
-            //     //////println!("\tThe sigma201q_excit_frequ {} give the real_Kauma_num {}", excitative_frequency, real_kaula_number.0);
-            //     sum_over_q = sum_over_q -(3./4.)*( eccentricity_function[1][x].powf(2.) * real_kaula_number.0 );
-            //     excitative_frequency = sigma_2mpq(2., 0., q, spin, orbital_frequency);
-            //     real_kaula_number = kaula_number( excitative_frequency, nm_data, real_k2, imaginary_k2, w_lmpq );
-            //     //////println!("\tThe sigma220q_excit_frequ {} give the real_Kaula_num {}", excitative_frequency, real_kaula_number.0);
-            //     sum_over_q = sum_over_q +(9./4.)*( eccentricity_function[0][x].powf(2.) * real_kaula_number.0 );
-            //     //////println!("\tThe sum_over_q {} \t the Re_Kaula {}, \t the ecc_function_g {} \n ", sum_over_q, real_kaula_number.0, eccentricity_function[0][x]);
-            //     q+=1.;
-            // }
-            // //println!("\t\nThe Total sum_over_q into Radial tidal force {} \n",sum_over );
-
             
             // particle.tides.parameters.internal.radial_component_of_the_tidal_force = 0.0; //RADIAL FORCE NULL
         }
@@ -1191,10 +1213,10 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
         //particle.tides.parameters.output.acceleration.y += factor2 * sum_total_tidal_force.y;
         //particle.tides.parameters.output.acceleration.z += factor2 * sum_total_tidal_force.z;
     //}
-    // Instead of the previous code, keep star tidal acceleration separated:
-    tidal_host_particle.tides.parameters.output.acceleration.x = -1.0 * factor2 * sum_total_tidal_force.x;
-    tidal_host_particle.tides.parameters.output.acceleration.y = -1.0 * factor2 * sum_total_tidal_force.y;
-    tidal_host_particle.tides.parameters.output.acceleration.z = -1.0 * factor2 * sum_total_tidal_force.z;
+    // Instead of the previous code, keep star tidal acceleration separated:==================================================IS HEre?
+    // tidal_host_particle.tides.parameters.output.acceleration.x = -1.0 * factor2 * sum_total_tidal_force.x;
+    // tidal_host_particle.tides.parameters.output.acceleration.y = -1.0 * factor2 * sum_total_tidal_force.y;
+    // tidal_host_particle.tides.parameters.output.acceleration.z = -1.0 * factor2 * sum_total_tidal_force.z;
     // println!("The sum_total_force {:?}", tidal_host_particle.tides.parameters.output.acceleration);
 
     
@@ -1327,8 +1349,8 @@ pub fn kaula_number(wk2:f64, _nm_data:f64, real_part_love_number: [[f64;32];32],
         im_k2 = imaginary_part_love_number[14][12];
     } else if w_k2 > love_number_excitation_frequency[13][31] {
         if ctrl && love_number_excitation_frequency[14][0] > w_k2 {
-            re_k2 = real_part_love_number[14][0] + (real_part_love_number[14][0] - real_part_love_number[14-1][31] )/2.;
-            im_k2 = imaginary_part_love_number[14][0] + (imaginary_part_love_number[14][0] - imaginary_part_love_number[14-1][31] )/2.;
+            re_k2 = real_part_love_number[14][0]        + (real_part_love_number[14][0]         - real_part_love_number[14-1][31] )     /2.;
+            im_k2 = imaginary_part_love_number[14][0]   + (imaginary_part_love_number[14][0]    - imaginary_part_love_number[14-1][31] )/2.;
         } else if ctrl {
             for frequency2 in 0..13{
                 if ctrl && love_number_excitation_frequency[14][frequency2] >= w_k2 {
@@ -1338,8 +1360,8 @@ pub fn kaula_number(wk2:f64, _nm_data:f64, real_part_love_number: [[f64;32];32],
                         ctrl = false;
                         break;
                     } else if ctrl {
-                        re_k2 = real_part_love_number[14][frequency2-1] + (real_part_love_number[14][frequency2] - real_part_love_number[14][frequency2-1])/2.;
-                        im_k2 = imaginary_part_love_number[14][frequency2-1] + (imaginary_part_love_number[14][frequency2] - imaginary_part_love_number[14][frequency2-1])/2.;
+                        re_k2 = real_part_love_number[14][frequency2-1]         + (real_part_love_number[14][frequency2]        - real_part_love_number[14][frequency2-1])      /2.;
+                        im_k2 = imaginary_part_love_number[14][frequency2-1]    + (imaginary_part_love_number[14][frequency2]   - imaginary_part_love_number[14][frequency2-1]) /2.;
                         // re_k2 = real_part_love_number[14][frequency2-1] + (real_part_love_number[14][2] - real_part_love_number[14][1])/2.;
                         // im_k2 = imaginary_part_love_number[14][1] + (imaginary_part_love_number[14][2] - imaginary_part_love_number[14][1])/2.;
                         // //println!("\n \n Find {}, with {} <-> {}  ", im_k2, imaginary_part_love_number[14][frequency2], imaginary_part_love_number[14][frequency2-1]);
@@ -1358,8 +1380,8 @@ pub fn kaula_number(wk2:f64, _nm_data:f64, real_part_love_number: [[f64;32];32],
             if ctrl && love_number_excitation_frequency[frequency1][31] > w_k2 {
                 // //println!("the firts {}", love_number_excitation_frequency[frequency1][31]);
                 if ctrl && love_number_excitation_frequency[frequency1][0] > w_k2 {
-                    re_k2 = real_part_love_number[frequency1][0] + (real_part_love_number[frequency1][0] - real_part_love_number[frequency1 -1][31] )/2.;
-                    im_k2 = imaginary_part_love_number[frequency1][0] + (imaginary_part_love_number[frequency1][0] - imaginary_part_love_number[frequency1 -1][31] )/2.;
+                    re_k2 = real_part_love_number[frequency1][0]        + (real_part_love_number[frequency1][0]         - real_part_love_number[frequency1 -1][31] )        /2.;
+                    im_k2 = imaginary_part_love_number[frequency1][0]   + (imaginary_part_love_number[frequency1][0]    - imaginary_part_love_number[frequency1 -1][31] )   /2.;
                 } else if ctrl {
                     for frequency2 in 0..love_number_excitation_frequency.len(){
                         if ctrl && love_number_excitation_frequency[frequency1][frequency2] >= w_k2 { 
@@ -1370,9 +1392,10 @@ pub fn kaula_number(wk2:f64, _nm_data:f64, real_part_love_number: [[f64;32];32],
                                 break;
                             }
                             else if ctrl { 
-                                re_k2 = real_part_love_number[frequency1][frequency2-1] + (real_part_love_number[frequency1][frequency2] - real_part_love_number[frequency1][frequency2-1])/2.;
-                                im_k2 = imaginary_part_love_number[frequency1][frequency2-1] + (imaginary_part_love_number[frequency1][frequency2] - imaginary_part_love_number[frequency1][frequency2-1])/2.;
-                                // //println!("\n \n Find {}, with {} <-> {}  ", im_k2, imaginary_part_love_number[frequency1][frequency2], imaginary_part_love_number[frequency1][frequency2-1]);
+                                re_k2 = real_part_love_number[frequency1][frequency2-1]         + (real_part_love_number[frequency1][frequency2]        - real_part_love_number[frequency1][frequency2-1])      /2.;
+                                im_k2 = imaginary_part_love_number[frequency1][frequency2-1]    + (imaginary_part_love_number[frequency1][frequency2]   - imaginary_part_love_number[frequency1][frequency2-1]) /2.;
+                                // println!("\n \n Find Imk2 {}, with {} <-> {}  ", im_k2, imaginary_part_love_number[frequency1][frequency2], imaginary_part_love_number[frequency1][frequency2-1]);
+                                // println!("\n \n Find ReK2 {}, with {} <-> {}  ", re_k2, real_part_love_number[frequency1][frequency2], real_part_love_number[frequency1][frequency2-1]);
                                 ctrl = false;
                                 break;
                             }
@@ -1388,6 +1411,11 @@ pub fn kaula_number(wk2:f64, _nm_data:f64, real_part_love_number: [[f64;32];32],
     }
     if parity {
         im_k2 = -im_k2;
+        re_k2 = -re_k2;
+    }
+    if w_k2!=0. && im_k2==0. {
+        println!("Frequ {} \t ImK2 {}", wk2, im_k2);
+        panic!("=================================")
     }
     // println!("The two number RE:{}  Im:{}\n", re_k2, im_k2);
     return (re_k2*1., im_k2*1.)

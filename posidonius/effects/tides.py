@@ -50,17 +50,19 @@ class Tides(object):
                     "spin": 0.,
                     "orbital_frequency": 0.,
 
-                    # "sigma220_2_excitative_frequency":0.,
-                    # "sigma220_1_excitative_frequency":0.,
-                    "sigma2200_excitative_frequency":0.,
-                    # "sigma2201_excitative_frequency":0.,
-                    # "sigma2202_excitative_frequency":0.,
+                    "tidal_torque_z":0.,
 
-                    # "im_love_number_sigma220_2": 0.,
-                    # "im_love_number_sigma220_1": 0.,
+                    "sigma220_2_excitative_frequency":0.,
+                    "sigma220_1_excitative_frequency":0.,
+                    "sigma2200_excitative_frequency":0.,
+                    "sigma2201_excitative_frequency":0.,
+                    "sigma2202_excitative_frequency":0.,
+
+                    "im_love_number_sigma220_2": 0.,
+                    "im_love_number_sigma220_1": 0.,
                     "im_love_number_sigma2200": 0.,
-                    # "im_love_number_sigma2201": 0.,
-                    # "im_love_number_sigma2202": 0.,
+                    "im_love_number_sigma2201": 0.,
+                    "im_love_number_sigma2202": 0.,
                 
                     # "re_love_number_sigma220_2": 0.,
                     # "re_love_number_sigma220_1": 0.,

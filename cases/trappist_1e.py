@@ -17,9 +17,9 @@ if __name__ == "__main__":
     #time_step = 0.05 # days
     #time_limit   = 4*time_step # days
     #time_limit   = 365.25 * 1.0e8 # days
-    time_limit   =  365.25 * 1e10 #365.25 * 1.0e6 # days
-    historic_snapshot_period = 10*365.25 #100.*365.25 # days
-    recovery_snapshot_period = 100.*historic_snapshot_period # days
+    time_limit   =  365.25 * 2e5  #365.25 * 1e10 #365.25 * 1.0e6 # days
+    historic_snapshot_period = 500.*365.25 #100.*365.25 # days
+    recovery_snapshot_period = 10.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
         "rotational_flattening": True,
@@ -191,15 +191,18 @@ if __name__ == "__main__":
     planet_i = 0.0
     planet_inclination = 0.0
     planet_obliquity = 0.0
-    e = 0.0051 #0.07 #========================================================================================================ECC
+    e = 0.00 #0.07 #========================================================================================================ECC
     planet_a = 0.02928# 0.02817 #0.015 #0.02817 #AU ==========================================================================SemiMaj 
-    planet_masses = 0.772 * 5.973e24/1.989e30 #1.898e27/1.989e30 #1.8850689e-06 #2.98e-6 # Mearth in  Msol ===================PLanetMass
+    planet_masses = 0.772 * 5.9736E+24/1.9818e30 #1.898e27/1.989e30 #1.8850689e-06 #2.98e-6 # Mearth in  Msol ===================PLanetMass
+
     planet_angular_frequency = posidonius.constants.TWO_PI/(5./12.) #TEST 1. Days#(5/12) #10 hours periods in day ===============PlanetSpin
+    # planet_angular_frequency = posidonius.constants.TWO_PI / 6.144379741742022 #TEST Pseudosyncrho in rad/Days================================================PlanetSpin
+    print("Verif angular frequency",posidonius.constants.TWO_PI/planet_angular_frequency )
 
     planet_mass = planet_masses # m # Solar masses (3.0e-6 solar masses = 1 earth mass)
     planet_radius_factor = planet_radiuses # r # R Earth
     planet_radius = planet_radius_factor * posidonius.constants.R_EARTH
-    planet_radius_of_gyration = planet_gyration_radius # 5.75e-01
+    planet_radius_of_gyration = np.sqrt( planet_gyration_radius ) # 5.75e-01
     a = planet_a
     i = planet_i
     l = planet_l
@@ -352,7 +355,7 @@ if __name__ == "__main__":
     #whfast_alternative_coordinates="WHDS"
     #whfast_alternative_coordinates="Jacobi"
     universe.write(filename, integrator="WHFast", whfast_alternative_coordinates=whfast_alternative_coordinates)
-    #universe.write(filename, integrator="IAS15")
+    # universe.write(filename, integrator="IAS15")
     #universe.write(filename, integrator="LeapFrog")
 
 

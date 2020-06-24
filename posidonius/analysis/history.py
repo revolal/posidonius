@@ -20,12 +20,13 @@ def read(filename):
 
     # fields = ('current_time', 'time_step', 'particle', 'position_x', 'position_y', 'position_z', 'spin_x', 'spin_y', 'spin_z', 'velocity_x', 'velocity_y', 'velocity_z', 'mass', 'radius', 'radius_of_gyration_2', 'love_number', 'scaled_dissipation_factor', 'lag_angle', 'denergy_dt', 'migration_timescale', 'sigma_excitative_frequency', )
     fields = ('current_time', 'time_step', 'particle', 'position_x', 'position_y', 'position_z', 'spin_x', 'spin_y', 'spin_z', 'velocity_x', 'velocity_y', 'velocity_z', 'mass', 'radius', 'radius_of_gyration_2',
-                'love_number', 'scaled_dissipation_factor', 'lag_angle', 'denergy_dt', 'migration_timescale',
+                'love_number', 'scaled_dissipation_factor', 'lag_angle', 'denergy_dt', 'migration_timescale', #20 arguments
                 'a', 'spin', 'orbital_frequency',
+                'tidal_torque_z','orthogonal_component_of_the_tidal_force_due_to_planetary_tide', 'radial_component_of_the_tidal_force', #26 
                 'acceleration_x', 'acceleration_y', 'acceleration_z',
-                'dangular_momentum_dt_x', 'dangular_momentum_dt_y', 'dangular_momentum_dt_z', 'sigma2200_excitative_frequency','im_love_number_sigma2200')
-                # 'sigma220_2_excitative_frequency', 'sigma220_1_excitative_frequency', 'sigma2200_excitative_frequency', 'sigma2201_excitative_frequency', 'sigma2202_excitative_frequency', 
-                # 'im_love_number_sigma220_2', 'im_love_number_sigma220_1', 'im_love_number_sigma2200', 'im_love_number_sigma2201', 'im_love_number_sigma2202', 
+                'dangular_momentum_dt_x', 'dangular_momentum_dt_y', 'dangular_momentum_dt_z', #32 arguments
+                'sigma220_2_excitative_frequency', 'sigma220_1_excitative_frequency', 'sigma2200_excitative_frequency', 'sigma2201_excitative_frequency', 'sigma2202_excitative_frequency', 
+                'im_love_number_sigma220_2', 'im_love_number_sigma220_1', 'im_love_number_sigma2200', 'im_love_number_sigma2201', 'im_love_number_sigma2202', ) #42 arguments
                 # 're_love_number_sigma220_2', 're_love_number_sigma220_1', 're_love_number_sigma2200', 're_love_number_sigma2201', 're_love_number_sigma2202', )
 
     data = []

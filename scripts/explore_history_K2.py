@@ -10,7 +10,7 @@ import posidonius
 import json
 
 if __name__ == "__main__":
-    print("\n \t Explore Frequency CTRL")
+    print("\n \t Explore IM K2")
     parser = argparse.ArgumentParser()
     parser.add_argument('start_case_filename', action='store', help='Filename with the initial conditions of the simulation (e.g., universe_integrator.json)')
     parser.add_argument('historic_snapshot_filename', action='store', help='Filename with the historic snapshots of the simulation (e.g., universe_integrator_history.bin)')
@@ -127,18 +127,6 @@ if __name__ == "__main__":
         planet_angular_frequency_pseudo_rot = posidonius.constants.TWO_PI/(planet_pseudo_synchronization_period) # days^-1
 
         if universe_integrator_json['universe']['consider_effects']['tides']:
-
-            planet_computed_data['tidal_torque_z'] = planet_data['tidal_torque_z']
-            planet_computed_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide'] = planet_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide']
-            planet_computed_data['radial_component_of_the_tidal_force'] = planet_data['radial_component_of_the_tidal_force']
-
-            planet_computed_data['dangular_momentum_dt_x'] = planet_data['dangular_momentum_dt_x']
-            planet_computed_data['dangular_momentum_dt_y'] = planet_data['dangular_momentum_dt_y']
-            planet_computed_data['dangular_momentum_dt_z'] = planet_data['dangular_momentum_dt_z']
-
-            planet_computed_data['acceleration_x'] = planet_data['acceleration_x']
-            planet_computed_data['acceleration_y'] = planet_data['acceleration_y']
-            planet_computed_data['acceleration_z'] = planet_data['acceleration_z']
 
             planet_computed_data['spin'] = planet_data['spin']
             planet_computed_data['orbital_frequency'] = planet_data['orbital_frequency']
@@ -343,202 +331,171 @@ if __name__ == "__main__":
             Tab_ImK2[k, i-k*Tab_size] = ImK2[i]
 
 
+    # planet_data['sigma220_2_excitative_frequency']
+    # planet_data['sigma220_1_excitative_frequency']
+    # planet_data['sigma2200_excitative_frequency']
+    # planet_data['sigma2201_excitative_frequency']
+    # planet_data['sigma2202_excitative_frequency']
+    # planet_data['im_love_number_sigma220_2']
+    # planet_data['im_love_number_sigma220_1']
+    # planet_data['im_love_number_sigma2200']
+    # planet_data['im_love_number_sigma2201']
+    # planet_data['im_love_number_sigma2202']
 
     print("preparing plot...")
     fig = plt.figure(figsize=(25, 20))
-    ligne = 3
-    colonne = 2
+    ligne = 5
+    colonne = 1
     i=0
 
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
+        ax.scatter( abs(planets_computed_data[key]['sigma220_2_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma220_2']), marker='+', label='220-2 \n -2 $\Omega$', color = 'red')
+    ax.set_ylabel("")
+    #ax.set_ylim([0.005, 0.028])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+    # i=i+1
+    # ax = fig.add_subplot(ligne,colonne,i)
+    # field = ''
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     ax.scatter(planet_data['current_time'],abs(planets_computed_data[key]['sigma220_2_excitative_frequency']), label='220-2 \n -2 $\Omega$', color = 'red')
+    # ax.set_ylabel("")
+    # #ax.set_ylim([0.005, 0.028])
+    # ax.set_xscale('log')
+    # ax.set_xlim(right=1.)
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+#==================================================================================================================================================================
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
+        ax.scatter(abs(planets_computed_data[key]['sigma220_1_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma220_1']), marker='+', label='220-1 \n n -2 $\Omega$', color = 'red')
+    ax.set_ylabel("")
+    #ax.set_ylim([0.005, 0.028])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+    # i=i+1
+    # ax = fig.add_subplot(ligne,colonne,i)
+    # field = ''
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     ax.scatter(planet_data['current_time'],abs(planets_computed_data[key]['sigma220_1_excitative_frequency']),  label='220-1 \n n -2 $\Omega$', color = 'red')
+    # ax.set_ylabel("")
+    # #ax.set_ylim([0.005, 0.028])
+    # ax.set_xscale('log')
+    # ax.set_xlim(right=1.)
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+#==================================================================================================================================================================
 
     i=i+1
     ax = fig.add_subplot(ligne,colonne,i)
     field = ''
     for key in planets_keys:
         planet_data = planets_data[key]
-        #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-        ax.scatter( planet_data['current_time'],planet_data['tidal_torque_z'] , label='Tidal Torque Z', color = 'red')
+        ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
+        ax.scatter(abs(planets_computed_data[key]['sigma2200_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma2200']), marker='+', label='2200 \n 2n -2$\Omega$', color = 'red')
     ax.set_ylabel("")
     #ax.set_ylim([0.005, 0.028])
     ax.set_xscale('log')
-    #ax.set_xlim(right=1.)
+    ax.set_xlim(right=1.)
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
+    # i=i+1
+    # ax = fig.add_subplot(ligne,colonne,i)
+    # field = ''
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     ax.scatter(planet_data['current_time'],abs(planets_computed_data[key]['sigma2200_excitative_frequency']),  label='2200 \n 2n -2$\Omega$', color = 'red')
+    # ax.set_ylabel("")
+    # #ax.set_ylim([0.005, 0.028])
+    # ax.set_xscale('log')
+    # ax.set_xlim(right=1.)
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+#==================================================================================================================================================================
 
     i=i+1
     ax = fig.add_subplot(ligne,colonne,i)
     field = ''
     for key in planets_keys:
         planet_data = planets_data[key]
-        #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-        ax.scatter( planet_data['current_time'], planet_data['spin_x'] , label='spin_x', color = 'red')
+        ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
+        ax.scatter(abs(planets_computed_data[key]['sigma2201_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma2201']), marker='+', label='2201 \n 3n -2 $\Omega$', color = 'red')
     ax.set_ylabel("")
     #ax.set_ylim([0.005, 0.028])
     ax.set_xscale('log')
-    #ax.set_xlim(right=1.)
+    ax.set_xlim(right=1.)
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-###########################################################################
+    # i=i+1
+    # ax = fig.add_subplot(ligne,colonne,i)
+    # field = ''
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     ax.scatter(planet_data['current_time'],abs(planets_computed_data[key]['sigma2201_excitative_frequency']),  label='2201 \n 3n -2 $\Omega$', color = 'red')
+    # ax.set_ylabel("")
+    # #ax.set_ylim([0.005, 0.028])
+    # ax.set_xscale('log')
+    # ax.set_xlim(right=1.)
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+#==================================================================================================================================================================
 
     i=i+1
     ax = fig.add_subplot(ligne,colonne,i)
     field = ''
     for key in planets_keys:
         planet_data = planets_data[key]
-        #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-        ax.scatter( planet_data['current_time'],planet_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide'] , label='Ortho Force', color = 'red')
+        ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
+        ax.scatter(abs(planets_computed_data[key]['sigma2202_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma2202']), marker='+', label='2202 \n 4n -2$\Omega$', color = 'red')
     ax.set_ylabel("")
     #ax.set_ylim([0.005, 0.028])
     ax.set_xscale('log')
-    #ax.set_xlim(right=1.)
+    ax.set_xlim(right=1.)
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-    i=i+1
-    ax = fig.add_subplot(ligne,colonne,i)
-    field = ''
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-        ax.scatter( planet_data['current_time'], planet_data['spin_y'] , label='spin_y', color = 'red')
-    ax.set_ylabel("")
-    #ax.set_ylim([0.005, 0.028])
-    ax.set_xscale('log')
-    #ax.set_xlim(right=1.)
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-###########################################################################
+    # i=i+1
+    # ax = fig.add_subplot(ligne,colonne,i)
+    # field = ''
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     ax.scatter(planet_data['current_time'],abs(planets_computed_data[key]['sigma2202_excitative_frequency']),  label='2202 \n 4n -2$\Omega$', color = 'red')
+    # ax.set_ylabel("")
+    # #ax.set_ylim([0.005, 0.028])
+    # ax.set_xscale('log')
+    # ax.set_xlim(right=1.)
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+#==================================================================================================================================================================
 
 
-    i=i+1
-    ax = fig.add_subplot(ligne,colonne,i)
-    field = ''
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-        ax.scatter( planet_data['current_time'],planet_data['radial_component_of_the_tidal_force'] , label='Radial Force', color = 'red')
-    ax.set_ylabel("")
-    #ax.set_ylim([0.005, 0.028])
-    ax.set_xscale('log')
-    #ax.set_xlim(right=1.)
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-
-    i=i+1
-    ax = fig.add_subplot(ligne,colonne,i)
-    field = ''
-    for key in planets_keys:
-        planet_data = planets_data[key]
-        #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-        ax.scatter( planet_data['current_time'], planet_data['spin_z'] , label='spin_z', color = 'red')
-    ax.set_ylabel("")
-    #ax.set_ylim([0.005, 0.028])
-    ax.set_xscale('log')
-    #ax.set_xlim(right=1.)
-    ax.legend(loc=0, prop={'size':8})
-    #plt.setp(ax.get_xticklabels(), visible=False)
-
-###########################################################################
-
-
-
-#     i=i+1
-#     ax = fig.add_subplot(ligne,colonne,i)
-#     field = ''
-#     for key in planets_keys:
-#         planet_data = planets_data[key]
-#         #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-#         ax.scatter( planet_data['current_time'],planets_computed_data[key]['dangular_momentum_dt_x'] , label='Da_Dt_x', color = 'red')
-#     ax.set_ylabel("")
-#     #ax.set_ylim([0.005, 0.028])
-#     ax.set_xscale('log')
-#     #ax.set_xlim(right=1.)
-#     ax.legend(loc=0, prop={'size':8})
-#     #plt.setp(ax.get_xticklabels(), visible=False)
-
-#     i=i+1
-#     ax = fig.add_subplot(ligne,colonne,i)
-#     field = ''
-#     for key in planets_keys:
-#         planet_data = planets_data[key]
-#         #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-#         ax.scatter( planet_data['current_time'],planets_computed_data[key]['acceleration_x'] , label='acc_x', color = 'red')
-#     ax.set_ylabel("")
-#     #ax.set_ylim([0.005, 0.028])
-#     ax.set_xscale('log')
-#     #ax.set_xlim(right=1.)
-#     ax.legend(loc=0, prop={'size':8})
-#     #plt.setp(ax.get_xticklabels(), visible=False)
-# ######################################################################################################################
-#     i=i+1
-#     ax = fig.add_subplot(ligne,colonne,i)
-#     field = ''
-#     for key in planets_keys:
-#         planet_data = planets_data[key]
-#         #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-#         ax.scatter( planet_data['current_time'],planets_computed_data[key]['dangular_momentum_dt_y'] , label='Da_Dt_y', color = 'red')
-#     ax.set_ylabel("")
-#     #ax.set_ylim([0.005, 0.028])
-#     ax.set_xscale('log')
-#     #ax.set_xlim(right=1.)
-#     ax.legend(loc=0, prop={'size':8})
-#     #plt.setp(ax.get_xticklabels(), visible=False)
-
-#     i=i+1
-#     ax = fig.add_subplot(ligne,colonne,i)
-#     field = ''
-#     for key in planets_keys:
-#         planet_data = planets_data[key]
-#         #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-#         ax.scatter( planet_data['current_time'],planets_computed_data[key]['acceleration_y'] , label='acc_y', color = 'red')
-#     ax.set_ylabel("")
-#     #ax.set_ylim([0.005, 0.028])
-#     ax.set_xscale('log')
-#     #ax.set_xlim(right=1.)
-#     ax.legend(loc=0, prop={'size':8})
-#     #plt.setp(ax.get_xticklabels(), visible=False)
-# ######################################################################################################################
-#     i=i+1
-#     ax = fig.add_subplot(ligne,colonne,i)
-#     field = ''
-#     for key in planets_keys:
-#         planet_data = planets_data[key]
-#         #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-#         ax.scatter( planet_data['current_time'],planets_computed_data[key]['dangular_momentum_dt_z'] , label='Da_Dt_z', color = 'red')
-#     ax.set_ylabel("")
-#     #ax.set_ylim([0.005, 0.028])
-#     ax.set_xscale('log')
-#     #ax.set_xlim(right=1.)
-#     ax.legend(loc=0, prop={'size':8})
-#     #plt.setp(ax.get_xticklabels(), visible=False)
-
-    
-#     i=i+1
-#     ax = fig.add_subplot(ligne,colonne,i)
-#     field = ''
-#     for key in planets_keys:
-#         planet_data = planets_data[key]
-#         #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-#         ax.scatter( planet_data['current_time'],planets_computed_data[key]['acceleration_z'] , label='axx_z', color = 'red')
-#     ax.set_ylabel("")
-#     #ax.set_ylim([0.005, 0.028])
-#     ax.set_xscale('log')
-#     #ax.set_xlim(right=1.)
-#     ax.legend(loc=0, prop={'size':8})
-#     #plt.setp(ax.get_xticklabels(), visible=False)
-
-#     # plt.show()
-#     plt.tight_layout()
+    # plt.show()
+    plt.tight_layout()
 
     output_figure_dirname = os.path.dirname(filename)
-    output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_CTRL.png")
+    output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "lovenumber.png")
     plt.savefig(output_figure_filename)
 
-# ######################################################################################################################
+######################################################################################################################
 
 
 
