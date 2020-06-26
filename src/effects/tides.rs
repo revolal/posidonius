@@ -780,39 +780,39 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
                 // }
             }
 
-            ///////////////////////////////////////////////////////////////////////////////////////
-            // let mut sum_g_im_k2_over_q:f64=0.;
-            // for x in 0..5{
-            //     sum_g_im_k2_over_q = sum_g_im_k2_over_q + ( eccentricity_function[x].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[x] ) ;
-            // }
-            ///////////////////////////////////////////////////////////////////////////////////////
-            let eccentricity_function_g_20q = eccentricty_function_g_20q(eccentricity);
-            let mut sum_g_im_k2_over_q:f64 = 0.;
-            let n = orbital_frequency;
-            let t = current_time;
-            let mut integer_q:f64 = -2.;
-            let mut integer_j:f64 = -2.;
-
-            // let im_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.imaginary_part_love_number;
-            // let re_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
-            // let w_lmpq = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;
-            // let nm_data = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
-
-            // println!("\n\tInto Ortho tidal force:");
-            // println!("Ecc {}, semi_maj_axis {} AU, orbital period {} Days", eccentricity, semi_major_axis, orbital_period);
-            // println!("The Star Mass {} Msol, The planet radius {} Rearth, ", tidal_host_particle.mass, particle.radius*AU/6.3781e6 );
-            // panic!("...");
-
-            for q in 0..5{
-                for j in 0..5{
-                    let phase_term =  (integer_q - integer_j)*n*t;
-                    sum_g_im_k2_over_q = sum_g_im_k2_over_q + eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
-                                           * ( phase_term.sin() * particle.tides.parameters.internal.re_love_number_sigma220q[q] + phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] ) ;
-                    integer_j = integer_j +1.;
-                }
-                integer_q = integer_q +1.;
+            /////////////////////////////////////////////////////////////////////////////////////
+            let mut sum_g_im_k2_over_q:f64=0.;
+            for x in 0..5{
+                sum_g_im_k2_over_q = sum_g_im_k2_over_q + ( eccentricity_function[x].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[x] ) ;
             }
-            //////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////////////
+            // let eccentricity_function_g_20q = eccentricty_function_g_20q(eccentricity);
+            // let mut sum_g_im_k2_over_q:f64 = 0.;
+            // let n = orbital_frequency;
+            // let t = current_time;
+            // let mut integer_q:f64 = -2.;
+            // let mut integer_j:f64 = -2.;
+
+            // // let im_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.imaginary_part_love_number;
+            // // let re_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
+            // // let w_lmpq = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;
+            // // let nm_data = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
+
+            // // println!("\n\tInto Ortho tidal force:");
+            // // println!("Ecc {}, semi_maj_axis {} AU, orbital period {} Days", eccentricity, semi_major_axis, orbital_period);
+            // // println!("The Star Mass {} Msol, The planet radius {} Rearth, ", tidal_host_particle.mass, particle.radius*AU/6.3781e6 );
+            // // panic!("...");
+
+            // for q in 0..5{
+            //     for j in 0..5{
+            //         let phase_term =  (integer_q - integer_j)*n*t;
+            //         sum_g_im_k2_over_q = sum_g_im_k2_over_q + eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
+            //                                * ( phase_term.sin() * particle.tides.parameters.internal.re_love_number_sigma220q[q] + phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] ) ;
+            //         integer_j = integer_j +1.;
+            //     }
+            //     integer_q = integer_q +1.;
+            // }
+            // //////////////////////////////////////////////////////////////////////////////////
 
             // let sum_g_im_k2_over_q = eccentricity_function[0].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[0] +
             //                         eccentricity_function[1].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[1] +
