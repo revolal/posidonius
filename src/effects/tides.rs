@@ -628,7 +628,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
             //it return (a, q, eccentricity, i, p, n, l, orbital_period)
             let semi_major_axis = orbital_elements.0;
-            let eccentricity = orbital_elements.2; // ================================================================================================================================
+            let eccentricity = 0.;//orbital_elements.2; // ================================================================================================================================
 
             let orbital_period = (TWO_PI/ (G*(tidal_host_particle.mass+particle.mass)).sqrt()) * semi_major_axis.powf(3./2.);
             // let orbital_period = orbital_elements.7; //in [s]
@@ -928,7 +928,7 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
                 let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
                 //keplerian element return (a, q, eccentricity, i, p, n, l, orbital_period)
                 let semi_major_axis = orbital_elements.0;
-                let eccentricity = orbital_elements.2;
+                let eccentricity = 0.;//orbital_elements.2;
                 let orbital_period = orbital_elements.7;
                 let orbital_frequency = TWO_PI / (orbital_period *DAY) ;
             
@@ -1030,7 +1030,7 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
             let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
             //calculate keplerian el return (a, q, eccentricity, i, p, n, l, orbital_period)
             let semi_major_axis = orbital_elements.0;
-            let eccentricity = orbital_elements.2;
+            let eccentricity = 0.;//orbital_elements.2;
 
             let orbital_period = orbital_elements.7;
             let orbital_frequency = TWO_PI / (orbital_period *DAY) ;
@@ -1309,7 +1309,15 @@ pub fn kaula_number(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], 
     let mut parity = false;
     let nm_data = nm_data as usize;
     let last_colunm:usize = nm_data%32;
-    let last_line:usize = (nm_data-(nm_data%32))/32-2;
+    let last_line:usize = (nm_data-(nm_data%32))/32;
+
+
+    println!("Nmbre {} de points", nm_data);
+    println!("CTRL {} AND {} OK",last_colunm,last_line );
+    println!(" Last {} FRIST {}",love_number_excitation_frequency[last_colunm][last_line],love_number_excitation_frequency[0][0]);
+
+    // let last_colunm:usize = 14;
+    // let last_line:usize = 12;
 
     // //println!("NUM {}", nm_data);
     // //println!("TEST{} {}", nm_data%32., nm_data - (nm_data %32.)*32.);
@@ -1331,7 +1339,6 @@ pub fn kaula_number(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], 
         // //println!("\tThe new wk2 {}", w_k2);
     }
 
-
     // // ////println!("Ctrl de ses mort:\n IM  First {} End {} \n RE First {} End {} \n Frequ First {} End {}",imaginary_part_love_number[0][0], imaginary_part_love_number[last_colunm][11], real_part_love_number[0][0], real_part_love_number[last_colunm][11], love_number_excitation_frequency[0][0], love_number_excitation_frequency[last_colunm][11] );
     // if w_k2 < love_number_excitation_frequency[0][0] { //HAVE TO CHANGE THIS CONDITION
     //     re_k2 = real_part_love_number[0][0];
@@ -1344,10 +1351,12 @@ pub fn kaula_number(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], 
     if w_k2 > love_number_excitation_frequency[last_colunm][last_line] {
         re_k2 = real_part_love_number[last_colunm][last_line];
         im_k2 = imaginary_part_love_number[last_colunm][last_line];
-    } else if w_k2 > love_number_excitation_frequency[13][31] {
-        if ctrl && love_number_excitation_frequency[last_colunm][0] > w_k2 {
+        ctrl = false;
+    } else if w_k2 > love_number_excitation_frequency[last_colunm-1][31] {
+        if ctrl && w_k2 < love_number_excitation_frequency[last_colunm][0] {
             re_k2 = real_part_love_number[last_colunm][0]        + (real_part_love_number[last_colunm][0]         - real_part_love_number[last_colunm-1][31] )     /2.;
             im_k2 = imaginary_part_love_number[last_colunm][0]   + (imaginary_part_love_number[last_colunm][0]    - imaginary_part_love_number[last_colunm-1][31] )/2.;
+            ctrl = false;
         } else if ctrl {
             for frequency2 in 0..13{
                 if ctrl && love_number_excitation_frequency[last_colunm][frequency2] >= w_k2 {
@@ -1372,7 +1381,7 @@ pub fn kaula_number(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], 
             }
         }
     } else {
-        for frequency1 in 0..love_number_excitation_frequency.len()-1{
+        for frequency1 in 0..love_number_excitation_frequency.len(){
             // //println!("here?");
             if ctrl && love_number_excitation_frequency[frequency1][31] > w_k2 {
                 // //println!("the firts {}", love_number_excitation_frequency[frequency1][31]);
@@ -1411,9 +1420,10 @@ pub fn kaula_number(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], 
         re_k2 = -re_k2;
     }
     if w_k2!=0. && im_k2==0. {
-        println!("Frequ {} \t ImK2 {}", wk2, im_k2);
+        println!("Frequ {} \t ImK2 {}", w_k2, im_k2);
         panic!("=================================")
     }
+    // panic!("");
     // println!("The two number RE:{}  Im:{}\n", re_k2, im_k2);
     return (re_k2*1., im_k2*1.)
 }

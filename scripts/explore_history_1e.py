@@ -389,6 +389,7 @@ if __name__ == "__main__":
     for key in planets_keys:
         ax.plot(planet_data['current_time'], (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))/( 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY)), label="spin")
         ax.plot(planet_data['current_time'], Pseudosynchro_ratio, label='Pseudo-synchro', ls="--", color='green') # Pseudo-sync
+        ax.plot(planet_data['current_time'], Pseudosynchro_ratio/Pseudosynchro_ratio, label='Synchro', ls="--", color='red') # Pseudo-sync
         # ax.plot(planet_data['current_time'], 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY), label=key) 
         # ax.plot(planet_data['current_time'], 2.*np.pi/ (2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY)*posidonius.constants.DAY), label="orbital frequ")
         ax.set_ylabel(field)
@@ -469,6 +470,7 @@ if __name__ == "__main__":
         data['planet_rotation_frequ'] = 2.*np.pi/(planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY)
         data['planet_orbital_period'] = 2.*np.pi/(planets_computed_data[key]['orbital_period']*posidonius.constants.DAY)
         data['syncrho'] = (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))/ ( 2.*np.pi/(planets_computed_data[key]['orbital_period']*posidonius.constants.DAY) )
+        data['conservation_angular_momentum'] = conservation_of_angular_momentum
         # data['planet_pseudo_syncho'] = 2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY) #planet_data['semi-major_axis'] #pseudo_rot# pseudo_synchronization_period #2.*np.pi/(pseudo_synchronization_period*posidonius.constants.DAY)
 
     

@@ -110,7 +110,8 @@ if __name__ == "__main__":
 
     #############################################################################
 
-    planet_data = np.loadtxt('Results_Trappist_1e_00.0_138_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data = np.loadtxt('Results_Trappist_1e_00.0_138_freq_Imk2_posidonius.txt',comments='#')
+    planet_data = np.loadtxt('Results_Trappist_1e_05.0_150_freq_Imk2_posidonius.txt',comments='#')
   
     planet_masses, planet_radiuses, planet_gyration_radius = planet_data[0,:]  #in kg, m and radius of gyration squared 
  
@@ -191,7 +192,7 @@ if __name__ == "__main__":
     planet_i = 0.0
     planet_inclination = 0.0
     planet_obliquity = 0.0
-    e = 0.0051 #0.07 #========================================================================================================ECC
+    e = 0.0# 0.0051 #0.07 #========================================================================================================ECC
     planet_a = 0.02928# 0.02817 #0.015 #0.02817 #AU ==========================================================================SemiMaj 
     planet_masses = 0.772 * 5.9736E+24/1.9818e30 #1.898e27/1.989e30 #1.8850689e-06 #2.98e-6 # Mearth in  Msol ===================PLanetMass
 

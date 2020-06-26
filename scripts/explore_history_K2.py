@@ -25,6 +25,8 @@ if __name__ == "__main__":
     print("IM220_2", data["im_love_number_sigma2200"][:50])
     print("Sigma220_2", data["sigma220_2_excitative_frequency"][:50])
 
+    print("Semi Maj Axis", data["a"][:50])
+
     most_massive_particle_index = universe_integrator_json['universe']['hosts']['index']['most_massive']
     print("Transforming positions/velocities to heliocentric coordinates using the most masssive particle at index '{}'...".format(most_massive_particle_index))
     star_data, planets_data, planets_keys = posidonius.analysis.history.classify(n_particles, data, reference_particle_index=most_massive_particle_index, discard_first_hundred_years=False)
