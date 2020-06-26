@@ -22,8 +22,8 @@ if __name__ == "__main__":
     recovery_snapshot_period = 10.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
-        "rotational_flattening": True,
-        "general_relativity": True,
+        "rotational_flattening": False,
+        "general_relativity": False,
         "disk": False,
         "wind": False,
         "evolution": False,
@@ -191,7 +191,7 @@ if __name__ == "__main__":
     planet_i = 0.0
     planet_inclination = 0.0
     planet_obliquity = 0.0
-    e = 0.00 #0.07 #========================================================================================================ECC
+    e = 0.0051 #0.07 #========================================================================================================ECC
     planet_a = 0.02928# 0.02817 #0.015 #0.02817 #AU ==========================================================================SemiMaj 
     planet_masses = 0.772 * 5.9736E+24/1.9818e30 #1.898e27/1.989e30 #1.8850689e-06 #2.98e-6 # Mearth in  Msol ===================PLanetMass
 
