@@ -820,7 +820,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             //                         eccentricity_function[3].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[3] +
             //                         eccentricity_function[4].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[4];
 
-            /////////////////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////
 
             tidal_torque_kaula_coplanar[1] = - (3./2.)*( ( G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5) ) / semi_major_axis.powi(6) ) *sum_g_im_k2_over_q;
 
@@ -965,7 +965,7 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
 //                 particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - (3./2.) *( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Eq3.26 No Re Ortho Force
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Eq3.26 No Re Ortho Force
 
                 for x in 0..5{
                     sum_over = sum_over + eccentricity_function_g_20q[x].powi(2) *particle.tides.parameters.internal.im_love_number_sigma220q[x] ;
@@ -1061,7 +1061,7 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
             // println!("Ecc {}, semi_maj_axis {} AU, orbital period {} Days", eccentricity, semi_major_axis, orbital_period);
             // println!("The Star Mass {} Msol, The planet radius {} Rearth, ", tidal_host_particle.mass, particle.radius*AU/6.3781e6 );
             // panic!("...");
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// Eq 3.26 Radial Force
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// Eq 3.26 Radial Force
             for q in 0..5{
                 for j in 0..5{
                     let phase_term =  (integer_q - integer_j)*n*t;
