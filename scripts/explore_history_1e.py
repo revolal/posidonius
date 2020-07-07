@@ -65,6 +65,9 @@ if __name__ == "__main__":
         planet_norm_spin = np.sqrt(np.power(planet_data['spin_x'], 2) + np.power(planet_data['spin_y'], 2) + np.power(planet_data['spin_z'], 2))
         planet_rotation_period = 2*np.pi / planet_norm_spin
         planet_computed_data['planet_rotation_period'] = planet_rotation_period
+        print("Verification Eccentricity",planet_data['eccentricity'][0])
+        print("Verification Semi Maj",planet_data['semi-major_axis'][0])
+        print(" ")
 
         ## Planet obliquity
         # Calculation of orbital angular momentum (without mass and in AU^2/day)
@@ -385,7 +388,7 @@ if __name__ == "__main__":
     i=i+1
     ax = fig.add_subplot(ligne,colonne,i, sharex=ax)
     # field = 'star_rotation_period\n(days)'
-    field = 'ratio 1-spin/orb freq %'
+    field = 'ratio spin/orb freq %'
     for key in planets_keys:
         ax.plot(planet_data['current_time'], (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))/( 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY)), label="spin")
         ax.plot(planet_data['current_time'], Pseudosynchro_ratio, label='Pseudo-synchro', ls="--", color='green') # Pseudo-sync

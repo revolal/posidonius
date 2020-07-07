@@ -13,12 +13,12 @@ if __name__ == "__main__":
 
     #initial_time = 4.5e6*365.25 # time [days] where simulation starts
     initial_time = 1.0e6*365.25 # time [days] where simulation starts
-    time_step = 0.01 # days
+    time_step = 0.08 # days
     #time_step = 0.05 # days
     #time_limit   = 4*time_step # days
     #time_limit   = 365.25 * 1.0e8 # days
-    time_limit   = 1.#365.25 * 1.0e3 # days
-    historic_snapshot_period = 0.01#*365.25 # days
+    time_limit   = 365.25 * 1.0e10 # days
+    historic_snapshot_period = 10.*365.25 # days
     recovery_snapshot_period = 100.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
@@ -124,55 +124,55 @@ if __name__ == "__main__":
     planet_data_c = np.loadtxt('Results_Trappist_1c_07.5_100_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_c, planet_radius_c, planet_gyration_radius_squared_c = planet_data_c[0,:] 
 
-    w_lm_c   = planet_data_b[1:,0]
-    ImK2_c   = planet_data_b[1:,1]
-    ReK2_c   = planet_data_b[1:,2]
-    size_c   = np.size(w_lm_b)
+    w_lm_c   = planet_data_c[1:,0]
+    ImK2_c   = planet_data_c[1:,1]
+    ReK2_c   = planet_data_c[1:,2]
+    size_c   = np.size(w_lm_c)
 
     #===============================================================================================
     planet_data_d = np.loadtxt('Results_Trappist_1d_19.5_100_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_d, planet_radius_d, planet_gyration_radius_squared_d = planet_data_d[0,:] 
 
-    w_lm_d   = planet_data_b[1:,0]
-    ImK2_d   = planet_data_b[1:,1]
-    ReK2_d   = planet_data_b[1:,2]
-    size_d   = np.size(w_lm_b)
+    w_lm_d   = planet_data_d[1:,0]
+    ImK2_d   = planet_data_d[1:,1]
+    ReK2_d   = planet_data_d[1:,2]
+    size_d   = np.size(w_lm_d)
 
     #===============================================================================================
     planet_data_e = np.loadtxt('Results_Trappist_1e_05.0_150_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_e, planet_radius_e, planet_gyration_radius_squared_e = planet_data_e[0,:] 
 
-    w_lm_e   = planet_data_b[1:,0]
-    ImK2_e   = planet_data_b[1:,1]
-    ReK2_e   = planet_data_b[1:,2]
-    size_e   = np.size(w_lm_b)
+    w_lm_e   = planet_data_e[1:,0]
+    ImK2_e   = planet_data_e[1:,1]
+    ReK2_e   = planet_data_e[1:,2]
+    size_e   = np.size(w_lm_e)
 
     #===============================================================================================
     planet_data_f = np.loadtxt('Results_Trappist_1f_14.5_150_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_f, planet_radius_f, planet_gyration_radius_squared_f = planet_data_f[0,:] 
 
-    w_lm_f   = planet_data_b[1:,0]
-    ImK2_f   = planet_data_b[1:,1]
-    ReK2_f   = planet_data_b[1:,2]
-    size_f   = np.size(w_lm_b)
+    w_lm_f   = planet_data_f[1:,0]
+    ImK2_f   = planet_data_f[1:,1]
+    ReK2_f   = planet_data_f[1:,2]
+    size_f   = np.size(w_lm_f)
 
     #===============================================================================================
     planet_data_g = np.loadtxt('Results_Trappist_1g_22.5_150_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_g, planet_radius_g, planet_gyration_radius_squared_g = planet_data_g[0,:] 
 
-    w_lm_g   = planet_data_b[1:,0]
-    ImK2_g   = planet_data_b[1:,1]
-    ReK2_g   = planet_data_b[1:,2]
-    size_g   = np.size(w_lm_b)
+    w_lm_g   = planet_data_g[1:,0]
+    ImK2_g   = planet_data_g[1:,1]
+    ReK2_g   = planet_data_g[1:,2]
+    size_g   = np.size(w_lm_g)
 
     #===============================================================================================
     planet_data_h = np.loadtxt('Results_Trappist_1h_13.5_150_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_h, planet_radius_h, planet_gyration_radius_squared_h = planet_data_h[0,:] 
 
-    w_lm_h   = planet_data_b[1:,0]
-    ImK2_h   = planet_data_b[1:,1]
-    ReK2_h   = planet_data_b[1:,2]
-    size_h   = np.size(w_lm_b)
+    w_lm_h   = planet_data_h[1:,0]
+    ImK2_h   = planet_data_h[1:,1]
+    ReK2_h   = planet_data_h[1:,2]
+    size_h   = np.size(w_lm_h)
 
 
     ############################################################################
@@ -192,7 +192,8 @@ if __name__ == "__main__":
     # planet_l = (323.732652895, 96.4925777097, 111.770368348, 165.724187804, 254.117367005, 161.020362506, 134.724813585)
     planet_l = (0., 0., 0., 0., 0., 0., 0.)
 
-    planet_e = (0., 0., 0., 0., 0., 0., 0.)
+    # planet_e = (0., 0., 0., 0., 0., 0., 0.)
+    planet_e = (0.00622, 0.00654, 0.0837, 0.0051, 0.01007, 0.00208, 0.00567)
 
     planet_w_lm = (w_lm_b, w_lm_c, w_lm_d, w_lm_e, w_lm_f, w_lm_g, w_lm_h)
 
@@ -211,10 +212,14 @@ if __name__ == "__main__":
         # planet_radius_of_gyration = 5.75e-01
         planet_radius_of_gyration = np.sqrt(gyration_radius_2)
 
+        print("Verif Ecc", e)
+        print("Verif Semi Maj", a)
+        print(" ")
+
         #////////// Specify initial position and velocity for a stable orbit
         #////// Keplerian orbital elements, in the `asteroidal' format of Mercury code
         # a = 0.01111;                             # semi-major axis (in AU)
-        # e = #0000010;                              # eccentricity
+        # e = e = #0000010;                              # eccentricity
         i = i * posidonius.constants.DEG2RAD;                      # inclination (degrees)
         p = 0. * posidonius.constants.DEG2RAD;                                # argument of pericentre (degrees)
         n = 0. * posidonius.constants.DEG2RAD;                      # longitude of the ascending node (degrees)
