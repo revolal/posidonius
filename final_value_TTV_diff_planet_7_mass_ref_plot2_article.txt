@@ -1,0 +1,4 @@
+Test No-effect CTL Kaula 
+test, TTV_diff at 1500 day 
+1 	 -3.91e-03 
+2 	 5.83e-03 

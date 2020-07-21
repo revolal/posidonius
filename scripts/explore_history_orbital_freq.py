@@ -382,24 +382,53 @@ if __name__ == "__main__":
     # ax.legend(loc=0, prop={'size':8})
     # #plt.setp(ax.get_xticklabels(), visible=False)
 
+    # i=i+1
+    # # ax = fig.add_subplot(ligne,colonne,i, sharex=ax)
+    # # field = 'star_rotation_period\n(days)'
+    # field = 'Spin & Orbital frequency rad/s in CTL '
+    # for key in planets_keys:
+    #     plt.plot(planet_data['current_time'], (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))/( 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY)), label="Spin")
+    #     # plt.plot(planet_data['current_time'], Pseudosynchro_ratio-0.000078, label='Pseudo-synchro', ls="--", color='green') # Pseudo-sync
+    #     plt.plot(planet_data['current_time'], Pseudosynchro_ratio/Pseudosynchro_ratio, label='Synchronisation', ls="--", color='red') # Pseudo-sync
+    #     # plt.plot(planet_data['current_time'], (2.*np.pi/ (planet_computed_data['pseudo_synchronization_period']*posidonius.constants.DAY))/( 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY)), label="spin")
+    #     # ax.plot(planet_data['current_time'], 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY), label=key)  
+    #     # ax.plot(planet_data['current_time'], 2.*np.pi/ (2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY)*posidonius.constants.DAY), label="orbital frequ")
+    #     plt.ylabel(field, size=14)
+    #     plt.ylim([0.9990000, 1.00100001])
+    #     plt.xlabel('Time (yrs)', size=14)
+    #     plt.xlim([9.e3, 3e4])
+    #     plt.xscale('log')
+    # plt.legend(loc=0, prop={'size':14})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
+
     i=i+1
     # ax = fig.add_subplot(ligne,colonne,i, sharex=ax)
     # field = 'star_rotation_period\n(days)'
-    field = 'Spin & Orbital frequency rad/s in CTL '
+    field = 'Tidal heat\nflux (W/m^2)'
     for key in planets_keys:
-        plt.plot(planet_data['current_time'], (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))/( 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY)), label="Spin")
-        # plt.plot(planet_data['current_time'], Pseudosynchro_ratio-0.000078, label='Pseudo-synchro', ls="--", color='green') # Pseudo-sync
-        plt.plot(planet_data['current_time'], Pseudosynchro_ratio/Pseudosynchro_ratio, label='Synchronisation', ls="--", color='red') # Pseudo-sync
-        # plt.plot(planet_data['current_time'], (2.*np.pi/ (planet_computed_data['pseudo_synchronization_period']*posidonius.constants.DAY))/( 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY)), label="spin")
-        # ax.plot(planet_data['current_time'], 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY), label=key)  
-        # ax.plot(planet_data['current_time'], 2.*np.pi/ (2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY)*posidonius.constants.DAY), label="orbital frequ")
-        plt.ylabel(field, size=14)
-        plt.ylim([0.9990000, 1.00100001])
-        plt.xlabel('Time (yrs)', size=14)
-        plt.xlim([9.e3, 3e4])
+        plt.plot(planet_data['current_time'], planets_computed_data[key]['inst_tidal_flux'], label=key) # Instantaneous energy loss
+        plt.plot(planet_data['current_time'], planets_computed_data[key]['mean_tidal_flux'], label=None, ls="--", color='b') # Mean energy loss
+        plt.ylabel(field)
+        #ax.set_ylim([1e-2, 1e5])
         plt.xscale('log')
-    plt.legend(loc=0, prop={'size':14})
+        plt.yscale('log')
+        plt.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
+
+    #     ax = fig.add_subplot(5,3,5, sharex=ax)
+    # # Energy loss dE/dt due to tides per planet surface
+    # #field = 'Energy lost\ndue to tides (W/m^2)'
+    # field = 'Tidal heat\nflux (W/m^2)'
+    # for key in planets_keys:
+    #     planet_data = planets_data[key]
+    #     line, = ax.plot(planet_data['current_time'], planets_computed_data[key]['inst_tidal_flux'], label=key) # Instantaneous energy loss
+    #     ax.plot(planet_data['current_time'], planets_computed_data[key]['mean_tidal_flux'], label=None, ls="--", c=line.get_color()) # Mean energy loss
+    # ax.set_ylabel(field)
+    # #ax.set_ylim([1e-2, 1e5])
+    # #ax.set_xscale('log')
+    # ax.set_yscale('log')
+    # ax.legend(loc=0, prop={'size':8})
+    # #plt.setp(ax.get_xticklabels(), visible=False)
 
     # ax = fig.add_subplot(ligne,colonne,8, sharex=ax)
     # field = 'Omega/n'

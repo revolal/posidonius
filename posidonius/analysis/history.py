@@ -26,8 +26,8 @@ def read(filename):
                 'acceleration_x', 'acceleration_y', 'acceleration_z',
                 'dangular_momentum_dt_x', 'dangular_momentum_dt_y', 'dangular_momentum_dt_z', #32 arguments
                 'sigma220_2_excitative_frequency', 'sigma220_1_excitative_frequency', 'sigma2200_excitative_frequency', 'sigma2201_excitative_frequency', 'sigma2202_excitative_frequency', 
-                'im_love_number_sigma220_2', 'im_love_number_sigma220_1', 'im_love_number_sigma2200', 'im_love_number_sigma2201', 'im_love_number_sigma2202', ) #42 arguments
-                # 're_love_number_sigma220_2', 're_love_number_sigma220_1', 're_love_number_sigma2200', 're_love_number_sigma2201', 're_love_number_sigma2202', )
+                'im_love_number_sigma220_2', 'im_love_number_sigma220_1', 'im_love_number_sigma2200', 'im_love_number_sigma2201', 'im_love_number_sigma2202', #) #42 arguments
+                're_love_number_sigma220_2', 're_love_number_sigma220_1', 're_love_number_sigma2200', 're_love_number_sigma2201', 're_love_number_sigma2202', ) #47 arguments
 
     data = []
     while True:

@@ -22,7 +22,9 @@ if __name__ == "__main__":
     n_particles, data = posidonius.analysis.history.read(filename)
     most_massive_particle_index = universe_integrator_json['universe']['hosts']['index']['most_massive']
     print("Transforming positions/velocities to heliocentric coordinates using the most masssive particle at index '{}'...".format(most_massive_particle_index))
+    print("Recover data... from", filename)
     star_data, planets_data, planets_keys = posidonius.analysis.history.classify(n_particles, data, reference_particle_index=most_massive_particle_index, discard_first_hundred_years=False)
+    print("Done")
     star_mass = star_data['mass'][0]
 
 
@@ -465,6 +467,9 @@ if __name__ == "__main__":
         data = pd.DataFrame(planet_data['current_time'], columns=['current_time'])
         data['planet'] = key
         data['semi-major_axis_AU'] = planet_data['semi-major_axis']
+        data['tidal_torque_z'] = planet_data['tidal_torque_z']
+        data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide'] = planet_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide']
+        data['radial_component_of_the_tidal_force'] = planet_data['radial_component_of_the_tidal_force']
         # data['corotation_radius_AU'] = planets_computed_data[key]['corotation_radius']
         # data['planet_obliquity_deg'] = planets_computed_data[key]['planet_obliquity']
         # data['eccentricity'] = planet_data['eccentricity']

@@ -72,6 +72,7 @@ posidonius resume target/case7.bin target/case7_history.bin
 posidonius resume target/example.bin target/example_history.bin
 posidonius resume target/trappist_1e.bin target/trappist_1e_history.bin
 posidonius resume target/trappist1_multi.bin target/trappist1_multi_history.bin
+posidonius resume target/venus_hot.bin target/venus_hot_history.bin
 ```
 
 The flag `--silent` can be added to avoid printing the current year of the simulation.

@@ -17,8 +17,8 @@ if __name__ == "__main__":
     #time_step = 0.05 # days
     #time_limit   = 4*time_step # days
     #time_limit   = 365.25 * 1.0e8 # days
-    time_limit   = 365.25 * 1.0e10 # days
-    historic_snapshot_period = 10.*365.25 # days
+    time_limit   = 1501 #365.25 * 1.0e10 # days
+    historic_snapshot_period = 0.01 #10.*365.25 # days
     recovery_snapshot_period = 100.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     })
     universe = posidonius.Universe(initial_time, time_limit, time_step, recovery_snapshot_period, historic_snapshot_period, consider_effects)
 
-    star_mass = 0.089 # Solar masses
+    star_mass = 0.08 # Solar masses
     star_radius_factor = 0.117
     star_radius = star_radius_factor * posidonius.constants.R_SUN
     star_radius_of_gyration = 4.47e-01 # Brown dwarf
@@ -54,8 +54,8 @@ if __name__ == "__main__":
         "love_number": 0.0,
     }
     star_tides = posidonius.effects.tides.CentralBody(star_tides_parameters)
-    #star_tides = posidonius.effects.tides.OrbitingBody(star_tides_parameters)
-    #star_tides = posidonius.effects.tides.Disabled()
+    # star_tides = posidonius.effects.tides.OrbitingBody(star_tides_parameters)
+    # star_tides = posidonius.effects.tides.Disabled()
     #
     star_rotational_flattening_parameters = {"love_number": star_tides_parameters["love_number"] }
     #star_rotational_flattening = posidonius.effects.rotational_flattening.CentralBody(star_rotational_flattening_parameters)
@@ -111,8 +111,9 @@ if __name__ == "__main__":
     print("Recover K2 data")
     
 
-    #===============================================================================================
+#===============================================================================================
     planet_data_b = np.loadtxt('Results_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_b = np.loadtxt('Results_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_b, planet_radius_b, planet_gyration_radius_squared_b = planet_data_b[0,:] 
 
     w_lm_b   = planet_data_b[1:,0]
@@ -122,6 +123,7 @@ if __name__ == "__main__":
 
     #===============================================================================================
     planet_data_c = np.loadtxt('Results_Trappist_1c_07.5_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_c = np.loadtxt('Results_Trappist_1c_07.5_100_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_c, planet_radius_c, planet_gyration_radius_squared_c = planet_data_c[0,:] 
 
     w_lm_c   = planet_data_c[1:,0]
@@ -131,6 +133,7 @@ if __name__ == "__main__":
 
     #===============================================================================================
     planet_data_d = np.loadtxt('Results_Trappist_1d_19.5_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_d = np.loadtxt('Results_Trappist_1d_19.5_100_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_d, planet_radius_d, planet_gyration_radius_squared_d = planet_data_d[0,:] 
 
     w_lm_d   = planet_data_d[1:,0]
@@ -139,7 +142,8 @@ if __name__ == "__main__":
     size_d   = np.size(w_lm_d)
 
     #===============================================================================================
-    planet_data_e = np.loadtxt('Results_Trappist_1e_05.0_150_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_e = np.loadtxt('Results_Trappist_1e_00.0_138_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_e = np.loadtxt('Results_Trappist_1e_05.0_150_freq_Imk2_posidonius.txt',comments='#') 
     planet_mass_e, planet_radius_e, planet_gyration_radius_squared_e = planet_data_e[0,:] 
 
     w_lm_e   = planet_data_e[1:,0]
@@ -148,7 +152,8 @@ if __name__ == "__main__":
     size_e   = np.size(w_lm_e)
 
     #===============================================================================================
-    planet_data_f = np.loadtxt('Results_Trappist_1f_14.5_150_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_f = np.loadtxt('Results_Trappist_1f_11.0_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_f = np.loadtxt('Results_Trappist_1f_14.5_150_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_f, planet_radius_f, planet_gyration_radius_squared_f = planet_data_f[0,:] 
 
     w_lm_f   = planet_data_f[1:,0]
@@ -157,7 +162,8 @@ if __name__ == "__main__":
     size_f   = np.size(w_lm_f)
 
     #===============================================================================================
-    planet_data_g = np.loadtxt('Results_Trappist_1g_22.5_150_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_g = np.loadtxt('Results_Trappist_1g_19.0_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_g = np.loadtxt('Results_Trappist_1g_22.5_150_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_g, planet_radius_g, planet_gyration_radius_squared_g = planet_data_g[0,:] 
 
     w_lm_g   = planet_data_g[1:,0]
@@ -166,7 +172,8 @@ if __name__ == "__main__":
     size_g   = np.size(w_lm_g)
 
     #===============================================================================================
-    planet_data_h = np.loadtxt('Results_Trappist_1h_13.5_150_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_h = np.loadtxt('Results_Trappist_1h_10.0_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_h = np.loadtxt('Results_Trappist_1h_13.5_150_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_h, planet_radius_h, planet_gyration_radius_squared_h = planet_data_h[0,:] 
 
     w_lm_h   = planet_data_h[1:,0]
@@ -182,18 +189,25 @@ if __name__ == "__main__":
     # Masses in M_SUN
     # planet_masses = (2.5843686e-06, 4.1957984e-06, 1.2465778e-06, 1.8850689e-06, 2.0674949e-06, 4.0741811e-06, 1.2465778e-06)
     planet_masses = (planet_mass_b, planet_mass_c, planet_mass_d, planet_mass_e, planet_mass_f, planet_mass_g, planet_mass_h)
+
     # Semi-major axis in AU
     # planet_a = (0.01111, 0.01521, 0.02144, 0.02817, 0.0371, 0.0451, 0.0596)
-    planet_a = (0.01154775, 0.01581512, 0.02228038, 0.02928285, 0.03853361, 0.04687692, 0.06193488)
+    # planet_a = (0.01154775, 0.01581512, 0.02228038, 0.02928285, 0.03853361, 0.04687692, 0.06193488) #From Grimm 2018
+    planet_a = (0.01110318e0, 0.01520668e0, 0.02142513e0, 0.02815839e0, 0.03705241e0, 0.04508048e0, 0.05955922e0) #From Bolmont 2020 TTV
+    
     # Inclination in degrees
     # planet_i = (0.3500000, 0.330000, 0.250000, 0.140000, 0.320000, 0.290000, 0.130000)
-    planet_i = (0., 0., 0., 0., 0., 0., 0.)
+    # planet_i = (0., 0., 0., 0., 0., 0., 0.)
+    planet_i = (0.59e0, 0.5e0, 0.30e0, 0.40e0, 0.080e0, 0.37e0, 0.20e0) #From Bolmont 2020 TTV
+
     # Mean anomaly in degrees
     # planet_l = (323.732652895, 96.4925777097, 111.770368348, 165.724187804, 254.117367005, 161.020362506, 134.724813585)
-    planet_l = (0., 0., 0., 0., 0., 0., 0.)
+    # planet_l = (0., 0., 0., 0., 0., 0., 0.)
+    planet_l = (90.0000000e0, 51.5815880e0, 84.5759410e0, 305.4552470e0, 283.5599420e0, 233.7735200e0, 1.3139080e0) #From Bolmont 2020 TTV
 
-    # planet_e = (0., 0., 0., 0., 0., 0., 0.)
-    planet_e = (0.00622, 0.00654, 0.0837, 0.0051, 0.01007, 0.00208, 0.00567)
+    # Eccentricity
+    planet_e = (0., 0., 0., 0., 0., 0., 0.)
+    # planet_e = (0.00622, 0.00654, 0.0837, 0.0051, 0.01007, 0.00208, 0.00567)
 
     planet_w_lm = (w_lm_b, w_lm_c, w_lm_d, w_lm_e, w_lm_f, w_lm_g, w_lm_h)
 
@@ -233,13 +247,13 @@ if __name__ == "__main__":
         planet_obliquity = 0. #1.0e-4 # rad
         # Pseudo-synchronization period
         planet_pseudo_synchronization_period = posidonius.calculate_pseudo_synchronization_period(a, e, star_mass, planet_mass) # days
-        # planet_angular_frequency = posidonius.constants.TWO_PI/(planet_pseudo_synchronization_period) # days^-1
+        planet_angular_frequency = posidonius.constants.TWO_PI/(planet_pseudo_synchronization_period) # days^-1
         planet_angular_frequency = posidonius.constants.TWO_PI/(5./12.) # days^-1
         planet_keplerian_orbital_elements = posidonius.calculate_keplerian_orbital_elements(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
         planet_inclination = planet_keplerian_orbital_elements[3]
         planet_spin = posidonius.calculate_spin(planet_angular_frequency, planet_inclination, planet_obliquity)
 
-        k2pdelta = 2.465278e-3 # Terrestrial planets (no gas)
+        k2pdelta =  2.465278e-3 #6.7497e-6 #2.465278e-3 # Terrestrial planets (no gas)
         planet_tides_parameters = {
             "dissipation_factor_scale": 1.0,
             "dissipation_factor": 2. * posidonius.constants.K2 * k2pdelta/(3. * np.power(planet_radius, 5)),
@@ -286,10 +300,10 @@ if __name__ == "__main__":
 
 
         #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_parameters)
-        #planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_parameters)
-        # planet_tides = posidonius.effects.tides.ConstTimeLagOrbitingBody(planet_tides_parameters)
+        # planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_parameters)
+
         planet_tides = posidonius.effects.tides.KaulaCoplanarOrbitingBody(planet_tides_parameters_love_number_kaula)
-        #planet_tides = posidonius.effects.tides.Disabled()
+        # planet_tides = posidonius.effects.tides.Disabled()
         #
         planet_rotational_flattening_parameters = {"love_number": 0.9532}
         #planet_rotational_flattening = posidonius.effects.rotational_flattening.CentralBody(planet_rotational_flattening_parameters)
@@ -347,8 +361,8 @@ if __name__ == "__main__":
     whfast_alternative_coordinates="DemocraticHeliocentric"
     #whfast_alternative_coordinates="WHDS"
     #whfast_alternative_coordinates="Jacobi"
-    universe.write(filename, integrator="WHFast", whfast_alternative_coordinates=whfast_alternative_coordinates)
-    #universe.write(filename, integrator="IAS15")
+    # universe.write(filename, integrator="WHFast", whfast_alternative_coordinates=whfast_alternative_coordinates)
+    universe.write(filename, integrator="IAS15")
     #universe.write(filename, integrator="LeapFrog")
 
 

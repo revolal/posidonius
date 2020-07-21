@@ -244,11 +244,11 @@ pub struct TidesParticleInternalParameters {
     pub im_love_number_sigma2201: f64,
     pub im_love_number_sigma2202: f64,
 
-    // pub re_love_number_sigma220_2: f64,
-    // pub re_love_number_sigma220_1: f64,
-    // pub re_love_number_sigma2200: f64,
-    // pub re_love_number_sigma2201: f64,
-    // pub re_love_number_sigma2202: f64,
+    pub re_love_number_sigma220_2: f64,
+    pub re_love_number_sigma220_1: f64,
+    pub re_love_number_sigma2200: f64,
+    pub re_love_number_sigma2201: f64,
+    pub re_love_number_sigma2202: f64,
 
     // pub im_love_number:f64,
     // pub re_love_number:f64,
@@ -360,11 +360,11 @@ impl Tides {
                     im_love_number_sigma2201: 0.,
                     im_love_number_sigma2202: 0.,
                 
-                    // re_love_number_sigma220_2: 0.,
-                    // re_love_number_sigma220_1: 0.,
-                    // re_love_number_sigma2200: 0.,
-                    // re_love_number_sigma2201: 0.,
-                    // re_love_number_sigma2202: 0.,
+                    re_love_number_sigma220_2: 0.,
+                    re_love_number_sigma220_1: 0.,
+                    re_love_number_sigma2200: 0.,
+                    re_love_number_sigma2201: 0.,
+                    re_love_number_sigma2202: 0.,
 
                     // im_love_number:0.,
                     // re_love_number:0.,
@@ -681,7 +681,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             // }
 
             let mut do_calculation:bool=false;
-            if (1.- particle.tides.parameters.internal.check_excitative_frequ / sigma_2mpq(2., 0., 0., spin, orbital_frequency)).abs() > 0.00001 {
+            if (1.- particle.tides.parameters.internal.check_excitative_frequ / sigma_2mpq(2., 0., 0., spin, orbital_frequency)).abs() > 0.001 {
                 // //println!("Excitative frequency Variation {}", (1.- particle.tides.parameters.internal.check_excitative_frequ / sigma_2mpq(2., 0., 0., spin, orbital_frequency)).abs() );
                 particle.tides.parameters.internal.check_excitative_frequ = sigma_2mpq(2., 0., 0., spin, orbital_frequency);
                 do_calculation = true;
@@ -701,6 +701,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
                 particle.tides.parameters.internal.im_love_number_sigma220q[0] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma220q[0] = kaula.0 ;
                 //=============go to output
+                particle.tides.parameters.internal.re_love_number_sigma220_2 = kaula.0;
                 particle.tides.parameters.internal.im_love_number_sigma220_2 = kaula.1;
                 particle.tides.parameters.internal.sigma220_2_excitative_frequency = particle.tides.parameters.internal.excitative_frequ_sigma220q[0];
                 // println!("TIDES.RS");
@@ -721,6 +722,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
                 particle.tides.parameters.internal.im_love_number_sigma220q[1] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma220q[1] = kaula.0 ;
                 //=============go to output
+                particle.tides.parameters.internal.re_love_number_sigma220_1 = kaula.0;
                 particle.tides.parameters.internal.im_love_number_sigma220_1 = kaula.1;
                 particle.tides.parameters.internal.sigma220_1_excitative_frequency = particle.tides.parameters.internal.excitative_frequ_sigma220q[1];
                 // println!("\nsigma201_1");
@@ -736,6 +738,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
                 particle.tides.parameters.internal.im_love_number_sigma220q[2] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma220q[2] = kaula.0 ;
                 //=============go to output
+                particle.tides.parameters.internal.re_love_number_sigma2200 = kaula.0;
                 particle.tides.parameters.internal.im_love_number_sigma2200 = kaula.1;
                 particle.tides.parameters.internal.sigma2200_excitative_frequency = particle.tides.parameters.internal.excitative_frequ_sigma220q[2];
 
@@ -752,6 +755,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
                 particle.tides.parameters.internal.im_love_number_sigma220q[3] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma220q[3] = kaula.0 ;
                 //=============go to output
+                particle.tides.parameters.internal.re_love_number_sigma2201 = kaula.0;
                 particle.tides.parameters.internal.im_love_number_sigma2201 = kaula.1;
                 particle.tides.parameters.internal.sigma2201_excitative_frequency = particle.tides.parameters.internal.excitative_frequ_sigma220q[3];
                 // println!("\nsigma2011");
@@ -767,6 +771,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
                 particle.tides.parameters.internal.im_love_number_sigma220q[4] = kaula.1 ;
                 particle.tides.parameters.internal.re_love_number_sigma220q[4] = kaula.0 ;
                 //=============go to output
+                particle.tides.parameters.internal.re_love_number_sigma2202 = kaula.0;
                 particle.tides.parameters.internal.im_love_number_sigma2202 = kaula.1;
                 particle.tides.parameters.internal.sigma2202_excitative_frequency = particle.tides.parameters.internal.excitative_frequ_sigma220q[4];
                 // println!("\nsigma2012");
@@ -942,50 +947,52 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
                 let eccentricity_function_g_20q = eccentricty_function_g_20q(eccentricity);
 
                 let mut sum_over:f64 = 0.;
-                // let n = orbital_frequency;
-                // let t = current_time;
-                // let mut integer_q = -2.;
-                // let mut integer_j = -2.;
+                let n = orbital_frequency;
+                let t = current_time;
+                let mut integer_q = -2.;
+                let mut integer_j = -2.;
                 // println!("\n\tInto Radial tidal force:");
                 // println!("Ecc {}, semi_maj_axis {} AU, orbital period {} Days", eccentricity, semi_major_axis, orbital_period);
                 // println!("The Star Mass {} Msol, The planet radius {} Rearth, ", tidal_host_particle.mass, particle.radius*AU/6.3781e6 );
                 // panic!("...");
-// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Eq3.26 Ortho Force
-//                 for q in 0..5 {
-//                     for j in 0..5{
-//                         let phase_term = (integer_q - integer_j)*n*t;
-//                         sum_over = sum_over + eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] 
-//                                                 * ( phase_term.sin() * particle.tides.parameters.internal.re_love_number_sigma220q[q] 
-//                                                         - phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
-//                         integer_j = integer_j +1.;
-//                         // println!("n° {}     real {}   imaginary {}", q, particle.tides.parameters.internal.re_love_number_sigma220q[q], particle.tides.parameters.internal.im_love_number_sigma220q[q] );
-//                     }
-//                     integer_q = integer_q +1.;
-//                 }
-//                 particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - (3./2.) *( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Eq3.26 No Re Ortho Force
-
-                for x in 0..5{
-                    sum_over = sum_over + eccentricity_function_g_20q[x].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[x] ;
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Eq3.27 Ortho Force
+                for q in 0..5 {
+                    for j in 0..5{
+                        let phase_term = (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+                        sum_over = sum_over +  (3./2.) *eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] 
+                                                * ( phase_term.sin() * particle.tides.parameters.internal.re_love_number_sigma220q[q] - phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+                        integer_j = integer_j +1.;
+                        // println!("n° {}     real {}   imaginary {}", q, particle.tides.parameters.internal.re_love_number_sigma220q[q], particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+                    }
+                    integer_q = integer_q +1.;
                 }
+                particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
 
-                particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - (3./2.) *( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+// ==============================================================================orthoradiale 2 imaginaire
+
+                // for q in 0..5 {
+                //     for j in 0..5{
+                //         let phase_term = (integer_q - integer_j)*n*t;
+                //         sum_over = sum_over + eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] 
+                //                                 * ( phase_term.sin() * particle.tides.parameters.internal.re_love_number_sigma220q[q] - phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+                //         integer_j = integer_j +1.;
+                //         // println!("n° {}     real {}   imaginary {}", q, particle.tides.parameters.internal.re_love_number_sigma220q[q], particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+                //     }
+                //     integer_q = integer_q +1.;
+                // }
+                // particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - (3./2.) *( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Eq3.30 Ortho Force Hybride
+
+                // for x in 0..5{
+                //     sum_over = sum_over + eccentricity_function_g_20q[x].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[x] ;
+                // }
+
+                // particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - (3./2.) *( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
+
 
                 // println!("Ortho force {}", particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide);
-                // let mut excitative_frequency: f64;
-                // let mut sum_over_q = 0.;
-                // let mut q = -2.;
-
-                //////println!("\nInto Ortho tidal force:");
-
-                // let sum_over_q = eccentricity_function_g_20q[0].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[0] +
-                //                     eccentricity_function_g_20q[1].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[1] +
-                //                     eccentricity_function_g_20q[2].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[2]+
-                //                     eccentricity_function_g_20q[3].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[3]+
-                //                     eccentricity_function_g_20q[4].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[4];
-
                 // particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = 0.0; //ORTHO FORCE NULL
             }
         }
@@ -1064,7 +1071,7 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// Eq 3.26 Radial Force
             for q in 0..5{
                 for j in 0..5{
-                    let phase_term =  (integer_q - integer_j)*n*t;
+                    let phase_term =  (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
                     sum_over = sum_over + (3./4.) * eccentricity_function_g_21q[q] * eccentricity_function_g_21q[j]
                                            * ( phase_term.cos() * particle.tides.parameters.internal.re_love_number_sigma201q[q] - phase_term.sin() * particle.tides.parameters.internal.im_love_number_sigma201q[q] )
                                         + (9./4.) * eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
@@ -1075,19 +1082,82 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
             }
             particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
 
+//==================================================== Radiale 3/4 1
 
-            // let sum_over_q = - (3./4.)*( eccentricity_function_g_21q[0].powi(2) * particle.tides.parameters.internal.re_love_number_sigma220_2 +
-            //                                 eccentricity_function_g_21q[1].powi(2) * particle.tides.parameters.internal.re_love_number_sigma220_1 +
-            //                                 eccentricity_function_g_21q[2].powi(2) * particle.tides.parameters.internal.re_love_number_sigma2200 +
-            //                                 eccentricity_function_g_21q[3].powi(2) * particle.tides.parameters.internal.re_love_number_sigma2201 +
-            //                                 eccentricity_function_g_21q[4].powi(2) * particle.tides.parameters.internal.re_love_number_sigma2202 ) 
-            //                 + (9./4.)*( eccentricity_function_g_20q[0].powi(2) * particle.tides.parameters.internal.re_love_number_sigma220_2 +
-            //                                 eccentricity_function_g_20q[1].powi(2) * particle.tides.parameters.internal.re_love_number_sigma220_1 +
-            //                                 eccentricity_function_g_20q[2].powi(2) * particle.tides.parameters.internal.re_love_number_sigma2200 +
-            //                                 eccentricity_function_g_20q[3].powi(2) * particle.tides.parameters.internal.re_love_number_sigma2201 +
-            //                                 eccentricity_function_g_20q[4].powi(2) * particle.tides.parameters.internal.re_love_number_sigma2202 
-            //                             );
-            
+            // for q in 0..5{
+            //     for j in 0..5{
+            //         let phase_term =  (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+            //         sum_over = sum_over + (3./4.) * eccentricity_function_g_21q[q] * eccentricity_function_g_21q[j]
+            //                                * ( phase_term.cos() * particle.tides.parameters.internal.re_love_number_sigma201q[q] ) ;
+            //         integer_j = integer_j +1.;
+            //     }
+            //     integer_q = integer_q +1.;
+            // }
+            // particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
+//=======================================================radiale 3/4 2
+
+            // for q in 0..5{
+            //     for j in 0..5{
+            //         let phase_term =  (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+            //         sum_over = sum_over + (3./4.) * eccentricity_function_g_21q[q] * eccentricity_function_g_21q[j]
+            //                                * ( - phase_term.sin() * particle.tides.parameters.internal.im_love_number_sigma201q[q] );
+            //         integer_j = integer_j +1.;
+            //     }
+            //     integer_q = integer_q +1.;
+            // }
+            // particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
+//======================================================radiale 3/4
+            // for q in 0..5{
+            //     for j in 0..5{
+            //         let phase_term =  (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+            //         sum_over = sum_over + (3./4.) * eccentricity_function_g_21q[q] * eccentricity_function_g_21q[j]
+            //                                * ( phase_term.cos() * particle.tides.parameters.internal.re_love_number_sigma201q[q] - phase_term.sin() * particle.tides.parameters.internal.im_love_number_sigma201q[q] ) ;
+            //         integer_j = integer_j +1.;
+            //     }
+            //     integer_q = integer_q +1.;
+            // }
+            // particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
+//======================================================radiale 9/4 1
+            // for q in 0..5{
+            //     for j in 0..5{
+            //         let phase_term =  (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+            //         sum_over = sum_over + (9./4.) * eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
+            //                                * ( phase_term.cos()*particle.tides.parameters.internal.re_love_number_sigma220q[q] ) ;
+            //         integer_j = integer_j +1.;
+            //     }
+            //     integer_q = integer_q +1.;
+            // }
+            // particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+//=====================================================radiale 9/4 2
+
+            // for q in 0..5{
+            //     for j in 0..5{
+            //         let phase_term =  (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+            //         sum_over = sum_over + (9./4.) * eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
+            //                                * ( - phase_term.sin()*particle.tides.parameters.internal.im_love_number_sigma220q[q] ) ;
+            //         integer_j = integer_j +1.;
+            //     }
+            //     integer_q = integer_q +1.;
+            // }
+            // particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+//===================================================radiale 9/4 
+            // for q in 0..5{
+            //     for j in 0..5{
+            //         let phase_term =  (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+            //         sum_over = sum_over + (9./4.) * eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
+            //                                * ( phase_term.cos()*particle.tides.parameters.internal.re_love_number_sigma220q[q] - phase_term.sin()*particle.tides.parameters.internal.im_love_number_sigma220q[q] ) ;
+            //         integer_j = integer_j +1.;
+            //     }
+            //     integer_q = integer_q +1.;
+            // }
+            // particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
+
+
+
             // particle.tides.parameters.internal.radial_component_of_the_tidal_force = 0.0; //RADIAL FORCE NULL
         }
     }
@@ -1251,10 +1321,10 @@ pub fn eccentricty_function_g_20q(eccentricity: f64) -> [f64; 5]{
     // let e_4 = e_3 *e_1 ;
 
     eccentricity_function[0] = 0.;
-    eccentricity_function[1] = -(1./2.)*eccentricity +(1./16.)*eccentricity.powi(3);
-    eccentricity_function[2] = 1. -(5./2.)*eccentricity.powi(2) +(13./16.)*eccentricity.powi(4);
-    eccentricity_function[3] = (7./2.)*eccentricity -(123./16.)*eccentricity.powi(3);
-    eccentricity_function[4] = (17./2.)*eccentricity.powi(2) -(115./6.)*eccentricity.powi(4);
+    eccentricity_function[1] = -(1./2.)*eccentricity +(1./16.)*eccentricity.powi(3) - (15./384.)*eccentricity.powi(5) - (143./18432.)*eccentricity.powi(7);
+    eccentricity_function[2] = 1. -(5./2.)*eccentricity.powi(2) +(13./16.)*eccentricity.powi(4) - (35./288.) * eccentricity.powi(6);
+    eccentricity_function[3] = (7./2.)*eccentricity -(123./16.)*eccentricity.powi(3) + (489./128.) * eccentricity.powi(5) - (1763./2048.)*eccentricity.powi(7);
+    eccentricity_function[4] = (17./2.)*eccentricity.powi(2) -(115./6.)*eccentricity.powi(4) + (601./48.)*eccentricity.powi(6);
 
     return eccentricity_function;
 }
@@ -1303,20 +1373,119 @@ pub fn kaula_number(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], 
     let mut im_k2 = 0.;
     let mut _x = 0.;
     let mut _y = 0.;
-    let mut ctrl = true; 
+    let mut ctrl = true;
+    let mut find_it = false; 
     let mut parity = false;
+    let mut case_oneline_last_col = false;
+    let mut more_than_one_col = true;
     let nm_data = nm_data as usize;
-    let last_line:usize = nm_data%32-2;
-    let last_colunm:usize = (nm_data-(nm_data%32))/32;
 
+    let mut last_line:usize;
+    let mut last_column:usize;
 
-    // println!("\n\tNmbre {} de points", nm_data);
-    // println!("last COL {} last LINE {}",last_colunm,last_line );
-    // println!("Excitative Last {}  Last +1 {} Firts {}",love_number_excitation_frequency[last_colunm][last_line], love_number_excitation_frequency[last_colunm][last_line+1],love_number_excitation_frequency[0][0]);
-    // println!("Excitative Last-1 {}  Last +1 {} Firts {}",love_number_excitation_frequency[last_colunm][last_line-1], love_number_excitation_frequency[last_colunm][last_line+1],love_number_excitation_frequency[0][0]);
-    // println!("IM K2 Last {}  Last +1 {} Firts {}",imaginary_part_love_number[last_colunm][last_line], imaginary_part_love_number[last_colunm][last_line+1],imaginary_part_love_number[0][0]);
+    let mut line:usize;
+    let mut column:usize;
+
+    if nm_data%32==0{ // If there is 32 line in the last column
+        last_line=31;
+        last_column = nm_data/32-1;
+        more_than_one_col = false;
+        // // println!(" Full the last column")
+    } else {
+        last_line = nm_data%32-1;
+        last_column = nm_data/32;
+        if last_line==0{  // If there is only one line in the last column
+            case_oneline_last_col = true;
+            // // println!("one line last col")
+        }
+    }
+    
+    // println!("\n===============================");
+    // println!("\n\tNmbre ={} de points", nm_data);
+    // println!("last COL ={} last LINE ={}",last_column,last_line );
+    // println!("Excitative Last ={} Firts ={}",love_number_excitation_frequency[last_column][last_line], love_number_excitation_frequency[0][0]);
+    // println!("Love number Last ={} Lsat-1 ={} Firts ={}",imaginary_part_love_number[last_column][last_line], imaginary_part_love_number[last_column][last_line-1], imaginary_part_love_number[0][0]);
     // println!("The Lens {} de ses morts", love_number_excitation_frequency.len());
-    // println!("Search K2 for w_k2 {}",w_k2);
+    // println!("Search K2 for w_k2 ={} \n\t",w_k2);
+
+    //===========================================================================================================================================================
+
+    // if w_k2 < 0.0 {
+    //     w_k2 = w_k2.abs();
+    //     parity = true;
+    //     // //println!("\tThe new wk2 {}", w_k2);
+    // }
+
+    // if w_k2 == 0. {
+    //     im_k2 = 0.;
+    //     re_k2 = real_part_love_number[0][0];
+    //     find_it = true;
+    // }
+
+    // if w_k2 > love_number_excitation_frequency[last_column][last_line] && !find_it {
+    //     if last_line ==0 {
+    //         let derive = (imaginary_part_love_number[last_column][last_line].log10() - imaginary_part_love_number[last_column-1][31].log10())/(love_number_excitation_frequency[last_column][last_line].log10()-love_number_excitation_frequency[last_column-1][31].log10());
+    //         im_k2 = 10f64.powf( imaginary_part_love_number[last_column][last_line].log10()  + (w_k2.log10() - love_number_excitation_frequency[last_column][last_line].log10()) * derive) ;
+    //         let derive = (real_part_love_number[last_column][last_line].log10() - real_part_love_number[last_column-1][31].log10())/(love_number_excitation_frequency[last_column][last_line].log10()-love_number_excitation_frequency[last_column-1][31].log10());
+    //         re_k2 = 10f64.powf( real_part_love_number[last_column][last_line].log10()    + (w_k2.log10() - love_number_excitation_frequency[last_column][last_line].log10()) * derive) ;
+    //         find_it = true;
+    //     } else {
+    //         let derive = (imaginary_part_love_number[last_column][last_line].log10() - imaginary_part_love_number[last_column][last_line-1].log10())/(love_number_excitation_frequency[last_column][last_line].log10()-love_number_excitation_frequency[last_column][last_line-1].log10());
+    //         im_k2 = 10f64.powf( imaginary_part_love_number[last_column][last_line].log10()  + (w_k2.log10() - love_number_excitation_frequency[last_column][last_line].log10()) * derive) ;
+    //         let derive = (real_part_love_number[last_column][last_line].log10() - real_part_love_number[last_column][last_line-1].log10())/(love_number_excitation_frequency[last_column][last_line].log10()-love_number_excitation_frequency[last_column][last_line-1].log10());
+    //         re_k2 = 10f64.powf( real_part_love_number[last_column][last_line].log10()    + (w_k2.log10() - love_number_excitation_frequency[last_column][last_line].log10()) * derive) ;
+    //         find_it = true;
+    //     }
+    //     // println!(" Beyond the table ");
+    // } else if w_k2 < love_number_excitation_frequency[0][0] && !find_it {
+    //     let derive = (imaginary_part_love_number[0][1].log10() - imaginary_part_love_number[0][0].log10())/(love_number_excitation_frequency[0][1].log10()-love_number_excitation_frequency[0][0].log10());
+    //     im_k2 = 10f64.powf( imaginary_part_love_number[0][0].log10()  + (w_k2.log10() - love_number_excitation_frequency[0][0].log10()) * derive) ;
+    //     let derive = (real_part_love_number[0][1].log10() - real_part_love_number[0][0].log10())/(love_number_excitation_frequency[0][1].log10()-love_number_excitation_frequency[0][0].log10());
+    //     re_k2 = 10f64.powf( real_part_love_number[0][0].log10()    + (w_k2.log10() - love_number_excitation_frequency[0][0].log10()) * derive) ;
+    //     find_it = true;
+    //     // println!(" Before the table");
+    // } else if !find_it {
+    //     for data_i in 0..nm_data {
+    //         line    = data_i%32;
+    //         column  = data_i/32;
+    //         if w_k2 == love_number_excitation_frequency[column][line] && !find_it {
+    //             re_k2 = real_part_love_number[column][line];
+    //             im_k2 = imaginary_part_love_number[column][line];
+    //             find_it = true;
+    //             break;
+    //         } else if w_k2 < love_number_excitation_frequency[column][line] && !find_it {
+    //             // println!(" line {} column {}", line, column);
+    //             if line==0 {
+    //                 re_k2 = real_part_love_number[column-1][31]         + (real_part_love_number[column][line]        - real_part_love_number[column-1][31])      /2.;
+    //                 im_k2 = imaginary_part_love_number[column-1][31]    + (imaginary_part_love_number[column][line ]   - imaginary_part_love_number[column-1][31]) /2.;
+    //                 find_it = true;
+    //                 // println!("btw two colunm for {}  btw {} <-- {} ", wk2, love_number_excitation_frequency[column-1][31], love_number_excitation_frequency[column][line]);
+    //                 break;
+    //             } else {
+    //                 re_k2 = real_part_love_number[column][line-1]         + (real_part_love_number[column][line]        - real_part_love_number[column][line-1])      /2.;
+    //                 im_k2 = imaginary_part_love_number[column][line-1]    + (imaginary_part_love_number[column][line ]   - imaginary_part_love_number[column][line-1]) /2.;
+    //                 find_it = true;
+    //                 // println!("Interpolation give {} btw {} <--> {} ", wk2, love_number_excitation_frequency[column][line-1], love_number_excitation_frequency[column][line] );
+    //                 break;
+    //             }
+                
+    //         }
+            
+    //     }
+    // }
+
+    // if im_k2 < 0. {
+    //     println!("Frequ {} \t ImK2 {}", w_k2.abs(), im_k2);
+    //     panic!("=== Error  in tide.rs fail interpolation k2 ===")
+    // }
+
+    // if parity {
+    //     im_k2 = -im_k2;
+    // }
+
+    // println!("\t With {} \t The two number RE:{}  Im:{}\n", w_k2, re_k2, im_k2);
+
+    //===================================================================================================================================================================================
 
 
     if w_k2 < 0.0 {
@@ -1325,39 +1494,43 @@ pub fn kaula_number(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], 
         // //println!("\tThe new wk2 {}", w_k2);
     }
 
-    if w_k2 < love_number_excitation_frequency[0][0] {
-        re_k2 = real_part_love_number[0][0];
-        im_k2 = imaginary_part_love_number[0][0];
-        ctrl = false;
-    }
-
-    if w_k2 > love_number_excitation_frequency[last_colunm][last_line] {
-        re_k2 = real_part_love_number[last_colunm][last_line]       + (w_k2 - love_number_excitation_frequency[last_colunm][last_line]) * (real_part_love_number[last_colunm][last_line] - real_part_love_number[last_colunm][last_line-1])/(love_number_excitation_frequency[last_colunm][last_line]-love_number_excitation_frequency[last_colunm-1][last_line-1]) ;
-        im_k2 = imaginary_part_love_number[last_colunm][last_line]  + (w_k2 - love_number_excitation_frequency[last_colunm][last_line]) * (imaginary_part_love_number[last_colunm][last_line] - imaginary_part_love_number[last_colunm][last_line-1])/(love_number_excitation_frequency[last_colunm][last_line]-love_number_excitation_frequency[last_colunm-1][last_line-1]);
-        if im_k2<0. || re_k2<0. {
-            re_k2 = real_part_love_number[last_colunm][last_line]       + (real_part_love_number[last_colunm][last_line+1] - real_part_love_number[last_colunm][last_line])/2.;
-            im_k2 = imaginary_part_love_number[last_colunm][last_line]  + (imaginary_part_love_number[last_colunm][last_line+1] - imaginary_part_love_number[last_colunm][last_line])/2.;
-        }
-        ctrl = false;
-    } else if w_k2 > love_number_excitation_frequency[last_colunm-1][31] {
-        if ctrl && w_k2 < love_number_excitation_frequency[last_colunm][0] {
-            re_k2 = real_part_love_number[last_colunm][0]        + (real_part_love_number[last_colunm][0]         - real_part_love_number[last_colunm-1][31] )     /2.;
-            im_k2 = imaginary_part_love_number[last_colunm][0]   + (imaginary_part_love_number[last_colunm][0]    - imaginary_part_love_number[last_colunm-1][31] )/2.;
+    if w_k2 > love_number_excitation_frequency[last_column][last_line] { //==================================================================Check beyond the last value of the 2D table
+        if case_oneline_last_col {
+            re_k2 = real_part_love_number[last_column][last_line]       + (w_k2 - love_number_excitation_frequency[last_column][last_line]) * (real_part_love_number[last_column][last_line] - real_part_love_number[last_column-1][31])/(love_number_excitation_frequency[last_column][last_line]-love_number_excitation_frequency[last_column-1][31]) ;
+            im_k2 = imaginary_part_love_number[last_column][last_line]  + (w_k2 - love_number_excitation_frequency[last_column][last_line]) * (imaginary_part_love_number[last_column][last_line] - imaginary_part_love_number[last_column-1][31])/(love_number_excitation_frequency[last_column][last_line]-love_number_excitation_frequency[last_column-1][31]);
+        } else {
+            re_k2 = real_part_love_number[last_column][last_line]       + (w_k2 - love_number_excitation_frequency[last_column][last_line]) * (real_part_love_number[last_column][last_line] - real_part_love_number[last_column][last_line-1])/(love_number_excitation_frequency[last_column][last_line]-love_number_excitation_frequency[last_column][last_line-1]) ;
+            im_k2 = imaginary_part_love_number[last_column][last_line]  + (w_k2 - love_number_excitation_frequency[last_column][last_line]) * (imaginary_part_love_number[last_column][last_line] - imaginary_part_love_number[last_column][last_line-1])/(love_number_excitation_frequency[last_column][last_line]-love_number_excitation_frequency[last_column][last_line-1]);
+            // println!("Beyond the table");
+            if im_k2<0. || re_k2<0. {
+                re_k2 = real_part_love_number[last_column][last_line]       + (real_part_love_number[last_column][last_line+1] - real_part_love_number[last_column][last_line])/2.;
+                im_k2 = imaginary_part_love_number[last_column][last_line]  + (imaginary_part_love_number[last_column][last_line+1] - imaginary_part_love_number[last_column][last_line])/2.;
+                // println!("Neg result");
+            }
             ctrl = false;
-        } else if ctrl {
-            for frequency2 in 0..last_line+1{
-                if ctrl && love_number_excitation_frequency[last_colunm][frequency2] >= w_k2 {
-                    if  love_number_excitation_frequency[last_colunm][frequency2] == w_k2 {
-                        re_k2 = real_part_love_number[last_colunm][frequency2];
-                        im_k2 = imaginary_part_love_number[last_colunm][frequency2];
+        }
+    } else if w_k2 > love_number_excitation_frequency[last_column-1][31] { //================================================================Check the last column
+        if ctrl && w_k2 < love_number_excitation_frequency[last_column][0] { //==================================================Check btw the two last column
+            re_k2 = real_part_love_number[last_column][0]        + (real_part_love_number[last_column][0]         - real_part_love_number[last_column-1][31] )     /2.;
+            im_k2 = imaginary_part_love_number[last_column][0]   + (imaginary_part_love_number[last_column][0]    - imaginary_part_love_number[last_column-1][31] )/2.;
+            // println!("\n\tBtw the last-1 and the last\t");
+            ctrl = false;
+        } else if ctrl { //======================================================================================================Check into the last column
+            for frequency2 in 0..last_line+1{ //====Because for 00 to last line-1
+                if ctrl && love_number_excitation_frequency[last_column][frequency2] >= w_k2 {
+                    if  love_number_excitation_frequency[last_column][frequency2] == w_k2 {
+                        re_k2 = real_part_love_number[last_column][frequency2];
+                        im_k2 = imaginary_part_love_number[last_column][frequency2];
+                        // println!("\n\tInto the last col AND equal\t");
                         ctrl = false;
                         break;
                     } else if ctrl {
-                        re_k2 = real_part_love_number[last_colunm][frequency2-1]         + (real_part_love_number[last_colunm][frequency2]        - real_part_love_number[last_colunm][frequency2-1])      /2.;
-                        im_k2 = imaginary_part_love_number[last_colunm][frequency2-1]    + (imaginary_part_love_number[last_colunm][frequency2]   - imaginary_part_love_number[last_colunm][frequency2-1]) /2.;
-                        // re_k2 = real_part_love_number[last_colunm][frequency2-1] + (real_part_love_number[last_colunm][2] - real_part_love_number[last_colunm][1])/2.;
-                        // im_k2 = imaginary_part_love_number[last_colunm][1] + (imaginary_part_love_number[last_colunm][2] - imaginary_part_love_number[last_colunm][1])/2.;
-                        // //println!("\n \n Find {}, with {} <-> {}  ", im_k2, imaginary_part_love_number[last_colunm][frequency2], imaginary_part_love_number[last_colunm][frequency2-1]);
+                        re_k2 = real_part_love_number[last_column][frequency2-1]         + (real_part_love_number[last_column][frequency2]        - real_part_love_number[last_column][frequency2-1])      /2.;
+                        im_k2 = imaginary_part_love_number[last_column][frequency2-1]    + (imaginary_part_love_number[last_column][frequency2]   - imaginary_part_love_number[last_column][frequency2-1]) /2.;
+                        // re_k2 = real_part_love_number[last_column][frequency2-1] + (real_part_love_number[last_column][2] - real_part_love_number[last_column][1])/2.;
+                        // im_k2 = imaginary_part_love_number[last_column][1] + (imaginary_part_love_number[last_column][2] - imaginary_part_love_number[last_column][1])/2.;
+                        // println!("\n\t Into the last col");
+                        // println!("Find {}, with {} <-> {}  ", im_k2, imaginary_part_love_number[last_column][frequency2], imaginary_part_love_number[last_column][frequency2-1]);
                         // //println!("Stuff {}", w_k2);
                         ctrl = false;
                         break;
@@ -1366,22 +1539,24 @@ pub fn kaula_number(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], 
                 }
                 if !ctrl {break;}
             }
-        }
-    } else {
-        for frequency1 in 0..love_number_excitation_frequency.len()-1{ //-1 Do not take the last col
+        } //================End check last column
+    } else { //===============================================================================================================================Check All other column
+        for frequency1 in 0..last_column{ // Loop into the column without the last one 
             // //println!("here?");
-            if ctrl && love_number_excitation_frequency[frequency1][31] > w_k2 {
-                // //println!("the firts {}", love_number_excitation_frequency[frequency1][31]);
+            if ctrl && love_number_excitation_frequency[frequency1][31] >= w_k2 {
+                // println!("The last {}", love_number_excitation_frequency[frequency1][31]);
                 if ctrl && love_number_excitation_frequency[frequency1][0] > w_k2 {
                     re_k2 = real_part_love_number[frequency1][0]        + (real_part_love_number[frequency1][0]         - real_part_love_number[frequency1 -1][31] )        /2.;
                     im_k2 = imaginary_part_love_number[frequency1][0]   + (imaginary_part_love_number[frequency1][0]    - imaginary_part_love_number[frequency1 -1][31] )   /2.;
+                    // println!("\n\tBtw two column");
                     ctrl = false;
                 } else if ctrl {
-                    for frequency2 in 0..love_number_excitation_frequency.len(){
+                    for frequency2 in 0..love_number_excitation_frequency.len(){ //loop into the 32 elements of each line
                         if ctrl && love_number_excitation_frequency[frequency1][frequency2] >= w_k2 { 
                             if  love_number_excitation_frequency[frequency1][frequency2] == w_k2 {
                                 re_k2 = real_part_love_number[frequency1][frequency2];
                                 im_k2 = imaginary_part_love_number[frequency1][frequency2];
+                                // println!("Is equal");
                                 ctrl = false;
                                 break;
                             }
@@ -1407,15 +1582,22 @@ pub fn kaula_number(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], 
         im_k2 = -im_k2;
         // re_k2 = -re_k2;
     }
-    if w_k2!=0. && im_k2==0. {
-        println!("Frequ {} \t ImK2 {}", w_k2, im_k2);
+
+    //============================================================================================================================================================================================
+
+
+    if (w_k2!=0. && im_k2==0.) || (w_k2!=0. && re_k2==0.) {
+        println!("Frequ {} \t ImK2 {} \t ReK2 {}", w_k2, im_k2, re_k2);
         panic!("=== Error  in tide.rs fail interpolation k2 ===")
     }
+    // if (w_k2!=0. && im_k2==0.)  {
+    //     println!("Frequ {} \t ImK2 {} \t ReK2 {}", w_k2, im_k2, re_k2);
+    //     panic!("=== Error  in tide.rs fail interpolation k2 ===")
+    // }
     // panic!("");
     // println!("The two number RE:{}  Im:{}\n", re_k2, im_k2);
     return (re_k2, im_k2)
 }
-
 
 pub fn sigma_2mpq(m:f64, p:f64, q:f64, spin:f64, orbital_frequency: f64) -> f64{
     // //////println!("\tsigma_calulation: the orbital_frequ {} and spin {}  give the sigma excit_frequ {}, the integer m {}, p {}, q {},  ", orbital_frequency, spin, (2. -2.*p + q)*orbital_frequency -m*spin, m, p, q );

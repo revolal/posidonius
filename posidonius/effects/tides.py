@@ -64,11 +64,11 @@ class Tides(object):
                     "im_love_number_sigma2201": 0.,
                     "im_love_number_sigma2202": 0.,
                 
-                    # "re_love_number_sigma220_2": 0.,
-                    # "re_love_number_sigma220_1": 0.,
-                    # "re_love_number_sigma2200": 0.,
-                    # "re_love_number_sigma2201": 0.,
-                    # "re_love_number_sigma2202": 0.,
+                    "re_love_number_sigma220_2": 0.,
+                    "re_love_number_sigma220_1": 0.,
+                    "re_love_number_sigma2200": 0.,
+                    "re_love_number_sigma2201": 0.,
+                    "re_love_number_sigma2202": 0.,
                     
                     "check_excitative_frequ":0.,
 
