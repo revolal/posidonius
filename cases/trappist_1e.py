@@ -114,6 +114,7 @@ if __name__ == "__main__":
     #===============================================================================================
     # planet_data_b = np.loadtxt('Results_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
     planet_data_b = np.loadtxt('Results_Creep_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_b = np.loadtxt('Results_Creep-2_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_b, planet_radius_b, planet_gyration_radius_squared_b = planet_data_b[0,:] 
 
     w_lm_b   = planet_data_b[1:,0]
@@ -252,7 +253,7 @@ if __name__ == "__main__":
     a = 0.01111
     i = 0.
     l = 0.
-    e = 0.00622
+    e = 0.0#1 #0.00622
     w_lmpq = w_lm_b
     ImK2 = ImK2_b
     ReK2 = ReK2_b
@@ -400,8 +401,8 @@ if __name__ == "__main__":
     whfast_alternative_coordinates="DemocraticHeliocentric"
     #whfast_alternative_coordinates="WHDS"
     #whfast_alternative_coordinates="Jacobi"
-    universe.write(filename, integrator="WHFast", whfast_alternative_coordinates=whfast_alternative_coordinates)
-    # universe.write(filename, integrator="IAS15")
+    # universe.write(filename, integrator="WHFast", whfast_alternative_coordinates=whfast_alternative_coordinates)
+    universe.write(filename, integrator="IAS15")
     #universe.write(filename, integrator="LeapFrog")
 
 

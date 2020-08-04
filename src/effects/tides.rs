@@ -627,19 +627,19 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             // let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass), particle.inertial_position, particle.inertial_velocity);
             let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
             //it return (a, q, eccentricity, i, p, n, l, orbital_period)
-            let semi_major_axis = orbital_elements.0;
-            let eccentricity =  orbital_elements.2; // ================================================================================================================================
+            let semi_major_axis:f64 = orbital_elements.0;
+            let eccentricity:f64 =  orbital_elements.2; // ================================================================================================================================
             // println!("\tL ECC {} SE SES MORTS\n", eccentricity);
             let orbital_period = (TWO_PI/ (G*(tidal_host_particle.mass+particle.mass)).sqrt()) * semi_major_axis.powf(3./2.);
             // let orbital_period = orbital_elements.7; //in [s]
-            let orbital_frequency = TWO_PI / (orbital_period*DAY) ; // in [rad/s]
+            let orbital_frequency:f64 = TWO_PI / (orbital_period*DAY) ; // in [rad/s]
             
             // let orbital_period = TWO_PI *( (semi_major_axis *AU).powi(3)/(G_SI*M_SUN*(tidal_host_particle.mass+particle.mass))).sqrt();
             // let orbital_frequency = TWO_PI / (orbital_period) ; // in [rad/s]
             
 
             // let spin = particle.norm_spin_vector_2.sqrt()/DAY; //this is [rad.s^-1]
-            let spin = ( particle.spin.x.powi(2) + particle.spin.y.powi(2) + particle.spin.z.powi(2) ).sqrt() / DAY; //this is [rad.s^-1]
+            let spin:f64 = ( particle.spin.x.powi(2) + particle.spin.y.powi(2) + particle.spin.z.powi(2) ).sqrt() / DAY; //this is [rad.s^-1]
 
 
 
@@ -648,11 +648,11 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             let im_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.imaginary_part_love_number;
             let re_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
             let w_lmpq = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;
-            let nm_data = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
+            let nm_data:f64 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
 
             let eccentricity_function = eccentricty_function_g_20q(eccentricity);
             let mut _excitative_frequency: f64;
-            let mut _q = -2.;
+            let mut _q:f64 = -2.;
 
             particle.tides.parameters.internal.a = semi_major_axis;
             // particle.tides.parameters.internal.spin = spin;
@@ -790,6 +790,50 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             for x in 0..5{
                 sum_g_im_k2_over_q = sum_g_im_k2_over_q + ( eccentricity_function[x].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[x] ) ;
             }
+            tidal_torque_kaula_coplanar[1] = - (3./2.)*( ( G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5) ) / semi_major_axis.powi(6) ) *sum_g_im_k2_over_q;
+
+
+            //===============================================================================Torque No simplification
+            // let eccentricity_function_g_20q = eccentricty_function_g_20q(eccentricity);
+            // let n = orbital_frequency;
+            // let t = current_time;
+            // let mut sum_g_im_k2_over_q:f64=0.;
+            // let mut integer_q = -2.;
+            // let mut integer_j = -2.;
+
+            // for q in 0..5 {
+            //     for j in 0..5{
+            //         let phase_term = (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+            //         sum_g_im_k2_over_q = sum_g_im_k2_over_q +  (3./2.) * eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] 
+            //                                 * ( phase_term.sin()*particle.tides.parameters.internal.re_love_number_sigma220q[q] + phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+            //         integer_j = integer_j +1.;
+            //         // println!("n° {}     real {}   imaginary {}", q, particle.tides.parameters.internal.re_love_number_sigma220q[q], particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+            //     }
+            //     integer_q = integer_q +1.;
+            // }
+            // tidal_torque_kaula_coplanar[1] = - ( ( G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5) ) / semi_major_axis.powi(6) ) *sum_g_im_k2_over_q;
+
+            //==============================================================================Torque only Im
+        
+            // let eccentricity_function_g_20q = eccentricty_function_g_20q(eccentricity);
+            // let n = orbital_frequency;
+            // let t = current_time;
+            // let mut sum_g_im_k2_over_q:f64=0.;
+            // let mut integer_q = -2.;
+            // let mut integer_j = -2.;
+
+            // for q in 0..5 {
+            //     for j in 0..5{
+            //         let phase_term = (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+            //         sum_g_im_k2_over_q = sum_g_im_k2_over_q +  (3./2.) * eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] 
+            //                                 * ( phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+            //         integer_j = integer_j +1.;
+            //         // println!("n° {}     real {}   imaginary {}", q, particle.tides.parameters.internal.re_love_number_sigma220q[q], particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+            //     }
+            //     integer_q = integer_q +1.;
+            // }
+            // tidal_torque_kaula_coplanar[1] = - ( ( G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5) ) / semi_major_axis.powi(6) ) *sum_g_im_k2_over_q;
+
             /////////////////////////////////////////////////////////////////////////////////////
             // let eccentricity_function_g_20q = eccentricty_function_g_20q(eccentricity);
             // let mut sum_g_im_k2_over_q:f64 = 0.;
@@ -827,7 +871,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
 
             ////////////////////////////////////////////////////////////////////////////////////////
 
-            tidal_torque_kaula_coplanar[1] = - (3./2.)*( ( G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5) ) / semi_major_axis.powi(6) ) *sum_g_im_k2_over_q;
+            
 
             particle.tides.parameters.internal.tidal_torque_z = tidal_torque_kaula_coplanar[1];
 
@@ -932,63 +976,77 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
            if !central_body{
                 let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
                 //keplerian element return (a, q, eccentricity, i, p, n, l, orbital_period)
-                let semi_major_axis = orbital_elements.0;
-                let eccentricity =  orbital_elements.2;
-                let orbital_period = orbital_elements.7;
-                let orbital_frequency = TWO_PI / (orbital_period *DAY) ;
+                let semi_major_axis:f64 = orbital_elements.0;
+                let eccentricity:f64 =  orbital_elements.2;
+                let orbital_period:f64 = orbital_elements.7;
+                let orbital_frequency:f64 = TWO_PI / (orbital_period *DAY) ;
             
-                let _spin = particle.norm_spin_vector_2.sqrt()/DAY;
+                let _spin:f64 = particle.norm_spin_vector_2.sqrt()/DAY;
                 let _imaginary_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.imaginary_part_love_number;
                 let _real_k2 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.real_part_love_number;
                 let _w_lmpq = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.love_number_excitation_frequency;
-                let _nm_data = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
+                let _nm_data:f64 = particle.tides.parameters.input.kaula_coplanar_tides_input_parameters.num_datapoints;
                 // num_datapoint is f64
                 
                 let eccentricity_function_g_20q = eccentricty_function_g_20q(eccentricity);
 
                 let mut sum_over:f64 = 0.;
-                let n = orbital_frequency;
-                let t = current_time;
-                let mut integer_q = -2.;
-                let mut integer_j = -2.;
+                let n:f64 = orbital_frequency;
+                let t:f64 = current_time;
+                let mut integer_q:f64 = -2.;
+                let mut integer_j:f64 = -2.;
                 // println!("\n\tInto Radial tidal force:");
                 // println!("Ecc {}, semi_maj_axis {} AU, orbital period {} Days", eccentricity, semi_major_axis, orbital_period);
                 // println!("The Star Mass {} Msol, The planet radius {} Rearth, ", tidal_host_particle.mass, particle.radius*AU/6.3781e6 );
                 // panic!("...");
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Eq3.27 Ortho Force
-                for q in 0..5 {
-                    for j in 0..5{
-                        let phase_term = (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
-                        sum_over = sum_over +  (3./2.) *eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] 
-                                                * ( phase_term.sin() * particle.tides.parameters.internal.re_love_number_sigma220q[q] - phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
-                        integer_j = integer_j +1.;
-                        // println!("n° {}     real {}   imaginary {}", q, particle.tides.parameters.internal.re_love_number_sigma220q[q], particle.tides.parameters.internal.im_love_number_sigma220q[q] );
-                    }
-                    integer_q = integer_q +1.;
-                }
-                particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
-
-// ==============================================================================orthoradiale 2 imaginaire
-
                 // for q in 0..5 {
                 //     for j in 0..5{
-                //         let phase_term = (integer_q - integer_j)*n*t;
-                //         sum_over = sum_over + eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] 
-                //                                 * ( phase_term.sin() * particle.tides.parameters.internal.re_love_number_sigma220q[q] - phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+                //         let phase_term = (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+                //         sum_over = sum_over +  (3./2.) *eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] 
+                //                                 * ( phase_term.sin() * particle.tides.parameters.internal.re_love_number_sigma220q[q] + phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
                 //         integer_j = integer_j +1.;
                 //         // println!("n° {}     real {}   imaginary {}", q, particle.tides.parameters.internal.re_love_number_sigma220q[q], particle.tides.parameters.internal.im_love_number_sigma220q[q] );
                 //     }
                 //     integer_q = integer_q +1.;
                 // }
-                // particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - (3./2.) *( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+                // particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Eq3.30 Ortho Force Hybride
-
-                // for x in 0..5{
-                //     sum_over = sum_over + eccentricity_function_g_20q[x].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[x] ;
+//===========================================================================================================================================Ortho only Im
+                // for q in 0..5 {
+                //     for j in 0..5{
+                //         let phase_term = (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+                //         sum_over = sum_over +  (3./2.) *eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] 
+                //                                 * (  phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+                //         integer_j = integer_j +1.;
+                //         // println!("n° {}     real {}   imaginary {}", q, particle.tides.parameters.internal.re_love_number_sigma220q[q], particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+                //     }
+                //     integer_q = integer_q +1.;
                 // }
+                // particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
 
-                // particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - (3./2.) *( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
+//===========================================================================================================================================Eq Ortho Pseudo-hybride
+
+                // for q in 0..5 {
+                //     for j in 0..5{
+                //         let phase_term = (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+                //         sum_over = sum_over +  (3./2.) *eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j] 
+                //                                 * ( phase_term.cos() * particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+                //         integer_j = integer_j +1.;
+                //         // println!("n° {}     real {}   imaginary {}", q, particle.tides.parameters.internal.re_love_number_sigma220q[q], particle.tides.parameters.internal.im_love_number_sigma220q[q] );
+                //     }
+                //     integer_q = integer_q +1.;
+                // }
+                // particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
+//===========================================================================================================================================Eq3.30 Ortho Force Hybride
+
+                for x in 0..5{
+                    sum_over = sum_over + eccentricity_function_g_20q[x].powi(2) * particle.tides.parameters.internal.im_love_number_sigma220q[x] ;
+                }
+
+                particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide = - (3./2.) *( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
 
 
 
@@ -1036,11 +1094,11 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
 
             let orbital_elements = tools::calculate_keplerian_orbital_elements(G*(tidal_host_particle.mass+particle.mass), particle.heliocentric_position, particle.heliocentric_velocity);
             //calculate keplerian el return (a, q, eccentricity, i, p, n, l, orbital_period)
-            let semi_major_axis = orbital_elements.0;
-            let eccentricity =  orbital_elements.2;
+            let semi_major_axis:f64 = orbital_elements.0;
+            let eccentricity:f64 =  orbital_elements.2;
 
-            let orbital_period = orbital_elements.7;
-            let orbital_frequency = TWO_PI / (orbital_period *DAY) ;
+            let orbital_period:f64 = orbital_elements.7;
+            let orbital_frequency:f64 = TWO_PI / (orbital_period *DAY) ;
 
             // let _spin = particle.norm_spin_vector_2.sqrt()/DAY; // in rad/s
             // //////println!("The Planetary Spin in [s^-1]: {}\t Period in [s]: {}\t in [day]: {} Vector: {:?}", spin, 1./(spin), 1./(spin*DAY), particle.spin);
@@ -1054,8 +1112,8 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
 
             // let mut _excitative_frequency: f64;
             let mut sum_over:f64 = 0.;
-            let n = orbital_frequency;
-            let t = current_time;
+            let n:f64 = orbital_frequency;
+            let t:f64 = current_time;
             let mut integer_q:f64 = -2.;
             let mut integer_j:f64 = -2.;
 
@@ -1081,6 +1139,23 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
                 integer_q = integer_q +1.;
             }
             particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
+
+//====================================================Radial Ony Im
+            // for q in 0..5{
+            //     for j in 0..5{
+            //         let phase_term =  (integer_j - integer_q)*n*t; //(integer_q - integer_j)*n*t;
+            //         sum_over = sum_over + (3./4.) * eccentricity_function_g_21q[q] * eccentricity_function_g_21q[j]
+            //                             * ( phase_term.sin() * particle.tides.parameters.internal.im_love_number_sigma201q[q] )
+            //                             + (9./4.) * eccentricity_function_g_20q[q] * eccentricity_function_g_20q[j]
+            //                             * ( phase_term.sin()*particle.tides.parameters.internal.im_love_number_sigma220q[q] ) ;
+            //         integer_j = integer_j +1.;
+            //     }
+            //     integer_q = integer_q +1.;
+            // }
+            // particle.tides.parameters.internal.radial_component_of_the_tidal_force = - ( (G* tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6) * particle.heliocentric_distance) ) * sum_over;
+
+
 
 //==================================================== Radiale 3/4 1
 

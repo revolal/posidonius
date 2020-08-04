@@ -29,8 +29,8 @@ if __name__ == "__main__":
     filename = args.historic_snapshot_filename
     n_particles, data = posidonius.analysis.history.read(filename)
 
-    print("IM220_2", abs(data["im_love_number_sigma2200"][:]))
-    print("Sigma220_2", abs(data["sigma220_2_excitative_frequency"][:]))
+    # print("IM220_2", abs(data["im_love_number_sigma2200"][:]))
+    # print("Sigma220_2", abs(data["sigma220_2_excitative_frequency"][:]))
 
     # print("Semi Maj Axis", data["a"][:50])
 

@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
-mpl.use('Agg')
+# mpl.use('Agg')
 mpl.rcParams['agg.path.chunksize'] = 10000
 import matplotlib.pyplot as plt
 import argparse
@@ -333,7 +333,7 @@ if __name__ == "__main__":
     #plt.setp(ax.get_xticklabels(), visible=False)
 
     i=i+1
-    ax = fig.add_subplot(ligne,colonne,i)
+    ax = fig.add_subplot(ligne,colonne,i, sharex=ax)
     field = 'acceleration'
     for key in planets_keys:
         planet_data = planets_data[key]
@@ -359,11 +359,11 @@ if __name__ == "__main__":
     i=i+1
     ax = fig.add_subplot(ligne,colonne,i, sharex=ax)
     # Planet orbital period
-    field = 'Orbital period\n(days)'
+    field = 'planet_precession_angle'
     #ax.plot(planet_data['current_time'], planet_data[field])
     for key in planets_keys:
         planet_data = planets_data[key]
-        ax.plot(planet_data['current_time'], planets_computed_data[key]['orbital_period'], label="orbital_period") #
+        ax.plot(planet_data['current_time'], planets_computed_data[key]['planet_precession_angle'] , label='planet_precession_angle') #
         ax.set_ylabel(field)
         #ax.set_ylim([1e12, 1e19])
         ax.set_xscale('log')
@@ -398,6 +398,7 @@ if __name__ == "__main__":
         # ax.plot(planet_data['current_time'], Pseudosynchro_ratio, label='Pseudo-synchro', ls="--", color='green') # Pseudo-sync
         ax.plot(planet_data['current_time'], Pseudosynchro_ratio/Pseudosynchro_ratio, label='Synchro', ls="--", color='red') # Pseudo-sync
         ax.plot(planet_data['current_time'], Pseudosynchro_ratio/Pseudosynchro_ratio *2., label='1./2. resonnance', ls="--", color='green') # Pseudo-sync
+        ax.plot(planet_data['current_time'], Pseudosynchro_ratio/Pseudosynchro_ratio *3./2., label='2./3. resonnance', ls="--", color='orange') # Pseudo-sync
         # ax.plot(planet_data['current_time'], 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY), label=key) 
         # ax.plot(planet_data['current_time'], 2.*np.pi/ (2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY)*posidonius.constants.DAY), label="orbital frequ")
         ax.set_ylabel(field)

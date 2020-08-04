@@ -23,8 +23,8 @@ if __name__ == "__main__":
     n_particles, data = posidonius.analysis.history.read(filename)
 
     # print("Tidal torque Z ", data['tidal_torque_z'][:50])
-    print("Tidal torque Z ", data['tidal_torque_z'][:50], len(data['tidal_torque_z']))
-    print( data['current_time'][:50], len(data['current_time']))
+    # print("Tidal torque Z ", data['tidal_torque_z'][:50], len(data['tidal_torque_z']))
+    # print( data['current_time'][:50], len(data['current_time']))
     # print("Sigma220_2", data["sigma220_2_excitative_frequency"][:50])
 
     most_massive_particle_index = universe_integrator_json['universe']['hosts']['index']['most_massive']
@@ -70,9 +70,12 @@ if __name__ == "__main__":
         planet_computed_data = {}
 
 
-        print("Tidal torque Z ", planet_data['tidal_torque_z'][:50], len(planet_data['tidal_torque_z']))
-        print( planet_data['current_time'][:50], len(planet_data['current_time']))
-        print("MAx et Min", np.max(planet_data['tidal_torque_z']) , np.min(planet_data['tidal_torque_z']))
+        print("Tidal torque Z \n Max ", np.max(np.abs(planet_data['tidal_torque_z'])), '\n The min', np.min(np.abs(planet_data['tidal_torque_z'])), '\n The len ', len(planet_data['tidal_torque_z']), )#' \n The 50 first elements:', planet_data['tidal_torque_z'][:50], )
+
+        print("orthogonal_component_of_the_tidal_force_due_to_planetary_tide Z \n Max ", np.max(np.abs(planet_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide'])), '\n The min', np.min(np.abs(planet_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide'])), '\n The len ', len(planet_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide']), )# ' \n The 50 first elements:', planet_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide'][:50], )
+
+        print("radial_component_of_the_tidal_force \n Max ", np.max(np.abs(planet_data['radial_component_of_the_tidal_force'])), '\n The min', np.min(np.abs(planet_data['radial_component_of_the_tidal_force'])), '\n The len ', len(planet_data['radial_component_of_the_tidal_force']), )#' \n The 50 first elements:', planet_data['radial_component_of_the_tidal_force'][:50], )
+
 
         planet_norm_spin = np.sqrt(np.power(planet_data['spin_x'], 2) + np.power(planet_data['spin_y'], 2) + np.power(planet_data['spin_z'], 2))
         planet_rotation_period = 2*np.pi / planet_norm_spin
@@ -417,9 +420,9 @@ if __name__ == "__main__":
     print("> Output data written to plain text file: {}".format(output_text_filename))
 
     # print("Tidal torque Z ", planet_data['tidal_torque_z'][:50], len(planet_data['tidal_torque_z']))
-    print("Radial Force ", planet_data['radial_component_of_the_tidal_force'])
-    print("Ortho Force ",planet_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide'] )
-    print("Spin X ", planet_data['spin_x'], 'Spin Y ', planet_data['spin_y'], "Spin Z",  planet_data['spin_z'])
+    # print("Radial Force ", planet_data['radial_component_of_the_tidal_force'])
+    # print("Ortho Force ",planet_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide'] )
+    # print("Spin X ", planet_data['spin_x'], 'Spin Y ', planet_data['spin_y'], "Spin Z",  planet_data['spin_z'])
     # print( planet_data['current_time'][:50], len(planet_data['current_time']))
 
     # ===================================================================================================================================
@@ -437,9 +440,9 @@ if __name__ == "__main__":
     for key in planets_keys:
         planet_data = planets_data[key]
         #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-        ax.scatter( planet_data['current_time'],planet_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide'] ,ls='-', label='Ortho Force', color = 'red')
+        ax.scatter( planet_data['current_time'],planet_data['orthogonal_component_of_the_tidal_force_due_to_planetary_tide'] , linestyle='-', label='Ortho Force', color = 'red')
     ax.set_ylabel("")
-    ax.set_ylim([-5e-15, 5e-15])
+    ax.set_ylim([-1e-16, 1e-16])
     ax.set_xscale('log')
     ax.set_xlim(left=1., right=5E5)
     ax.legend(loc=0, prop={'size':8})
@@ -447,7 +450,7 @@ if __name__ == "__main__":
 
 
     i=i+1
-    ax = fig.add_subplot(ligne,colonne,i)
+    ax = fig.add_subplot(ligne,colonne,i, sharex=ax)
     field = ''
     for key in planets_keys:
         planet_data = planets_data[key]
@@ -463,14 +466,14 @@ if __name__ == "__main__":
 ###########################################################################
 
     i=i+1
-    ax = fig.add_subplot(ligne,colonne,i)
+    ax = fig.add_subplot(ligne,colonne,i, sharex=ax)
     field = ''
     for key in planets_keys:
         planet_data = planets_data[key]
         #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
         ax.scatter( planet_data['current_time'],planet_data['radial_component_of_the_tidal_force'], ls='-',  label='Radial Force', color = 'red')
     ax.set_ylabel("")
-    ax.set_ylim([-5e-15, 5e-15])
+    ax.set_ylim([-2e-13, 2e-13])
     ax.set_xscale('log')
     ax.set_xlim(left=1., right=5E5)
     ax.legend(loc=0, prop={'size':8})
@@ -478,7 +481,7 @@ if __name__ == "__main__":
 
 
     i=i+1
-    ax = fig.add_subplot(ligne,colonne,i)
+    ax = fig.add_subplot(ligne,colonne,i, sharex=ax)
     field = ''
     for key in planets_keys:
         planet_data = planets_data[key]
@@ -495,14 +498,14 @@ if __name__ == "__main__":
 
 
     i=i+1
-    ax = fig.add_subplot(ligne,colonne,i)
+    ax = fig.add_subplot(ligne,colonne,i, sharex=ax)
     field = ''
     for key in planets_keys:
         planet_data = planets_data[key]
         #ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
         ax.scatter( planet_data['current_time'],planet_data['tidal_torque_z'] ,ls='-', label='Tidal Torque Z', color = 'red')
     ax.set_ylabel("")
-    ax.set_ylim([-5e-16, 5e-16])
+    ax.set_ylim([-1e-18, 1e-18])
     # ax.set_yscale('log')
     ax.set_xscale('log')
     ax.set_xlim(left=1., right=5E5)
@@ -511,7 +514,7 @@ if __name__ == "__main__":
 
 
     i=i+1
-    ax = fig.add_subplot(ligne,colonne,i)
+    ax = fig.add_subplot(ligne,colonne,i, sharex=ax)
     field = ''
     for key in planets_keys:
         planet_data = planets_data[key]
