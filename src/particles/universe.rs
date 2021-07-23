@@ -439,7 +439,8 @@ impl Universe {
                         if self.consider_effects.tides {
                             // println!("///TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT///");
                             tides::calculate_radial_component_of_the_tidal_force(&mut tidal_host_particle, &mut particles_left, &mut particles_right, &mut self.star_planet_dependent_dissipation_factors, current_time);  // Needed for calculate_tidal_acceleration
-                            tides::calculate_tidal_acceleration(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
+                            tides::calculate_orthogonal_component_of_the_tidal_force(&mut tidal_host_particle, &mut particles_left, &mut particles_right, &mut self.star_planet_dependent_dissipation_factors, current_time);
+                            tides::calculate_tidal_acceleration(&mut tidal_host_particle, &mut particles_left, &mut particles_right,current_time);
                             // println!("///TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT///");
                         }
 

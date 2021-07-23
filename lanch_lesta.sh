@@ -4,7 +4,7 @@
 #SBATCH --job-name=TTV_T1_POS
 #SBATCH --output=output.txt
 #
-#SBATCH --partition=p5
+#SBATCH --partition=s1
 #SBATCH --ntasks=1
 path=$PWD
 NAME=${path##*/}

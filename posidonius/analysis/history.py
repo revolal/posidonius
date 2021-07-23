@@ -27,7 +27,10 @@ def read(filename):
                 'dangular_momentum_dt_x', 'dangular_momentum_dt_y', 'dangular_momentum_dt_z', #32 arguments
                 'sigma220_2_excitative_frequency', 'sigma220_1_excitative_frequency', 'sigma2200_excitative_frequency', 'sigma2201_excitative_frequency', 'sigma2202_excitative_frequency', 
                 'im_love_number_sigma220_2', 'im_love_number_sigma220_1', 'im_love_number_sigma2200', 'im_love_number_sigma2201', 'im_love_number_sigma2202', #) #42 arguments
-                're_love_number_sigma220_2', 're_love_number_sigma220_1', 're_love_number_sigma2200', 're_love_number_sigma2201', 're_love_number_sigma2202', ) #47 arguments
+                're_love_number_sigma220_2', 're_love_number_sigma220_1', 're_love_number_sigma2200', 're_love_number_sigma2201', 're_love_number_sigma2202',  #47 arguments
+                'sigma201_2_excitative_frequency', 'sigma201_1_excitative_frequency', 'sigma2010_excitative_frequency', 'sigma2011_excitative_frequency', 'sigma2012_excitative_frequency', #52 arguments
+                'im_love_number_sigma201_2', 'im_love_number_sigma201_1', 'im_love_number_sigma2010', 'im_love_number_sigma2011', 'im_love_number_sigma2012', #) #57 arguments
+                're_love_number_sigma201_2', 're_love_number_sigma201_1', 're_love_number_sigma2010', 're_love_number_sigma2011', 're_love_number_sigma2012', ) #52 arguments
 
     data = []
     while True:
@@ -91,9 +94,13 @@ def classify(n_particles, data, reference_particle_index=0, discard_first_hundre
         positions.insert(0, zeros) # Star is at the center
         velocities = [Axes(planets_data[k]['velocity_x'], planets_data[k]['velocity_y'], planets_data[k]['velocity_z']) for k in planets_keys if k != key]
         velocities.insert(0, zeros) # Star is resting
-        a, q, e, i, p, n, l = posidonius.tools.calculate_keplerian_orbital_elements(target_mass, target_position, target_velocity, masses=masses, positions=positions, velocities=velocities)
+        a, q, e, i, p, n, l = posidonius.tools.calculate_keplerian_orbital_elements_2(target_mass, target_position, target_velocity, masses=masses, positions=positions, velocities=velocities)
         #a, q, e, i, p, n, l = posidonius.tools.calculate_keplerian_orbital_elements(target_mass+star_data['mass'], target_position, target_velocity)
-        planets_data[key] = append_fields(planets_data[key], ('semi-major_axis', 'eccentricity', 'inclination'), (a, e, i), usemask=False)
+        # planets_data[key] = append_fields(planets_data[key], ('semi-major_axis', 'eccentricity', 'inclination'), (a, e, i), usemask=False)
+        planets_data[key] = append_fields(planets_data[key], ('semi-major_axis', 'eccentricity', 'inclination', 'longitude_perihelion', 'longitude_ascending_node', 'mean_anomaly'), (a, e, i, p, n, l), usemask=False)
+        # ex, ey, ez = posidonius.tools.calculate_eccentricity_vector(target_mass, target_position, target_velocity)
+        ex, ey, ez = posidonius.tools.calculate_eccentricity_vector(target_mass, target_position, target_velocity, masses=masses, positions=positions, velocities=velocities)
+        planets_data[key] = append_fields(planets_data[key], ('eccentric_vector_x', 'eccentric_vector_y', 'eccentric_vector_z'), (ex, ey, ez), usemask=False)
     star_data['position_x'] = 0.
     star_data['position_y'] = 0.
     star_data['position_z'] = 0.

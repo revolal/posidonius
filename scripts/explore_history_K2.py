@@ -157,6 +157,24 @@ if __name__ == "__main__":
             planet_computed_data['re_love_number_sigma2200'] = planet_data['re_love_number_sigma2200']
             planet_computed_data['re_love_number_sigma2201'] = planet_data['re_love_number_sigma2201']
             planet_computed_data['re_love_number_sigma2202'] = planet_data['re_love_number_sigma2202']
+
+            planet_computed_data['sigma201_2_excitative_frequency'] = planet_data['sigma201_2_excitative_frequency']
+            planet_computed_data['sigma201_1_excitative_frequency'] = planet_data['sigma201_1_excitative_frequency']
+            planet_computed_data['sigma2010_excitative_frequency']  = planet_data['sigma2010_excitative_frequency']
+            planet_computed_data['sigma2011_excitative_frequency']  = planet_data['sigma2011_excitative_frequency']
+            planet_computed_data['sigma2012_excitative_frequency']  = planet_data['sigma2012_excitative_frequency']
+
+            planet_computed_data['im_love_number_sigma201_2'] = planet_data['im_love_number_sigma201_2']
+            planet_computed_data['im_love_number_sigma201_1'] = planet_data['im_love_number_sigma201_1']
+            planet_computed_data['im_love_number_sigma2010']  = planet_data['im_love_number_sigma2010']
+            planet_computed_data['im_love_number_sigma2011']  = planet_data['im_love_number_sigma2011']
+            planet_computed_data['im_love_number_sigma2012']  = planet_data['im_love_number_sigma2012']
+
+            planet_computed_data['re_love_number_sigma201_2'] = planet_data['re_love_number_sigma201_2']
+            planet_computed_data['re_love_number_sigma201_1'] = planet_data['re_love_number_sigma201_1']
+            planet_computed_data['re_love_number_sigma2010']  = planet_data['re_love_number_sigma2010']
+            planet_computed_data['re_love_number_sigma2011']  = planet_data['re_love_number_sigma2011']
+            planet_computed_data['re_love_number_sigma2012']  = planet_data['re_love_number_sigma2012']
             
             ### Calculation of energydot and tidal flux, in W/m2
             # Gravitationl energy lost of the system due to dissipation
@@ -318,7 +336,8 @@ if __name__ == "__main__":
 
     # data_K2 = 'Results_Trappist_1e_05.0_150_freq_Imk2_posidonius.txt'
     # data_K2 = 'Results_Trappist_1e_00.0_138_freq_Imk2_posidonius.txt'
-    data_K2 = 'Results_Creep_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt'
+    # data_K2 = 'Results_Creep_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt'
+    data_K2 = 'Results_V1_Armann2_atm_freq_Imk2_posidonius.txt'
 
     planet_data = np.loadtxt(data_K2)
     planet_mass, planet_radius, planet_gyration_radius = planet_data[0,:] 
@@ -360,7 +379,7 @@ if __name__ == "__main__":
     print("preparing plot...")
     fig = plt.figure(figsize=(25, 20))
     ligne = 5
-    colonne = 2
+    colonne = 4
     i=0
 
     i=i+1
@@ -393,6 +412,37 @@ if __name__ == "__main__":
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
+    # --------------------------------------------------------------------------------------------------------------------------------
+
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
+        ax.scatter( abs(planets_computed_data[key]['sigma201_2_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma201_2']), marker='+', label='201-2 \n -2n', color = 'red')
+    ax.set_ylabel("")
+    # ax.set_yscale('log')
+    #ax.set_ylim([0.005, 0.028])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ReK2, label='fichier txt', color='blue')
+        ax.scatter( abs(planets_computed_data[key]['sigma201_2_excitative_frequency']), abs(planets_computed_data[key]['re_love_number_sigma201_2']), marker='+', label='201-2 \n -2n', color = 'red')
+    ax.set_ylabel("")
+    # ax.set_yscale('log')
+    #ax.set_ylim([0.005, 0.028])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
 
 #==================================================================================================================================================================
 
@@ -411,7 +461,6 @@ if __name__ == "__main__":
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-
     i=i+1
     ax = fig.add_subplot(ligne,colonne,i)
     field = ''
@@ -426,6 +475,40 @@ if __name__ == "__main__":
     ax.set_xlim(right=1.)
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
+    
+    # --------------------------------------------------------------------------------------------------------------------------------
+
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
+        ax.scatter(abs(planets_computed_data[key]['sigma201_1_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma201_1']), marker='+', label='201-1 \n -n ', color = 'red')
+    ax.set_ylabel("")
+    # ax.set_yscale('log')
+    #ax.set_ylim([0.005, 0.028])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ReK2, label='fichier txt', color='blue')
+        ax.scatter(abs(planets_computed_data[key]['sigma201_1_excitative_frequency']), abs(planets_computed_data[key]['re_love_number_sigma201_1']), marker='+', label='201-1 \n -n', color = 'red')
+    ax.set_ylabel("")
+    # ax.set_yscale('log')
+    #ax.set_ylim([0.005, 0.028])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
 
 
 #==================================================================================================================================================================
@@ -446,8 +529,6 @@ if __name__ == "__main__":
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-
-
     i=i+1
     ax = fig.add_subplot(ligne,colonne,i)
     field = ''
@@ -456,6 +537,40 @@ if __name__ == "__main__":
         ax.plot(w_lmpq, ReK2, label='fichier txt', color='blue')
         # ax.axvline(abs(planets_computed_data[key]['sigma2200_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma2200']), marker='+', label='2200 \n 2n -2$\Omega$', color=colorFader(c1,c2, x/n))
         ax.scatter(abs(planets_computed_data[key]['sigma2200_excitative_frequency']), abs(planets_computed_data[key]['re_love_number_sigma2200']), marker='+', label='2200 \n 2n -2$\Omega$', color='red')
+    ax.set_ylabel("")
+    # ax.set_yscale('log')
+    # ax.set_ylim([0.28, 0.3])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+    # --------------------------------------------------------------------------------------------------------------------------------
+
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
+        # ax.axvline(abs(planets_computed_data[key]['sigma2200_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma2200']), marker='+', label='2200 \n 2n -2$\Omega$', color=colorFader(c1,c2, x/n))
+        ax.scatter(abs(planets_computed_data[key]['sigma2010_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma2010']), marker='+', label='2010 \n 0', color='red')
+    ax.set_ylabel("")
+    # ax.set_yscale('log')
+    #ax.set_ylim([0.005, 0.028])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ReK2, label='fichier txt', color='blue')
+        # ax.axvline(abs(planets_computed_data[key]['sigma2200_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma2200']), marker='+', label='2200 \n 2n -2$\Omega$', color=colorFader(c1,c2, x/n))
+        ax.scatter(abs(planets_computed_data[key]['sigma2010_excitative_frequency']), abs(planets_computed_data[key]['re_love_number_sigma2010']), marker='+', label='2100 \n 0', color='red')
     ax.set_ylabel("")
     # ax.set_yscale('log')
     # ax.set_ylim([0.28, 0.3])
@@ -473,7 +588,7 @@ if __name__ == "__main__":
     for key in planets_keys:
         planet_data = planets_data[key]
         ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
-        ax.scatter(abs(planets_computed_data[key]['sigma2201_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma2201']), marker='+', label='2201 \n 3n -2 $\Omega$', color = 'red')
+        ax.scatter(abs(planets_computed_data[key]['sigma2201_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma2201']), marker='+', label='2201 \n n -2 $\Omega$', color = 'red')
     ax.set_ylabel("")
     # ax.set_yscale('log')
     #ax.set_ylim([0.005, 0.028])
@@ -482,7 +597,6 @@ if __name__ == "__main__":
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
-
     i=i+1
     ax = fig.add_subplot(ligne,colonne,i)
     field = ''
@@ -490,6 +604,38 @@ if __name__ == "__main__":
         planet_data = planets_data[key]
         ax.plot(w_lmpq, ReK2, label='fichier txt', color='blue')
         ax.scatter(abs(planets_computed_data[key]['sigma2201_excitative_frequency']), abs(planets_computed_data[key]['re_love_number_sigma2201']), marker='+', label='2201 \n 3n -2 $\Omega$', color = 'red')
+    ax.set_ylabel("")
+    # ax.set_yscale('log')
+    #ax.set_ylim([0.005, 0.028])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+    # --------------------------------------------------------------------------------------------------------------------------------
+
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
+        ax.scatter(abs(planets_computed_data[key]['sigma2011_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma2011']), marker='+', label='2011 \n n ', color = 'red')
+    ax.set_ylabel("")
+    # ax.set_yscale('log')
+    #ax.set_ylim([0.005, 0.028])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ReK2, label='fichier txt', color='blue')
+        ax.scatter(abs(planets_computed_data[key]['sigma2011_excitative_frequency']), abs(planets_computed_data[key]['re_love_number_sigma2011']), marker='+', label='2011 \n n ', color = 'red')
     ax.set_ylabel("")
     # ax.set_yscale('log')
     #ax.set_ylim([0.005, 0.028])
@@ -516,6 +662,38 @@ if __name__ == "__main__":
     ax.legend(loc=0, prop={'size':8})
     #plt.setp(ax.get_xticklabels(), visible=False)
 
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ReK2, label='fichier txt', color='blue')
+        ax.scatter(abs(planets_computed_data[key]['sigma2202_excitative_frequency']), abs(planets_computed_data[key]['re_love_number_sigma2202']), marker='+', label='2202 \n 4n -2$\Omega$', color = 'red')
+    ax.set_ylabel("")
+    # ax.set_yscale('log')
+    #ax.set_ylim([0.005, 0.028])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
+    # --------------------------------------------------------------------------------------------------------------------------------
+
+    i=i+1
+    ax = fig.add_subplot(ligne,colonne,i)
+    field = ''
+    for key in planets_keys:
+        planet_data = planets_data[key]
+        ax.plot(w_lmpq, ImK2, label='fichier txt', color='blue')
+        ax.scatter(abs(planets_computed_data[key]['sigma2012_excitative_frequency']), abs(planets_computed_data[key]['im_love_number_sigma2012']), marker='+', label='2012 \n 2n ', color = 'red')
+    ax.set_ylabel("")
+    # ax.set_yscale('log')
+    #ax.set_ylim([0.005, 0.028])
+    ax.set_xscale('log')
+    ax.set_xlim(right=1.)
+    ax.legend(loc=0, prop={'size':8})
+    #plt.setp(ax.get_xticklabels(), visible=False)
+
 
 
     i=i+1
@@ -524,7 +702,7 @@ if __name__ == "__main__":
     for key in planets_keys:
         planet_data = planets_data[key]
         ax.plot(w_lmpq, ReK2, label='fichier txt', color='blue')
-        ax.scatter(abs(planets_computed_data[key]['sigma2202_excitative_frequency']), abs(planets_computed_data[key]['re_love_number_sigma2202']), marker='+', label='2202 \n 4n -2$\Omega$', color = 'red')
+        ax.scatter(abs(planets_computed_data[key]['sigma2012_excitative_frequency']), abs(planets_computed_data[key]['re_love_number_sigma2012']), marker='+', label='2012 \n 2n ', color = 'red')
     ax.set_ylabel("")
     # ax.set_yscale('log')
     #ax.set_ylim([0.005, 0.028])

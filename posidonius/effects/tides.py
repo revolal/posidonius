@@ -57,18 +57,32 @@ class Tides(object):
                     "sigma2200_excitative_frequency":0.,
                     "sigma2201_excitative_frequency":0.,
                     "sigma2202_excitative_frequency":0.,
-
                     "im_love_number_sigma220_2": 0.,
                     "im_love_number_sigma220_1": 0.,
                     "im_love_number_sigma2200": 0.,
                     "im_love_number_sigma2201": 0.,
                     "im_love_number_sigma2202": 0.,
-                
                     "re_love_number_sigma220_2": 0.,
                     "re_love_number_sigma220_1": 0.,
                     "re_love_number_sigma2200": 0.,
                     "re_love_number_sigma2201": 0.,
                     "re_love_number_sigma2202": 0.,
+
+                    "sigma201_2_excitative_frequency":0.,
+                    "sigma201_1_excitative_frequency":0.,
+                    "sigma2010_excitative_frequency":0.,
+                    "sigma2011_excitative_frequency":0.,
+                    "sigma2012_excitative_frequency":0.,
+                    "im_love_number_sigma201_2": 0.,
+                    "im_love_number_sigma201_1": 0.,
+                    "im_love_number_sigma2010": 0.,
+                    "im_love_number_sigma2011": 0.,
+                    "im_love_number_sigma2012": 0.,
+                    "re_love_number_sigma201_2": 0.,
+                    "re_love_number_sigma201_1": 0.,
+                    "re_love_number_sigma2010": 0.,
+                    "re_love_number_sigma2011": 0.,
+                    "re_love_number_sigma2012": 0.,
                     
                     "check_excitative_frequ":0.,
 
@@ -99,9 +113,9 @@ class Tides(object):
 
 
         if variant in ("CentralBody", "OrbitingBody"):
-            print("Central-Orbiting in tides.py")
+            # print("Central-Orbiting in tides.py")
             self._data["effect"] = variant
-            print("Hello there")
+            # print("Hello there")
             # Update default values, ignore non-recognised keys
             for key, value in six.iteritems(input_parameters):
 
@@ -142,7 +156,7 @@ class Tides(object):
         #     self._data["parameters"]["internal"]["scaled_dissipation_factor"] = self._data["parameters"]["input"]["ConstantTimeLag"]["dissipation_factor"] * self._data["parameters"]["input"]["ConstantTimeLag"]["dissipation_factor_scale"] 
         
         elif variant in ("KaulaCoplanarCentralBody","KaulaCoplanarOrbitingBody"):
-            print("KaulaCoplanarCentral-Orbiting in tides.py")
+            # print("KaulaCoplanarCentral-Orbiting in tides.py")
             self._data["effect"] = variant
             for key, value in six.iteritems(input_parameters):
                 if key in self._data["parameters"]["input"]:
