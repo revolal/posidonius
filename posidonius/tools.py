@@ -138,6 +138,9 @@ def _calculate_keplerian_orbital_elements_2(gm, position, velocity):
     # l # mean anomaly (or mean longitude if eccentricity < 1.e-8)
     # Local
     ex,ey,ez = _calculate_eccentricity_vector(gm, position, velocity)
+    e_norm = np.sqrt( np.power(ex,2) +np.power(ey,2) +np.power(ez,2) )
+    # print(" ecc vector {} {} {} ".format( ex, ey, ez))
+    # print("e norm", e_norm)
     e_scal_r = ex*x + ey*y + ez*z
     hx = y * w  -  z * v
     hy = z * u  -  x * w
@@ -148,6 +151,9 @@ def _calculate_keplerian_orbital_elements_2(gm, position, velocity):
     r = np.sqrt(x*x + y*y + z*z)
     h = np.sqrt(h2)
     s = h2 / gm
+    # print("hx hy hz ", hx, hy, hz)
+    # print("h", h)
+
 
     ###-------------------------------------------------------------------------
     ### a: Semi-major axis
@@ -155,6 +161,8 @@ def _calculate_keplerian_orbital_elements_2(gm, position, velocity):
 
     # Inclination and node
     ci = hz / h
+    # print("ci", ci)
+    # print(" acos i ", np.arccos(ci))
 
     ###-------------------------------------------------------------------------
     ### n: longitude_of_ascending_node
@@ -169,7 +177,14 @@ def _calculate_keplerian_orbital_elements_2(gm, position, velocity):
     less_than_one = np.abs(ci) < 1.
     if np.any(less_than_one):
         i[less_than_one] = np.arccos(ci[less_than_one])
-        n[less_than_one] = np.arctan2(hx[less_than_one], -hy[less_than_one])
+        # n[less_than_one] = np.arctan2(hx[less_than_one], -hy[less_than_one])
+        n[less_than_one] = np.arctan(hx[less_than_one] / -hy[less_than_one])
+        if hy[less_than_one]>0.:
+            i[less_than_one] = TWO_PI - i[less_than_one]
+        # if hy[less_than_one]<0.: 
+        #     n[less_than_one] = np.pi + n[less_than_one]
+        # if (hy[less_than_one]>0. and hx[less_than_one]>0.):
+        #     n[less_than_one] = 2*np.pi + n[less_than_one]
     negative_n = np.logical_and(n < 0, less_than_one)
     if np.any(negative_n):
         n[negative_n] += TWO_PI
@@ -200,25 +215,95 @@ def _calculate_keplerian_orbital_elements_2(gm, position, velocity):
     q = s / (1. + eccentricity)
 
     small_eccentricity = eccentricity < 3.0e-8
-    big_eccentricity = np.logical_not(small_eccentricity)
+    big_eccentricity = eccentricity >= 3.0e-8
 
     ###-------------------------------------------------------------------------
-    ### p: longitude_of_perihelion
+
+    # x = 1.
+    # y = 1.
+    # print(np.arctan2(y,x)/DEG2RAD)
+    # xrot= x*np.cos(30*DEG2RAD) + y*np.sin(30*DEG2RAD)
+    # yrot= -x*np.sin(30*DEG2RAD) + y*np.cos(30*DEG2RAD)
+    # print(xrot, yrot)
+    # print(np.arctan(yrot/xrot)/DEG2RAD)
+    # xrot2= xrot*np.cos(30*DEG2RAD) - yrot*np.sin(30*DEG2RAD)
+    # yrot2= xrot*np.sin(30*DEG2RAD) + yrot*np.cos(30*DEG2RAD)
+    # print(xrot2, yrot2)
+
+
+    ### p: longitude of perihelion
     # Algorithm:
 
-    p = np.zeros(len(eccentricity))
-    big_eccentricity = eccentricity >= 3.0e-8
+    # print("\t")
+    # print("\teccentricity vector tho rotation matrix {} {} {} ".format(ex_rot, ey_rot, ez_rot))
+    arg_pericentre = np.zeros(len(ci))
+    ex_rot = np.zeros(len(ci))
+    ey_rot = np.zeros(len(ci))
+    ez_rot = np.zeros(len(ci))
+    ex_rot_2 = np.zeros(len(ci))
+    ey_rot_2 = np.zeros(len(ci))
+    ez_rot_2 = np.zeros(len(ci))
+    if np.any(small_eccentricity):
+        arg_pericentre[small_eccentricity] = 0.
     if np.any(big_eccentricity):
-        p = np.arctan2(ey,ex)
+        # print("rotation tho ", n/DEG2RAD)
+        # Through the Matrix R3 rotation passage of the longitude of ascending node
+        ex_rot[big_eccentricity] = ex[big_eccentricity]*np.cos(n[big_eccentricity]) + ey[big_eccentricity]*np.sin(n[big_eccentricity])
+        ey_rot[big_eccentricity] = -ex[big_eccentricity]*np.sin(n[big_eccentricity]) + ey[big_eccentricity]*np.cos(n[big_eccentricity])
+        ez_rot[big_eccentricity] = ez[big_eccentricity]
+        
+        # print("Test") 
+        # print( "ex ey ez", ex, ey, ez)
+        # print(np.arctan2(ey,ex))
+        # print(np.arctan2(ey,ex)/DEG2RAD)
+        # print(np.arccos(ex/np.sqrt(ex*ex+ey*ey)))
+        # print("Test") 
+        # print("exrot eyrot ezrot", ex_rot, ey_rot, ez_rot)
+        # print(np.arctan2(ey_rot,ex_rot))
+        # print(np.arctan2(ey_rot,ex_rot)/DEG2RAD)
+        # print(np.arccos(ex_rot/np.sqrt(ex_rot*ex_rot+ey_rot*ey_rot)))
+        # print(np.arccos(ex_rot/np.sqrt(ex_rot*ex_rot+ey_rot*ey_rot))/DEG2RAD)
+
+        ex_rot_2[big_eccentricity] = ex_rot[big_eccentricity]
+        ey_rot_2[big_eccentricity] = ey_rot[big_eccentricity]*np.cos(i[big_eccentricity]) + ez_rot[big_eccentricity]*np.sin(i[big_eccentricity])
+        ez_rot_2[big_eccentricity] = -ey_rot[big_eccentricity]*np.sin(i[big_eccentricity]) + ez_rot[big_eccentricity]*np.cos(i[big_eccentricity])
+        # print("Test") 
+        # print("exrot eyrot ezrot", ex_rot_2, ey_rot_2, ez_rot_2)
+        # print(np.arctan2(ey_rot_2,ex_rot_2))
+        # print(np.arctan2(ey_rot_2,ex_rot_2)/DEG2RAD)
+        # print(np.arccos(ex_rot_2/np.sqrt(ex_rot_2*ex_rot_2+ey_rot_2*ey_rot_2)))
+        # print(np.arccos(ex_rot_2/np.sqrt(ex_rot_2*ex_rot_2+ey_rot_2*ey_rot_2))/DEG2RAD)
+
+
+        # arg_pericentre[big_eccentricity] = np.arctan(e_norm[big_eccentricity]/ex_rot[big_eccentricity])
+        # arg_pericentre[big_eccentricity] = np.arctan( np.sqrt(np.power(ey_rot[big_eccentricity],2) +np.power(ez_rot[big_eccentricity],2)) /ex_rot[big_eccentricity])
+        # arg_pericentre[big_eccentricity] = np.arctan(ey_rot[big_eccentricity]/ex_rot[big_eccentricity])
+
+        # arg_pericentre[big_eccentricity] = np.arctan(ey_rot_2[big_eccentricity]/ex_rot_2[big_eccentricity])
+        # ey_ez = np.sqrt( np.power(ey_rot_2[big_eccentricity],2) +np.power(ez_rot_2[big_eccentricity],2) )
+        # arg_pericentre[big_eccentricity] = np.arctan( ey_ez /ex_rot_2[big_eccentricity])
+        arg_pericentre[big_eccentricity] = np.arctan2(ey_rot_2,ex_rot_2)
+    # print(" \n in tools argument pericentre ", arg_pericentre, arg_pericentre/DEG2RAD)
+    # print(" \n in tools long asc node ", n, n/DEG2RAD)
+    # print(" \n in tools long perihelion ", arg_pericentre +n, (arg_pericentre+n)/DEG2RAD)
+    
+    # if np.any(big_eccentricity):
+    # p = np.arctan2(ey,ex)
         # print("longitude of perihelion ", p, p/posidonius.constants.DEG2RAD)
+    p = np.zeros(len(eccentricity))
+    p = arg_pericentre + n
 
     ###-------------------------------------------------------------------------
     ### True anomaly
     # Algorithm:
     f = np.zeros(len(ci))
     cosf_cal = np.zeros(len(ci))
+    x_rot = np.zeros(len(ci))
     if np.any(small_eccentricity):
-        cosf_cal[small_eccentricity] = x[small_eccentricity] / r[small_eccentricity]
+        x_rot[small_eccentricity] = x[small_eccentricity]*np.cos(n[small_eccentricity]) + y[small_eccentricity]*np.sin(n[small_eccentricity])
+        # y_rot = -x[small_eccentricity]*np.sin(n[small_eccentricity]) + y[small_eccentricity]*np.cos(n[small_eccentricity])
+        # z_rot = z
+        cosf_cal[small_eccentricity] = x_rot[small_eccentricity] / r[small_eccentricity]
         f[small_eccentricity] = np.arccos(cosf_cal[small_eccentricity])
     if np.any(big_eccentricity):
         cosf_cal = e_scal_r[big_eccentricity] / (eccentricity[big_eccentricity]*r[big_eccentricity])

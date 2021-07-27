@@ -1,8 +1,9 @@
 import posidonius
+from posidonius import constants
 import posidonius.tools
 import numpy as np
 import argparse
-
+import math
 
 if __name__ == "__main__":
     print("\n -------------------------------------- ")
@@ -17,11 +18,11 @@ if __name__ == "__main__":
     #initial_time = 4.5e6*365.25 # time [days] where simulation starts
     initial_time = 1.0e6*365.25 # time [days] where simulation starts
     time_step = 0.01 # days
-    time_step = 0.08 # days
+    time_step = 0.000008 # days
     #time_limit   = 4*time_step # days
     #time_limit   = 365.25 * 1.0e8 # days
     time_limit   = 365.25 * 1.0e10 # days
-    historic_snapshot_period = 0.5*365.25 # days
+    historic_snapshot_period = 10.*365.25 # days
     recovery_snapshot_period = historic_snapshot_period#10.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
@@ -299,11 +300,11 @@ if __name__ == "__main__":
     # --- Specify initial position and velocity for a stable orbit
     # --- Keplerian orbital elements, in the `asteroidal' format of Mercury code
     a = 0.0723                                    # semi-major axis (in AU)
-    e = 0.01                                      # eccentricity
-    i = 0. * posidonius.constants.DEG2RAD;        # inclination (degrees to radiant)
-    p = 10. * posidonius.constants.DEG2RAD;     # argument of pericentre (degrees to radiant) !! is != p is the longitude of perihelion in tools
-    n = 0. * posidonius.constants.DEG2RAD;      # longitude of the ascending node (degrees to radiant)
-    l = 20. * posidonius.constants.DEG2RAD;        # mean anomaly (degrees to radiant)
+    e = 0.901                                      # eccentricity
+    i = 300. * posidonius.constants.DEG2RAD;        # inclination (degrees to radiant)
+    p = 20. * posidonius.constants.DEG2RAD;     # argument of pericentre (degrees to radiant) !! is != p is the longitude of perihelion in tools
+    n = 30. * posidonius.constants.DEG2RAD;      # longitude of the ascending node (degrees to radiant)
+    l = 2. * posidonius.constants.DEG2RAD;        # mean anomaly (degrees to radiant)
     p = (p + n);                                 # Convert argument pericentre to longitude of perihelion !!
     q = a * (1.0 - e);                           # perihelion distance
     # 
@@ -313,8 +314,10 @@ if __name__ == "__main__":
     #
     #
     # --- Calculate planet position and velocity from the keplerian orbital elements
-    print("\n Input orbital elements \n\t a={} q={} e={} \n\t i={}rad ={}deg \n\t p={}rad ={}deg  \n\t n={}rad ={}deg\n\t l={}rad ={}deg \n" \
-        .format(a,q,e,i,i/posidonius.constants.DEG2RAD,p,p/posidonius.constants.DEG2RAD,n,n/posidonius.constants.DEG2RAD,l,l/posidonius.constants.DEG2RAD))
+    print("\n Input orbital elements \n\t a={} q={} e={} \n\t i={}rad ={}deg \n\t p={}rad ={}deg (or ={}deg)  \n\t n={}rad ={}deg  \n\t l={}rad ={}deg \n" \
+        .format(a,q,e,i,i/posidonius.constants.DEG2RAD,p,p/posidonius.constants.DEG2RAD,p/posidonius.constants.DEG2RAD-360,n,n/posidonius.constants.DEG2RAD,l,l/posidonius.constants.DEG2RAD))
+    # print("\n Input orbital elements \n\t a={} q={} e={} \n\t i={}rad ={}deg \n\t p={}rad ={}deg={}deg  \n\t n={}rad ={}deg  \n\t p-n={}rad ={}deg or {}  \n\t l={}rad ={}deg \n" \
+    #     .format(a,q,e,i,i/posidonius.constants.DEG2RAD,p,p/posidonius.constants.DEG2RAD,p/posidonius.constants.DEG2RAD-360,n,n/posidonius.constants.DEG2RAD,p-n,(p-n)/posidonius.constants.DEG2RAD,360-(p-n)/posidonius.constants.DEG2RAD,l,l/posidonius.constants.DEG2RAD))
     
     # --- Calculate the position and velocity vectors
     print(" -------------------------- ")
@@ -340,6 +343,7 @@ if __name__ == "__main__":
         # --- Eccentricity vector
         ex,ey,ez = posidonius.tools.calculate_eccentricity_vector(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
         print("\tEccentricity vector {} {} {} ".format(ex,ey,ez))
+        print("\tecc vector norm", np.sqrt(np.power(ex,2) +np.power(ey,2) +np.power(ez,2) ))
         e_scal_r = ex*x + ey*y + ez*z
         # --- Angular momentum
         hx = y * w  -  z * v
@@ -347,33 +351,55 @@ if __name__ == "__main__":
         hz = x * v  -  y * u
         print("\tAngular momentum {} {} {}".format(hx,hy,hz))
         # --- Some local variable
-        h2 = h2 = np.power(hx, 2) + np.power(hy, 2) + np.power(hz, 2)
+        h2 = np.power(hx, 2) + np.power(hy, 2) + np.power(hz, 2)
         r_cal = np.sqrt( np.power(x,2) +np.power(y,2) +np.power(z,2) )
         v_cal_2 = ( np.power(u,2) +np.power(v,2) +np.power(w,2) )
         r_scal_v = x*u +y*v +z*w
         reduced_mass = posidonius.constants.G*(planet_mass+star_mass)
+        
         # --- Semi major axis
         a_cal = 1./(2./r_cal -v_cal_2/reduced_mass)
-        print("\taclculated", a_cal)
-        # --- eccentricity
-        e_cal = np.sqrt(1. -h2/(reduced_mass*a_cal))
-        print("\teCalculated", e_cal)
-        q_cal = a_cal*(1-e_cal)
-        print("\tecc vector norm", np.sqrt(np.power(ex,2) +np.power(ey,2) +np.power(ez,2) ))
-        # --- inclination
-        i_cal = np.arccos(hz/np.sqrt(h2))
-        print("\tiCalculated", i_cal)
+        print("\ta Calculated", a_cal)
         
+        # --- eccentricity
+        e_sqare = 1. -h2/(reduced_mass*a_cal)
+        if e_sqare < np.power(3.0e-8,2):
+            e_cal = 0. #np.sqrt(1. -h2/(reduced_mass*a_cal))
+        else:
+            e_cal = np.sqrt(1. -h2/(reduced_mass*a_cal))
+        print("\te Calculated", e_cal)
+        q_cal = a_cal*(1-e_cal)
+
+        # --- inclination
+        # i_cal = np.arccos(hz/np.sqrt(h2))
+        # print("\tiCalculated", i_cal, i_cal/posidonius.constants.DEG2RAD)
+        # sign = math.copysign(1,hx_rot)
+        # i_cal = sign*np.arccos(hz/np.sqrt(h2))
+        # # print("SIGNE ", math.copysign(1,hx_rot), "-1 ", np.sign(-1), "0", np.sign(0), "1", np.sign(1))
+        # print("\tiReCalculated", i_cal, i_cal/posidonius.constants.DEG2RAD)
+        i_cal = np.arccos(hz/np.sqrt(h2))
+        if hy>0.:
+            i_cal = 2*np.pi - i_cal
+        print("\ti ReCalculated", i_cal, i_cal/posidonius.constants.DEG2RAD)
+
         # --- The longitude of ascending node 
         if i_cal==0: # need an inclination to be correctly determined
             long_asc_node_cal = 0.
         else:
-            long_asc_node_cal = np.arctan2(hx, -hy)
-        print("\tlong asc node cal", long_asc_node_cal, long_asc_node_cal/posidonius.constants.DEG2RAD)
-        
-        # --- The longitude of pericentre 
-        long_pericentre = np.arctan2(ey,ex)
-        print("\tlongitude pericenter ", long_pericentre, long_pericentre/posidonius.constants.DEG2RAD)
+            long_asc_node_cal = np.arctan(hx/-hy)
+            # if hy<0.: 
+            #     long_asc_node_cal = np.pi + long_asc_node_cal
+            # if (hy>0. and hx>0.):
+            #     long_asc_node_cal = 2*np.pi + long_asc_node_cal
+            print("\tlong asc node cal", long_asc_node_cal, long_asc_node_cal/posidonius.constants.DEG2RAD)
+
+
+        # --- The longitude of ascending node 
+        # long_asc_node_cal = -np.arctan2(hx, hy)
+        hx_rot = hx*np.cos(long_asc_node_cal) + hy*np.sin(long_asc_node_cal)
+        hy_rot = - hx*np.sin(long_asc_node_cal) + hy*np.cos(long_asc_node_cal)
+        hz_rot = hz
+        print("\t Angular momentum Rotate{} {} {}".format(hx_rot,hy_rot,hz_rot))
 
         # --- argument of pericenter
         # Through the Matrix R3 rotation passage of the longitude of ascending node
@@ -381,13 +407,26 @@ if __name__ == "__main__":
         ey_rot = - ex*np.sin(long_asc_node_cal) + ey*np.cos(long_asc_node_cal)
         ez_rot = ez
         print("\teccentricity vector tho rotation matrix {} {} {} ".format(ex_rot, ey_rot, ez_rot))
-        arg_pericentre = np.arctan2(ey_rot,ex_rot)
+        if e_cal==0.:
+            arg_pericentre = 0.
+        else:    
+            arg_pericentre = np.arctan2(ey_rot,ex_rot)
         print("\targument pericenter ", arg_pericentre, arg_pericentre/posidonius.constants.DEG2RAD)
+
+        # --- The longitude of pericentre 
+        long_pericentre = long_asc_node_cal + arg_pericentre
+        # long_pericentre = np.arctan2(ey,ex)
+        print("\tlongitude pericenter ", long_pericentre, long_pericentre/posidonius.constants.DEG2RAD)
+        # long_pericentre = np.arctan(ex/ey)
+        # print("\tlongitude pericenter ", long_pericentre, long_pericentre/posidonius.constants.DEG2RAD)
 
         # --- The true anomaly
         small_ecentricity = e_cal < 1.0e-7
         if small_ecentricity:
-            cosf_cal = x/r_cal
+            x_rot = x*np.cos(long_asc_node_cal) + y*np.sin(long_asc_node_cal)
+            y_rot = - x*np.sin(long_asc_node_cal) + y*np.cos(long_asc_node_cal)
+            z_rot = z
+            cosf_cal = x_rot/r_cal
             f = np.arccos(cosf_cal)
             print("\tTrue long in small ecc {} rad and {} deg".format(f, f/posidonius.constants.DEG2RAD))
         else:
@@ -408,7 +447,7 @@ if __name__ == "__main__":
         
         # --- mean anomaly 
         if small_ecentricity: # if small ecentricity :: mean_anomaly = true_longitude = true_anomaly + long_pericentre
-            mean_ano_cal = f + long_asc_node_cal
+            mean_ano_cal = f #+ long_pericentre
         else:
             cos_E = (1/e_cal)*(1.-(r_cal/a_cal))
             mean_ano_cal = np.arccos(cos_E) - e_cal*np.sin(np.arccos(cos_E) )
@@ -419,7 +458,7 @@ if __name__ == "__main__":
         p_cal = arg_pericentre + long_asc_node_cal
         n_cal = long_asc_node_cal
         l_cal = mean_ano_cal
-        print("\n --- Calculated orbital elements \n\t a={} q={} e={}  \n\t i={}rad ={}deg \n\t p={}rad ={}deg  \n\t n={}rad ={}deg \n\t l={}rad ={}deg" \
+        print("\n    --- Calculated orbital elements \n\t a={} q={} e={}  \n\t i={}rad ={}deg \n\t p={}rad ={}deg  \n\t n={}rad ={}deg \n\t l={}rad ={}deg" \
             .format(a_cal, q_cal, e_cal, i_cal, i_cal/posidonius.constants.DEG2RAD, p_cal, p_cal/posidonius.constants.DEG2RAD, n_cal, n_cal/posidonius.constants.DEG2RAD, l_cal, l_cal/posidonius.constants.DEG2RAD))
 
     # --- My module of calculate keplerian orbital elements

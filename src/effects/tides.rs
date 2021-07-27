@@ -5,7 +5,7 @@ use super::super::{Particle};
 use super::super::{Axes};
 use super::{EvolutionType};
 
-use crate::constants::{G,TWO_PI, DAY};//, AU, M_SUN, M2AU,R_SUN,R_EARTH};//, G_SI, AU, M_SUN};
+use crate::constants::{G, TWO_PI, DAY, DEG2RAD};//, AU, M_SUN, M2AU,R_SUN,R_EARTH};//, G_SI, AU, M_SUN};
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 //#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -485,10 +485,17 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
             // let orbital_period:f64                  = orbital_elements.7;
 
             let gm = G*(tidal_host_particle.mass+particle.mass);
-            let ( semi_major_axis, _perihelion_distance, eccentricity, inclination, longitude_perihelion, longitude_of_ascending_node, mean_anomaly, orbital_period 
+            let ( semi_major_axis, perihelion_distance, eccentricity, inclination, longitude_perihelion, longitude_of_ascending_node, mean_anomaly, orbital_period 
             ) = tools::calculate_keplerian_orbital_elements_2( gm, particle.heliocentric_position, particle.heliocentric_velocity);
 
+            println!("\n\n from Tide.rs --- orbital elements \n\t a={} q={} e={}  \n\t i={}rad ={}deg \n\t p={}rad ={}deg  \n\t n={}rad ={}deg \n\t l={}rad ={}deg", 
+            semi_major_axis, perihelion_distance, eccentricity, inclination, inclination/DEG2RAD, longitude_perihelion, longitude_perihelion/DEG2RAD, longitude_of_ascending_node, longitude_of_ascending_node/DEG2RAD, mean_anomaly, mean_anomaly/DEG2RAD );
+            println!("\t \n");
+            panic!(" At the Disco ");
+
+            let _argument_perihelion:f64             = longitude_of_ascending_node -longitude_perihelion;
             let orbital_frequency:f64               = TWO_PI / (orbital_period *DAY); // in s^-1
+
             let eccentricity_function_g_20q  = eccentricty_function_g_20q(eccentricity);
             let _inclination_function        = inclination_function_f2lm(inclination);
             let _associated_legendre_p_2m    = associated_legendre_p_2m(0.); // legendre (cos(theta=\pi/2)=0)) . in coplanar approximation
@@ -643,6 +650,7 @@ pub fn calculate_torque_due_to_tides(tidal_host_particle: &mut Particle, particl
                 for j in -2..3{
                     // let phase_term:f64 = ((j as f64)-(q as f64))*n*t;
                     let phase_term:f64 = ((j as f64)-(q as f64))*l;
+                    // let phase_term:f64 = 0.;
                     let frequence:f64 = sigma_2mpq(2., 0., (q as f64), spin, orbital_frequency);
                     // sum_over_j = sum_over_j +eccentricity_function_g_20q[(j+2) as usize]*( phase_term.sin()*particle.tides.parameters.internal.re_love_number_sigma220q[(q+2) as usize] +phase_term.cos()*particle.tides.parameters.internal.im_love_number_sigma220q[(q+2) as usize]);
                     sum_over_j = sum_over_j +eccentricity_function_g_20q[(j+2) as usize]*( phase_term.sin()*find_rek2(frequence, nm_data, re_k2, w_lmpq) +phase_term.cos()*find_imk2(frequence, nm_data, im_k2, w_lmpq) ) ;
@@ -767,6 +775,7 @@ fn calculate_orthogonal_component_of_the_tidal_force_for(central_body:bool, tida
                 let ( semi_major_axis, _perihelion_distance, eccentricity, inclination, longitude_perihelion, longitude_of_ascending_node, mean_anomaly, orbital_period 
                 ) = tools::calculate_keplerian_orbital_elements_2( gm, particle.heliocentric_position, particle.heliocentric_velocity);
 
+                let argument_perihelion:f64             = longitude_of_ascending_node -longitude_perihelion;
                 let orbital_frequency:f64               = TWO_PI / (orbital_period *DAY); // in s^-1
 
                 // let phi:f64 =0.; // atan(particle.spin.y / particle.spin.x ) ; // in rad
@@ -888,6 +897,7 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
             let ( semi_major_axis, _perihelion_distance, eccentricity, inclination, longitude_perihelion, longitude_of_ascending_node, mean_anomaly, orbital_period 
             ) = tools::calculate_keplerian_orbital_elements_2( gm, particle.heliocentric_position, particle.heliocentric_velocity);
 
+            let argument_perihelion:f64             = longitude_of_ascending_node -longitude_perihelion;
             let orbital_frequency:f64               = TWO_PI / (orbital_period *DAY); // in s^-1
             let spin:f64                            = ( particle.spin.x.powi(2) + particle.spin.y.powi(2) + particle.spin.z.powi(2) ).sqrt() / DAY; //this is [rad.s^-1]
 
@@ -1087,6 +1097,7 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
                 let ( semi_major_axis, _perihelion_distance, eccentricity, inclination, longitude_perihelion, longitude_of_ascending_node, mean_anomaly, orbital_period 
                 ) = tools::calculate_keplerian_orbital_elements_2( gm, particle.heliocentric_position, particle.heliocentric_velocity);
 
+                let argument_perihelion:f64             = longitude_of_ascending_node -longitude_perihelion;
                 let orbital_frequency:f64               = TWO_PI / (orbital_period *DAY); // in s^-1
                 let spin:f64    = ( particle.spin.x.powi(2) + particle.spin.y.powi(2) + particle.spin.z.powi(2) ).sqrt() / DAY; //this is [rad.s^-1]
                 // let phi:f64     = 0.; // atan(particle.spin.y / particle.spin.x ) ; // in rad
@@ -1161,8 +1172,8 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
 
                     sum_over_q=0.;
                     for q in -2..3{
-                        // let phase_term_220q:f64 = (2.+(q as f64))*l -2.*spin*time +2.*argument_perihelion +2.*longitude_of_ascending_node -2.*phi;
-                        let phase_term_220q:f64 = 0.;
+                        let phase_term_220q:f64 = (2.+(q as f64))*l -2.*spin*time +2.*argument_perihelion +2.*longitude_of_ascending_node -2.*phi;
+                        // let phase_term_220q:f64 = 0.;
                         let frequence:f64=sigma_2mpq(2., 0., (q as f64), spin, orbital_frequency);
                         sum_over_q = sum_over_q +eccentricity_function_g_20q[(q+2) as usize] *( phase_term_220q.cos()*find_imk2(frequence, nm_data, im_k2, w_lmpq) -phase_term_220q.sin()*find_rek2(frequence, nm_data, re_k2, w_lmpq)  );
                         // sum_over_q = sum_over_q +eccentricity_function_g_20q[(q+2) as usize] *( phase_term_220q.cos()*find_imk2(frequence, nm_data, im_k2, w_lmpq) +phase_term_220q.sin()*find_rek2(frequence, nm_data, re_k2, w_lmpq)  ); // Gabriel sign
@@ -1174,8 +1185,8 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
                     // --------------------------------------------------------
                     sum_over_q=0.;
                     for q in -2..3{
-                        // let phase_term_201q:f64 = (q as f64)*l;
-                        let phase_term_201q:f64 = 0.;
+                        let phase_term_201q:f64 = (q as f64)*l;
+                        // let phase_term_201q:f64 = 0.;
                         let frequence:f64=sigma_2mpq(0., 1., (q as f64), spin, orbital_frequency);
                         sum_over_q = sum_over_q +eccentricity_function_g_21q[(q+2) as usize]*( phase_term_201q.cos()*find_rek2(frequence, nm_data, re_k2, w_lmpq) +phase_term_201q.sin()*find_imk2(frequence, nm_data, im_k2, w_lmpq)  );
                     }
@@ -1183,8 +1194,8 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
                     
                     sum_over_q=0.;
                     for q in -2..3{
-                        // let phase_term_220q:f64 = (2.+(q as f64))*l -2.*spin*time +2.*argument_perihelion +2.*longitude_of_ascending_node -2.*phi;
-                        let phase_term_220q:f64 = 0.;
+                        let phase_term_220q:f64 = (2.+(q as f64))*l -2.*spin*time +2.*argument_perihelion +2.*longitude_of_ascending_node -2.*phi;
+                        // let phase_term_220q:f64 = 0.;
                         let frequence:f64=sigma_2mpq(2., 0., (q as f64), spin, orbital_frequency);
                         sum_over_q = sum_over_q +eccentricity_function_g_20q[(q+2) as usize]*( phase_term_220q.cos()*find_rek2(frequence, nm_data, re_k2, w_lmpq) +phase_term_220q.sin()*find_imk2(frequence, nm_data, im_k2, w_lmpq)  );
                     }
@@ -1541,7 +1552,6 @@ pub fn sigma_2mpq(m:f64, p:f64, q:f64, spin:f64, orbital_frequency: f64) -> f64{
 
 pub fn find_imk2(wk2:f64, nm_data:f64, imaginary_part_love_number: [[f64;32];32], love_number_excitation_frequency: [[f64;32];32] ) -> f64{
     let mut w_k2 = wk2;
-    let mut re_k2 = 0.;
     let mut im_k2 = 0.;
     let mut delta:f64 = 0.;
     let mut ctrl = true;
@@ -1582,7 +1592,7 @@ pub fn find_imk2(wk2:f64, nm_data:f64, imaginary_part_love_number: [[f64;32];32]
         } else {
             delta = (w_k2 - love_number_excitation_frequency[last_column][last_line-1]) / (love_number_excitation_frequency[last_column][last_line-1] - love_number_excitation_frequency[last_column][last_line-2]);
             im_k2 = delta*( imaginary_part_love_number[last_column][last_line-1] -imaginary_part_love_number[last_column][last_line-2] ) +imaginary_part_love_number[last_column][last_line-1];
-            if im_k2<0. || re_k2<0. { // HAVE TO CHECK
+            if im_k2<0. { // HAVE TO CHECK
                 im_k2 = imaginary_part_love_number[last_column][last_line]  + (imaginary_part_love_number[last_column][last_line] - imaginary_part_love_number[last_column][last_line-1])/2.;
             }
             column_up = last_column;
@@ -1684,7 +1694,6 @@ pub fn find_imk2(wk2:f64, nm_data:f64, imaginary_part_love_number: [[f64;32];32]
 pub fn find_rek2(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], love_number_excitation_frequency: [[f64;32];32] ) -> f64{
     let mut w_k2 = wk2;
     let mut re_k2 = 0.;
-    let mut im_k2 = 0.;
     let mut delta:f64 = 0.;
     let mut ctrl = true;
     let mut find_it = false; 
@@ -1722,7 +1731,7 @@ pub fn find_rek2(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32];32], lov
         } else {
             delta = (w_k2 - love_number_excitation_frequency[last_column][last_line-1]) / (love_number_excitation_frequency[last_column][last_line-1] - love_number_excitation_frequency[last_column][last_line-2]);
             re_k2 = delta*( real_part_love_number[last_column][last_line-1] -real_part_love_number[last_column][last_line-2] )           +real_part_love_number[last_column][last_line-1];
-            if im_k2<0. || re_k2<0. { // HAVE TO CHECK
+            if re_k2<0. { // HAVE TO CHECK
                 re_k2 = real_part_love_number[last_column][last_line]       + (real_part_love_number[last_column][last_line] - real_part_love_number[last_column][last_line-1])/2.;
             }
             line_up = last_line;

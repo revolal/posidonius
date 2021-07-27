@@ -52,7 +52,7 @@ pub fn calculate_keplerian_orbital_elements_2(gm: f64, position: Axes, velocity:
     let a: f64; // semi-major axis (in AU)
     let q: f64; // perihelion distance
     let eccentricity: f64; // eccentricity
-    let mut i: f64 = 0.; // inclination
+    let mut inclination: f64 = 0.; // inclination
     let mut _p: f64; // longitude of perihelion (NOT argument of perihelion!!)
     let mut _n: f64; // longitude of ascending node
     let mut _l: f64; // mean anomaly (or mean longitude if eccentricity < 1.e-8)
@@ -76,48 +76,72 @@ pub fn calculate_keplerian_orbital_elements_2(gm: f64, position: Axes, velocity:
     // --- Semi-major axis
     a  = gm * r / (2.0 * gm  -  r * v2);
 
-  
+
     // --- Inclination and longitude of ascending node
-    let mut longitude_of_ascending_node:f64;
+    let mut longitude_of_ascending_node:f64=0.;
     let cos_i = hz / h;
+
     if cos_i.abs() < 1. {
-        i = cos_i.acos();
-        longitude_of_ascending_node = hx.atan2(-hy);
+        inclination = cos_i.acos();
+        if hy>0.{
+            inclination = TWO_PI - inclination;
+        }
+        // longitude_of_ascending_node = hx.atan2(-hy);
+        longitude_of_ascending_node = (hx/-hy).atan();
         if longitude_of_ascending_node < 0. {
             longitude_of_ascending_node = longitude_of_ascending_node + TWO_PI;
         }
     } else {
         if cos_i > 0. {
-            i = 0.;
+            inclination = 0.;
+            longitude_of_ascending_node = 0.;
         }
         if cos_i < 0. { 
-            i = PI;
-        }
-        longitude_of_ascending_node = 0.;
+            inclination = PI;
+            longitude_of_ascending_node = PI;
+        }  
     }
   
     // --- Eccentricity and perihelion distance
     let temp = 1.  +  s * (v2 / gm  -  2. / r);
-    if temp <= 0. {
+    if temp <= 0. || temp.sqrt() < 3.0e-8 {
         eccentricity = 0.;
     } else {
         eccentricity = temp.sqrt();
     }
     q = s / (1. + eccentricity);
 
-    // --- Longitude of perihelion
-    let longitude_perihelion:f64;
+    // --- Argument pericentre
+    let argument_perihelion:f64;
     if eccentricity < 3.0e-8 {
-        longitude_perihelion= 0.;
+        argument_perihelion= 0.;
     } else {
-        longitude_perihelion = modulus(ey.atan2(ex) + TWO_PI + TWO_PI, TWO_PI);
+        let ex_rot = ex*longitude_of_ascending_node.cos() +ey*longitude_of_ascending_node.sin();
+        let ey_rot = -ex*longitude_of_ascending_node.sin() +ey*longitude_of_ascending_node.cos();
+        let ez_rot = ez ;
+        let ex_rot_2 = ex_rot ;
+        let ey_rot_2 = ey_rot*inclination.cos() + ez_rot*inclination.sin() ;
+        let ez_rot_2 = -ey_rot*inclination.sin() + ez_rot*inclination.cos() ;
+
+        // argument_perihelion = (ey_rot_2/ex_rot_2).atan();
+        argument_perihelion = (ey_rot_2).atan2(ex_rot_2);
     }
+
+    // --- Longitude of perihelion
+    // let longitude_perihelion:f64;
+    // if eccentricity < 3.0e-8 {
+    //     longitude_perihelion= 0.;
+    // } else {
+    //     longitude_perihelion = modulus(ey.atan2(ex) + TWO_PI + TWO_PI, TWO_PI);
+    // }
+    let longitude_perihelion = argument_perihelion + longitude_of_ascending_node;
 
     // --- True anomaly
     let mut true_anomaly:f64;
     let cos_f:f64;
     if eccentricity < 3.0e-8 {
-        cos_f = x / r;
+        let x_rot = x*longitude_of_ascending_node.cos() + y*longitude_of_ascending_node.sin();
+        cos_f = x_rot / r;
         true_anomaly = cos_f.acos();
     } else {
         cos_f = e_scal_r / (eccentricity * r);
@@ -144,7 +168,7 @@ pub fn calculate_keplerian_orbital_elements_2(gm: f64, position: Axes, velocity:
             if rv < 0. {
                 bige = TWO_PI - bige;
             }
-            mean_anomaly = bige - eccentricity*bige.sin();
+            mean_anomaly = bige - eccentricity*(bige.sin());
         } else {
             // Mean anomaly for hyperbola
             if cos_bige < 1. {
@@ -179,7 +203,7 @@ pub fn calculate_keplerian_orbital_elements_2(gm: f64, position: Axes, velocity:
     // l mean anomaly
     // orbital period bah...
 
-    return (a, q, eccentricity, i,longitude_perihelion , longitude_of_ascending_node, mean_anomaly, orbital_period)
+    return (a, q, eccentricity, inclination,longitude_perihelion, longitude_of_ascending_node, mean_anomaly, orbital_period)
 }
 
 pub fn calculate_keplerian_orbital_elements(gm: f64, position: Axes, velocity: Axes) -> (f64, f64, f64, f64, f64, f64, f64, f64) {
