@@ -105,18 +105,18 @@ if __name__ == "__main__":
         ## Planet precession angle
         # https://en.wikipedia.org/wiki/Apsidal_precession
         # Angle defined between an arbitrary direction and the semi-major axis direction ==!!Precession of Spin !!==
-        numerator = 1./np.sin(planet_obliquity) \
-                    *(planet_data['position_x']*planet_data['spin_x'] \
-                        + planet_data['position_y']*planet_data['spin_y'] \
-                        + planet_data['position_z']*planet_data['spin_z'])
+        # numerator = 1./np.sin(planet_obliquity) \
+        #             *(planet_data['position_x']*planet_data['spin_x'] \
+        #                 + planet_data['position_y']*planet_data['spin_y'] \
+        #                 + planet_data['position_z']*planet_data['spin_z'])
 
-        denominator = np.sqrt(np.power(planet_data['position_x'], 2) + np.power(planet_data['position_y'], 2) + np.power(planet_data['position_z'], 2)) \
-                        * planet_norm_spin
-        planet_precession_angle = numerator / denominator
-        ofilter = planet_precession_angle <= 1.
-        planet_precession_angle[ofilter] = np.arccos(planet_precession_angle[ofilter])*180./np.pi
-        planet_precession_angle[np.logical_not(ofilter)] = 1.e-6
-        planet_computed_data['planet_precession_angle'] = planet_precession_angle
+        # denominator = np.sqrt(np.power(planet_data['position_x'], 2) + np.power(planet_data['position_y'], 2) + np.power(planet_data['position_z'], 2)) \
+        #                 * planet_norm_spin
+        # planet_precession_angle = numerator / denominator
+        # ofilter = planet_precession_angle <= 1.
+        # planet_precession_angle[ofilter] = np.arccos(planet_precession_angle[ofilter])*180./np.pi
+        # planet_precession_angle[np.logical_not(ofilter)] = 1.e-6
+        # planet_computed_data['planet_precession_angle'] = planet_precession_angle
 
         planet_computed_data['orbital_angular_momentum_x'] = orbital_angular_momentum_x
         planet_computed_data['orbital_angular_momentum_y'] = orbital_angular_momentum_y
@@ -152,8 +152,8 @@ if __name__ == "__main__":
 
         planet_computed_data['eccentricity_vector_norm'] = np.sqrt( np.power(planet_computed_data['eccentricity_vector_x'],2) +np.power(planet_computed_data['eccentricity_vector_y'],2) +np.power(planet_computed_data['eccentricity_vector_z'],2))
 
-        argument_periastre = np.arctan( planet_computed_data['eccentricity_vector_y'] / planet_computed_data['eccentricity_vector_x'] )
-        planet_computed_data['argument_periastre'] = np.arctan( planet_data['eccentric_vector_y'] / planet_data['eccentric_vector_x'] )
+        # argument_periastre = np.arctan( planet_computed_data['eccentricity_vector_y'] / planet_computed_data['eccentricity_vector_x'] )
+        # planet_computed_data['argument_periastre'] = np.arctan( planet_data['eccentric_vector_y'] / planet_data['eccentric_vector_x'] )
 
         e = planet_data['eccentricity']
         non_zero = e != 0
