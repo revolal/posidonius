@@ -1557,11 +1557,11 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
                 let mut sum_over_p:f64 = 0.;
                 let mut sum_over_q:f64 = 0.;
 
-                let 1_kaula:bool = true;
-                let 1_kaula_averged_phases:bool = true;
-                let 1_kaula_no_phases:bool = true;
+                let kaula_1:bool = true;
+                let kaula_averged_phases_1:bool = true;
+                let kaula_no_phases_1:bool = true;
 
-                if 1_kaula{
+                if kaula_1{
                     // --- 1 Kaula --- //
                     sum_over_p=0.;
                     for p in 0..3{
@@ -1596,7 +1596,7 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
                     }
                     particle.tides.parameters.internal.radial_component_of_the_tidal_force_1_kaula = constante *sum_over_p;
                 }
-                if 1_kaula_averged_phases {
+                if kaula_averged_phases_1 {
                     // --- 1 Kaula Averaged phase --- //
                     sum_over_p=0.;
                     for p in 0..3{
@@ -1632,7 +1632,7 @@ pub fn calculate_radial_component_of_the_tidal_force(tidal_host_particle: &mut P
                     particle.tides.parameters.internal.radial_component_of_the_tidal_force_1_kaula_averaged = constante *sum_over_p;
                 }
 
-                if 1_kaula_no_phases {
+                if kaula_no_phases_1 {
                     // --- 1 Kaula No Phases --- //
                     sum_over_p=0.;
                     for p in 0..3{
