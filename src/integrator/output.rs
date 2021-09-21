@@ -56,7 +56,7 @@ pub fn write_recovery_snapshot<I: Serialize>(snapshot_path: &Path, universe_inte
 pub fn n_bytes_per_particle_in_historic_snapshot() -> u64 {
     // let n_stored_fields : u64 = 20;
     // let n_stored_fields : u64 = 25;
-    let n_stored_fields : u64 = 57;
+    let n_stored_fields : u64 = 71;
     let n_bytes_per_particle = 8+8+4+8*(n_stored_fields-3);
     n_bytes_per_particle
 }
@@ -132,17 +132,24 @@ pub fn write_historic_snapshot<T: Write>(universe_history_writer: &mut BufWriter
 
                         // particle.tides.parameters.internal.im_love_number,
                         // particle.tides.parameters.internal.re_love_number,
-
+                        particle.tides.parameters.internal.tidal_torque_x,
+                        particle.tides.parameters.internal.tidal_torque_y,
                         particle.tides.parameters.internal.tidal_torque_z,
                         particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_planetary_tide,
-                        particle.tides.parameters.internal.radial_component_of_the_tidal_force,
+                        particle.tides.parameters.internal.radial_component_of_the_tidal_force_2_kaula,
+                        particle.tides.parameters.internal.radial_component_of_the_tidal_force_1_kaula,
+                        particle.tides.parameters.internal.radial_component_of_the_tidal_force_1_kaula_nophases,
+                        particle.tides.parameters.internal.radial_component_of_the_tidal_force_1_kaula_averaged,
                         
-
                     );
         // println!("OUTPUT.RS 1");
         // println!(" SemiMajAxis {} \t Spin {} \t Orbital_frequ {}",particle.tides.parameters.internal.a, particle.tides.parameters.internal.spin, particle.tides.parameters.internal.orbital_frequency,);
         bincode::serialize_into(universe_history_writer, &output, bincode::Infinite).unwrap();
         let output = (
+                        particle.tides.parameters.internal.orthogonal_tidal_force_1_kaula,
+                        particle.tides.parameters.internal.orthogonal_tidal_force_1_kaula_averaged,
+                        particle.tides.parameters.internal.orthogonal_tidal_force_1_kaula_nophases,
+                        particle.tides.parameters.internal.orthogonal_tidal_force_2_kaula,
                         particle.tides.parameters.internal.force_by_tides.x,
                         particle.tides.parameters.internal.force_by_tides.y,
                         particle.tides.parameters.internal.force_by_tides.z,
