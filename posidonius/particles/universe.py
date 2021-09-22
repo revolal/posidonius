@@ -183,7 +183,9 @@ class Universe(object):
         found_disk_orbiting_body = False
         found_wind = False
         found_evolution = False
+
         for i, particle in enumerate(self._data['particles']):
+            # --- Is there tides? --- #
             if "CentralBody" in particle['tides']['effect']:
                 found_tides_central_body = True
             elif "OrbitingBody" in particle['tides']['effect']:
@@ -192,22 +194,29 @@ class Universe(object):
                 found_tides_central_body = True
             elif "KaulaCoplanarOrbitingBody" in particle['tides']['effect']:
                 found_tides_orbiting_body = True
-            elif "CentralBody" in particle['rotational_flattening']['effect']:
+            # --- Is there rotational_flattening? --- #
+            if "CentralBody" in particle['rotational_flattening']['effect']:
                 found_rotational_flattening_central_body = True
             elif "OrbitingBody" in particle['rotational_flattening']['effect']:
                 found_rotational_flattening_orbiting_body = True
-            elif "CentralBody" in particle['general_relativity']['effect']:
+            # --- Is there general_relativity? --- #
+            if "CentralBody" in particle['general_relativity']['effect']:
                 found_general_relativity_central_body = True
             elif "OrbitingBody" in particle['general_relativity']['effect']:
                 found_general_relativity_orbiting_body = True
-            elif "CentralBody" in particle['disk']['effect']:
+            # --- Is there disk? --- #
+            if "CentralBody" in particle['disk']['effect']:
                 found_disk_central_body = True
             elif "OrbitingBody" in particle['disk']['effect']:
                 found_disk_orbiting_body = True
-            elif "Interaction" in particle['wind']['effect']:
+            # --- Is there wind? --- #
+            if "Interaction" in particle['wind']['effect']:
                 found_wind = True
             elif "NonEvolving" in particle['evolution']:
                 found_evolution = True
+
+
+
         if self._data["consider_effects"]["tides"]:
             if not found_tides_central_body:
                 print("[INFO {} UTC] No central body for tidal effects".format(datetime.datetime.utcnow().strftime("%Y.%m.%d %H:%M:%S")))

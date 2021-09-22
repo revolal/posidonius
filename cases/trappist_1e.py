@@ -20,11 +20,13 @@ if __name__ == "__main__":
     # time_step = 0.08 # days
     time_step = 0.01 # days
     #time_limit   = 4*time_step # days
-    time_limit = 365.25 * 1.0e-1 # 365.25 * 0.5e1 # days
+    #time_limit   = 365.25 * 1.0e8 # days
+    time_limit = 365.25 * 1.0e3 # days
+    # time_limit = 365.25 * 1.0e15 # days
     # time_limit = 10.
-    historic_snapshot_period = 100.*time_step #0.1*365.25 # days
+    historic_snapshot_period = time_step # 100.*time_step #0.1*365.25 # days
     # historic_snapshot_period = 5.*365.25 # days
-    recovery_snapshot_period = 10.*historic_snapshot_period # days
+    recovery_snapshot_period = time_step # 10.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
         "rotational_flattening": False,
@@ -82,7 +84,7 @@ if __name__ == "__main__":
 
     #===============================================================================================
     # planet_data_b = np.loadtxt('Results_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
-    planet_data_b = np.loadtxt('Results_Creep_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_b = np.loadtxt('cases/k2_data/Results_Creep_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_b = np.loadtxt('Results_Creep-2_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_b, planet_radius_b, planet_gyration_radius_squared_b = planet_data_b[0,:] 
 
@@ -92,7 +94,7 @@ if __name__ == "__main__":
     size_b   = np.size(w_lm_b)
 
     #===============================================================================================
-    planet_data_c = np.loadtxt('Results_Trappist_1c_07.5_100_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_c = np.loadtxt('cases/k2_data/Results_Trappist_1c_07.5_100_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_c, planet_radius_c, planet_gyration_radius_squared_c = planet_data_c[0,:] 
 
     w_lm_c   = planet_data_c[1:,0]
@@ -101,7 +103,7 @@ if __name__ == "__main__":
     size_c   = np.size(w_lm_c)
 
     #===============================================================================================
-    planet_data_d = np.loadtxt('Results_Trappist_1d_19.5_100_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_d = np.loadtxt('cases/k2_data/Results_Trappist_1d_19.5_100_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_d, planet_radius_d, planet_gyration_radius_squared_d = planet_data_d[0,:] 
 
     w_lm_d   = planet_data_d[1:,0]
@@ -111,7 +113,7 @@ if __name__ == "__main__":
 
     #===============================================================================================
     # planet_data_e = np.loadtxt('Results_Trappist_1e_00.0_138_freq_Imk2_posidonius.txt',comments='#')
-    planet_data_e = np.loadtxt('Results_Trappist_1e_05.0_150_freq_Imk2_posidonius.txt',comments='#') 
+    planet_data_e = np.loadtxt('cases/k2_data/Results_Trappist_1e_05.0_150_freq_Imk2_posidonius.txt',comments='#') 
     planet_mass_e, planet_radius_e, planet_gyration_radius_squared_e = planet_data_e[0,:] 
 
     w_lm_e   = planet_data_e[1:,0]
@@ -120,7 +122,7 @@ if __name__ == "__main__":
     size_e   = np.size(w_lm_e)
 
     #===============================================================================================
-    planet_data_f = np.loadtxt('Results_Trappist_1f_11.0_100_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_f = np.loadtxt('cases/k2_data/Results_Trappist_1f_11.0_100_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_f = np.loadtxt('Results_Trappist_1f_14.5_150_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_f, planet_radius_f, planet_gyration_radius_squared_f = planet_data_f[0,:] 
 
@@ -130,7 +132,7 @@ if __name__ == "__main__":
     size_f   = np.size(w_lm_f)
 
     #===============================================================================================
-    planet_data_g = np.loadtxt('Results_Trappist_1g_19.0_100_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_g = np.loadtxt('cases/k2_data/Results_Trappist_1g_19.0_100_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_g = np.loadtxt('Results_Trappist_1g_22.5_150_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_g, planet_radius_g, planet_gyration_radius_squared_g = planet_data_g[0,:] 
 
@@ -140,7 +142,7 @@ if __name__ == "__main__":
     size_g   = np.size(w_lm_g)
 
     #===============================================================================================
-    planet_data_h = np.loadtxt('Results_Trappist_1h_10.0_100_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_h = np.loadtxt('cases/k2_data/Results_Trappist_1h_10.0_100_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_h = np.loadtxt('Results_Trappist_1h_13.5_150_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_h, planet_radius_h, planet_gyration_radius_squared_h = planet_data_h[0,:] 
 
@@ -150,7 +152,7 @@ if __name__ == "__main__":
     size_h   = np.size(w_lm_h)
 
     #===============================================================================================
-    planet_data_venus = np.loadtxt('trappist_T1e_1e18.txt',comments='#') #np.loadtxt('Results_V1_Armann2_atm_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_venus = np.loadtxt('cases/k2_data/trappist_T1e_1e18.txt',comments='#') #np.loadtxt('Results_V1_Armann2_atm_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_h = np.loadtxt('Results_Trappist_1h_13.5_150_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_venus, planet_radius_venus, planet_gyration_radius_squared_venus = planet_data_venus[0,:] 
 
@@ -411,7 +413,7 @@ if __name__ == "__main__":
     planet_pseudo_synchronization_period = posidonius.calculate_pseudo_synchronization_period(a, e, star_mass, planet_mass) # days
     orbital_period  = 2.*np.pi*(np.sqrt( (a*posidonius.constants.AU)**3. / ( posidonius.constants.G_SI*( star_mass*posidonius.constants.M_SUN + planet_mass*posidonius.constants.M_SUN ) ) ) )/86400.
     # print("Orbtial period is ",orbital_period)
-    rotation_period = orbital_period/(1.0 + 1e-5)
+    rotation_period = orbital_period/(1.0 + 1e-4)
     print("orbital period {} ".format(rotation_period))
     planet_angular_frequency = posidonius.constants.TWO_PI/(rotation_period)
 

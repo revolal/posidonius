@@ -5,7 +5,27 @@ from posidonius.constants import *
 from posidonius.particles.axes import Axes
 
 def calculate_eccentricity_vector(target_mass, position, velocity, masses=[], positions=[], velocities=[]):
+    """
+    Calculate the eccentricity vector
 
+    - target_mass: mass (typically the target planet mass+central body mass)
+    - target_position: position (Axes)
+    - target_velocity: position (Axes)
+
+    In case of instead of a central massive body there are two (i.e., circumbinary
+    planet), then it is necessary to provide their masses, positions and velocities
+    (as list of Axes objects) and target_mass must correspond only to the planet
+    mass. Order is important, for instance:
+
+    - target_mass: planet mass
+    - masses: [star1_mass, star2_mass]
+    - positions: [star1_position, star2_position]
+    - velocities: [star1_velocity, star2_velocity]
+
+    It returns the eccentricity vector
+    Is dimensionless vector with direction pointing from apoapsis to periapsis 
+    with magnitude equal to the orbit's scalar eccentricity
+    """
     if not isinstance(masses, list):
         masses = [masses]
     if not isinstance(positions, list):
@@ -53,6 +73,25 @@ def _calculate_eccentricity_vector(reduced_masse, position, velocity):
 
     return (ex, ey, ez)
 
+def rotation_matrix_R3(x, y, z, angle): 
+    """
+    Define the rotation matrix R3
+    Transformation matrix who perform a rotation by the given angle about the z axis
+    """
+    x_rot = x * np.cos(angle) + y * np.sin(angle)
+    y_rot = -x * np.sin(angle) + y * np.sin(angle)
+    z_rot = z
+    return x_rot, y_rot, z_rot
+
+def rotation_matrix_R1(x, y, z, angle):
+    """
+    Define the rotation matrix R1
+    Transformation matrix who perform a rotation by the given angle about the x axis
+    """
+    x_rot = x
+    y_rot = y * np.cos(angle) + z * np.sin(angle)
+    z_rot = -y * np.sin(angle) + z * np.cos(angle)
+    return x_rot, y_rot, z_rot
 
 def calculate_keplerian_orbital_elements_2(target_mass, target_position, target_velocity, masses=[], positions=[], velocities=[]):
     """
@@ -110,9 +149,19 @@ def calculate_keplerian_orbital_elements_2(target_mass, target_position, target_
     return (a, q, eccentricity, i, p, n, l)
 
 def _calculate_keplerian_orbital_elements_2(gm, position, velocity):
-    # ! Based on the implementation of Chambers in Mercury
+    """
+    It returns:
+
+    - a: semi-major axis (in AU)
+    - q: perihelion distance
+    - eccentricity: eccentricity
+    - i: inclination
+    - p: longitude of perihelion (NOT the argument of perihelion)
+    - n: longitude of ascending node
+    - l: mean anomaly (or mean longitude if eccentricity < 1.e-8)
+    """
+    # ! Corrected from calculate_keplerian_orbital_elements by Revol Alexandre alexandre.revol@unige.ch
     # Calculates Keplerian orbital elements given relative coordinates and
-    # velocities, and GM = G times the sum of the masses.
 
     # Input
     x = position.x()
@@ -132,59 +181,52 @@ def _calculate_keplerian_orbital_elements_2(gm, position, velocity):
     # a # semi-major axis (in AU)
     # q # perihelion distance
     # ecc # eccentricity
-    # i = 0. # inclination
+    # i # inclination
     # p # longitude of perihelion (NOT argument of perihelion!!)
     # n # longitude of ascending node
     # l # mean anomaly (or mean longitude if eccentricity < 1.e-8)
     # Local
+    # --- Calculate the eccentricity vector -- #
+    # is dimensionless vector with direction pointing from apoapsis to periapsis 
+    # with magnitude equal to the orbit's scalar eccentricity
     ex,ey,ez = _calculate_eccentricity_vector(gm, position, velocity)
-    e_norm = np.sqrt( np.power(ex,2) +np.power(ey,2) +np.power(ez,2) )
-    # print(" ecc vector {} {} {} ".format( ex, ey, ez))
-    # print("e norm", e_norm)
+    # --- Calculate the scalar product btw the eccentricity vector and the position vector
     e_scal_r = ex*x + ey*y + ez*z
+    # --- Calculate the component of the orbital angular momentum
     hx = y * w  -  z * v
     hy = z * u  -  x * w
     hz = x * v  -  y * u
     h2 = np.power(hx, 2) + np.power(hy, 2) + np.power(hz, 2)
+    h = np.sqrt(h2)
+
     v2 = u * u  +  v * v  +  w * w
+    # --- Calculate the scalar product btw the position vector and the velocity vector
     r_scal_v = x * u  +  y * v  +  z * w
     r = np.sqrt(x*x + y*y + z*z)
-    h = np.sqrt(h2)
     s = h2 / gm
-    # print("hx hy hz ", hx, hy, hz)
-    # print("h", h)
 
 
     ###-------------------------------------------------------------------------
-    ### a: Semi-major axis
+    # --- Calculate the Semi-major axis : a
     a  = gm * r / (2.0 * gm  -  r * v2)
 
-    # Inclination and node
+    # The cosine of the inclination by the inclination of the orbital angular momentum
     ci = hz / h
-    # print("ci", ci)
-    # print(" acos i ", np.arccos(ci))
+    ci = np.clip(ci, -1., 1.)
 
     ###-------------------------------------------------------------------------
-    ### n: longitude_of_ascending_node
-    ### i: inclination
-    # Algorithm:
+    # --- Calculate the longitude_of_ascending_node : n
+    # --- Calculate the inclination : i
 
     i = np.zeros(len(ci))
     n = np.zeros(len(ci))
-    no_inclination = i == 0.
-    if np.any(no_inclination):
-        n[no_inclination] = 0.
     less_than_one = np.abs(ci) < 1.
     if np.any(less_than_one):
         i[less_than_one] = np.arccos(ci[less_than_one])
-        # n[less_than_one] = np.arctan2(hx[less_than_one], -hy[less_than_one])
         n[less_than_one] = np.arctan(hx[less_than_one] / -hy[less_than_one])
-        if hy[less_than_one]>0.:
-            i[less_than_one] = TWO_PI - i[less_than_one]
-        # if hy[less_than_one]<0.: 
-        #     n[less_than_one] = np.pi + n[less_than_one]
-        # if (hy[less_than_one]>0. and hx[less_than_one]>0.):
-        #     n[less_than_one] = 2*np.pi + n[less_than_one]
+        positive_hy = hy[less_than_one] > 0.
+        if np.any(positive_hy):
+            i[positive_hy] = TWO_PI - i[positive_hy]
     negative_n = np.logical_and(n < 0, less_than_one)
     if np.any(negative_n):
         n[negative_n] += TWO_PI
@@ -197,105 +239,66 @@ def _calculate_keplerian_orbital_elements_2(gm, position, velocity):
         if np.any(negative_ci):
             i[negative_ci] = PI
         n[rest] = 0.
+    no_inclination = i == 0.
+    if np.any(no_inclination):
+        n[no_inclination] = 0.
 
     ###-------------------------------------------------------------------------
-    ### eccentricity
-    ### q: perihelion_distance
+    # --- Calculate the eccentricity : e
+    # --- Calculate the perihelion_distance : q
     temp = 1.  +  s * (v2 / gm  -  2. / r)
 
     eccentricity = np.zeros(len(ci))
-    ## Algorithm:
-    #if temp <= 0.:
-        #eccentricity = 0.
-    #else:
-        #eccentricity = np.sqrt(temp)
+
     positive_temp = temp > 0.
     if np.any(positive_temp):
         eccentricity[positive_temp] = np.sqrt(temp[positive_temp])
     q = s / (1. + eccentricity)
-
+    # if the eccentricity is calculated below 3.0e-8
+    # we take the 0 eccentricity approximation
     small_eccentricity = eccentricity < 3.0e-8
     big_eccentricity = eccentricity >= 3.0e-8
 
     ###-------------------------------------------------------------------------
+    # --- Calculate the longitude of perihelion : p
 
-    # x = 1.
-    # y = 1.
-    # print(np.arctan2(y,x)/DEG2RAD)
-    # xrot= x*np.cos(30*DEG2RAD) + y*np.sin(30*DEG2RAD)
-    # yrot= -x*np.sin(30*DEG2RAD) + y*np.cos(30*DEG2RAD)
-    # print(xrot, yrot)
-    # print(np.arctan(yrot/xrot)/DEG2RAD)
-    # xrot2= xrot*np.cos(30*DEG2RAD) - yrot*np.sin(30*DEG2RAD)
-    # yrot2= xrot*np.sin(30*DEG2RAD) + yrot*np.cos(30*DEG2RAD)
-    # print(xrot2, yrot2)
-
-
-    ### p: longitude of perihelion
-    # Algorithm:
-
-    # print("\t")
-    # print("\teccentricity vector tho rotation matrix {} {} {} ".format(ex_rot, ey_rot, ez_rot))
     arg_pericentre = np.zeros(len(ci))
+    # The eccentricity vector through the rotation matrix R3
     ex_rot = np.zeros(len(ci))
     ey_rot = np.zeros(len(ci))
     ez_rot = np.zeros(len(ci))
+    # The eccentricity vector through the rotation matrix R3 then the rotation matrix R
     ex_rot_2 = np.zeros(len(ci))
     ey_rot_2 = np.zeros(len(ci))
     ez_rot_2 = np.zeros(len(ci))
     if np.any(small_eccentricity):
         arg_pericentre[small_eccentricity] = 0.
     if np.any(big_eccentricity):
-        # print("rotation tho ", n/DEG2RAD)
-        # Through the Matrix R3 rotation passage of the longitude of ascending node
+        # The argument of pericentre is calculated with theangle made by the eccentricity vector
+        # with respect to the referential rotated first by the argument of ascending node with respect to the z axis
+        # and then by the inclination woth repect to the mew x axis
+
+        # Calculate the eccentricity vector through the rotation matrix R3
+        # with respect to the longitude of ascending node
         ex_rot[big_eccentricity] = ex[big_eccentricity]*np.cos(n[big_eccentricity]) + ey[big_eccentricity]*np.sin(n[big_eccentricity])
         ey_rot[big_eccentricity] = -ex[big_eccentricity]*np.sin(n[big_eccentricity]) + ey[big_eccentricity]*np.cos(n[big_eccentricity])
         ez_rot[big_eccentricity] = ez[big_eccentricity]
         
-        # print("Test") 
-        # print( "ex ey ez", ex, ey, ez)
-        # print(np.arctan2(ey,ex))
-        # print(np.arctan2(ey,ex)/DEG2RAD)
-        # print(np.arccos(ex/np.sqrt(ex*ex+ey*ey)))
-        # print("Test") 
-        # print("exrot eyrot ezrot", ex_rot, ey_rot, ez_rot)
-        # print(np.arctan2(ey_rot,ex_rot))
-        # print(np.arctan2(ey_rot,ex_rot)/DEG2RAD)
-        # print(np.arccos(ex_rot/np.sqrt(ex_rot*ex_rot+ey_rot*ey_rot)))
-        # print(np.arccos(ex_rot/np.sqrt(ex_rot*ex_rot+ey_rot*ey_rot))/DEG2RAD)
-
+        # Calculate the eccentricity vector (rotate with ) through the rotation matrix R1
+        # with respect to the inclination
         ex_rot_2[big_eccentricity] = ex_rot[big_eccentricity]
         ey_rot_2[big_eccentricity] = ey_rot[big_eccentricity]*np.cos(i[big_eccentricity]) + ez_rot[big_eccentricity]*np.sin(i[big_eccentricity])
         ez_rot_2[big_eccentricity] = -ey_rot[big_eccentricity]*np.sin(i[big_eccentricity]) + ez_rot[big_eccentricity]*np.cos(i[big_eccentricity])
-        # print("Test") 
-        # print("exrot eyrot ezrot", ex_rot_2, ey_rot_2, ez_rot_2)
-        # print(np.arctan2(ey_rot_2,ex_rot_2))
-        # print(np.arctan2(ey_rot_2,ex_rot_2)/DEG2RAD)
-        # print(np.arccos(ex_rot_2/np.sqrt(ex_rot_2*ex_rot_2+ey_rot_2*ey_rot_2)))
-        # print(np.arccos(ex_rot_2/np.sqrt(ex_rot_2*ex_rot_2+ey_rot_2*ey_rot_2))/DEG2RAD)
-
-
-        # arg_pericentre[big_eccentricity] = np.arctan(e_norm[big_eccentricity]/ex_rot[big_eccentricity])
-        # arg_pericentre[big_eccentricity] = np.arctan( np.sqrt(np.power(ey_rot[big_eccentricity],2) +np.power(ez_rot[big_eccentricity],2)) /ex_rot[big_eccentricity])
-        # arg_pericentre[big_eccentricity] = np.arctan(ey_rot[big_eccentricity]/ex_rot[big_eccentricity])
-
-        # arg_pericentre[big_eccentricity] = np.arctan(ey_rot_2[big_eccentricity]/ex_rot_2[big_eccentricity])
-        # ey_ez = np.sqrt( np.power(ey_rot_2[big_eccentricity],2) +np.power(ez_rot_2[big_eccentricity],2) )
-        # arg_pericentre[big_eccentricity] = np.arctan( ey_ez /ex_rot_2[big_eccentricity])
+        
         arg_pericentre[big_eccentricity] = np.arctan2(ey_rot_2,ex_rot_2)
-    # print(" \n in tools argument pericentre ", arg_pericentre, arg_pericentre/DEG2RAD)
-    # print(" \n in tools long asc node ", n, n/DEG2RAD)
-    # print(" \n in tools long perihelion ", arg_pericentre +n, (arg_pericentre+n)/DEG2RAD)
-    
-    # if np.any(big_eccentricity):
-    # p = np.arctan2(ey,ex)
-        # print("longitude of perihelion ", p, p/posidonius.constants.DEG2RAD)
+
     p = np.zeros(len(eccentricity))
     p = arg_pericentre + n
 
     ###-------------------------------------------------------------------------
-    ### True anomaly
-    # Algorithm:
+    # --- Calculate the true anomaly : f
+    # The true anomaly is needed to calculate the mean anomaly
+
     f = np.zeros(len(ci))
     cosf_cal = np.zeros(len(ci))
     x_rot = np.zeros(len(ci))
@@ -304,25 +307,22 @@ def _calculate_keplerian_orbital_elements_2(gm, position, velocity):
         # y_rot = -x[small_eccentricity]*np.sin(n[small_eccentricity]) + y[small_eccentricity]*np.cos(n[small_eccentricity])
         # z_rot = z
         cosf_cal[small_eccentricity] = x_rot[small_eccentricity] / r[small_eccentricity]
+        cosf_cal = np.clip(cosf_cal, -1., 1.)
         f[small_eccentricity] = np.arccos(cosf_cal[small_eccentricity])
     if np.any(big_eccentricity):
         cosf_cal = e_scal_r[big_eccentricity] / (eccentricity[big_eccentricity]*r[big_eccentricity])
+        cosf_cal = np.clip(cosf_cal, -1., 1.)
         ellipse = np.logical_and(big_eccentricity, eccentricity < 1.)
 
         f[big_eccentricity] = np.arccos(cosf_cal[big_eccentricity])
         negative_r_scal_v = r_scal_v < 0.
         if np.any(negative_r_scal_v):
             f[negative_r_scal_v] = TWO_PI -f[negative_r_scal_v]
-                
-        # print("True ano cal {} rad and {} deg".format( f, f/posidonius.constants.DEG2RAD))
-        # cosf_cal = (1/e_cal)*( (a_cal*(1-e_cal*e_cal)/r_cal) -1.)
-        # f = np.arccos(cosf_cal) 
-        # print("True ano cal {} rad and {} deg".format( f, f/posidonius.constants.DEG2RAD))
+
 
     ###-------------------------------------------------------------------------
-    ### l: mean_anomaly
-    # Algorithm:
-
+    # --- Calculate the mean_anomaly : l
+    
     l = np.zeros(len(ci))
     
     if np.any(small_eccentricity): #mean_anomaly = true_longitude = true_anomaly + long_pericentre
@@ -340,6 +340,7 @@ def _calculate_keplerian_orbital_elements_2(gm, position, velocity):
                 cos_E[change_sign] = np.sign(cos_E[change_sign])
             big_E = np.zeros(len(cos_E))
             big_E[ellipse] = np.arccos(cos_E[ellipse])
+            big_E[ellipse] = np.clip(big_E[ellipse], -1., 1.)
             negative_rv = np.logical_and(ellipse, r_scal_v < 0.)
             if np.any(negative_rv):
                 big_E[negative_rv] = TWO_PI - big_E[negative_rv]
@@ -357,12 +358,6 @@ def _calculate_keplerian_orbital_elements_2(gm, position, velocity):
                 big_E[negative_rv] = - big_E[negative_rv]
             l[hyperbola] = eccentricity[hyperbola] * np.sinh(big_E[hyperbola]) - big_E[hyperbola]
 
-    # Algorithm:
-    #if l < 0.:
-        #l = l + TWO_PI
-
-    #if l > TWO_PI:
-        #l = modulus(l, TWO_PI)
     negative_l = l < 0.
     if np.any(negative_l):
         l[negative_l] += TWO_PI

@@ -1918,7 +1918,7 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn calculate_gradient_factors(gm: f64, position: Axes, velocity: Axes) -> f64{
+fn _calculate_gradient_factors(gm: f64, position: Axes, velocity: Axes) -> f64{
     let ( a, _perihelion_distance, e, i, longitude_perihelion, longitude_of_ascending_node, l, p, f
     ) = tools::calculate_keplerian_orbital_elements_2( gm, position, velocity);
     let varpi:f64 = longitude_perihelion -longitude_of_ascending_node ;

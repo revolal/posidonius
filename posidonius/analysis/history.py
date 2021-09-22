@@ -22,7 +22,9 @@ def read(filename):
     fields = ('current_time', 'time_step', 'particle', 'position_x', 'position_y', 'position_z', 'spin_x', 'spin_y', 'spin_z', 'velocity_x', 'velocity_y', 'velocity_z', 'mass', 'radius', 'radius_of_gyration_2',
                 'love_number', 'scaled_dissipation_factor', 'lag_angle', 'denergy_dt', 'migration_timescale', #20 arguments
                 'a', 'spin', 'orbital_frequency',
-                'tidal_torque_z','orthogonal_component_of_the_tidal_force_due_to_planetary_tide', 'radial_component_of_the_tidal_force', #26 
+                'tidal_torque_x','tidal_torque_y','tidal_torque_z',
+                'orthogonal_component_of_the_tidal_force_due_to_planetary_tide', 'radial_component_of_the_tidal_force_2_kaula','radial_component_of_the_tidal_force_1_kaula','radial_component_of_the_tidal_force_1_kaula_nophases','radial_component_of_the_tidal_force_1_kaula_averaged', #28 
+                'orthogonal_tidal_force_1_kaula','orthogonal_tidal_force_1_kaula_averaged','orthogonal_tidal_force_1_kaula_nophases', 'orthogonal_tidal_force_2_kaula',
                 'acceleration_x', 'acceleration_y', 'acceleration_z',
                 'dangular_momentum_dt_x', 'dangular_momentum_dt_y', 'dangular_momentum_dt_z', #32 arguments
                 'sigma220_2_excitative_frequency', 'sigma220_1_excitative_frequency', 'sigma2200_excitative_frequency', 'sigma2201_excitative_frequency', 'sigma2202_excitative_frequency', 
@@ -30,7 +32,7 @@ def read(filename):
                 're_love_number_sigma220_2', 're_love_number_sigma220_1', 're_love_number_sigma2200', 're_love_number_sigma2201', 're_love_number_sigma2202',  #47 arguments
                 'sigma201_2_excitative_frequency', 'sigma201_1_excitative_frequency', 'sigma2010_excitative_frequency', 'sigma2011_excitative_frequency', 'sigma2012_excitative_frequency', #52 arguments
                 'im_love_number_sigma201_2', 'im_love_number_sigma201_1', 'im_love_number_sigma2010', 'im_love_number_sigma2011', 'im_love_number_sigma2012', #) #57 arguments
-                're_love_number_sigma201_2', 're_love_number_sigma201_1', 're_love_number_sigma2010', 're_love_number_sigma2011', 're_love_number_sigma2012', ) #52 arguments
+                're_love_number_sigma201_2', 're_love_number_sigma201_1', 're_love_number_sigma2010', 're_love_number_sigma2011', 're_love_number_sigma2012', ) #62 arguments !!+7 +2
 
     data = []
     while True:

@@ -13,16 +13,13 @@ if __name__ == "__main__":
 
     #initial_time = 4.5e6*365.25 # time [days] where simulation starts
     initial_time = 0.0 # time [days] where simulation starts
-    time_step = 0.03 # days
-    #time_step = 0.05 # days
-    #time_limit   = 4*time_step # days
-    #time_limit   = 365.25 * 1.0e8 # days
+    time_step = 0.1 # days
     time_limit   = 365.25*1.0e8 # days
-    historic_snapshot_period = 100.0*1.0e4*time_step # days
+    historic_snapshot_period = 10.0*1.0e1*time_step # days
     recovery_snapshot_period = 1000.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
-        "rotational_flattening": False,
+        "rotational_flattening": True,
         "general_relativity": False,
         "disk": False,
         "wind": False,
@@ -39,7 +36,6 @@ if __name__ == "__main__":
 
     # Initialization of stellar spin
     star_rotation_period = 3.3*24 # hours
-    #star_rotation_period = 19.0*24 # hours
     star_angular_frequency = posidonius.constants.TWO_PI/(star_rotation_period/24.) # days^-1
     star_spin = posidonius.Axes(0., 0., star_angular_frequency)
 
@@ -52,7 +48,9 @@ if __name__ == "__main__":
     #star_tides = posidonius.effects.tides.OrbitingBody(star_tides_parameters)
     #star_tides = posidonius.effects.tides.Disabled()
     #
-    star_rotational_flattening = posidonius.effects.rotational_flattening.Disabled()
+    star_rotational_flattening_parameters = {"love_number": star_tides_parameters["love_number"] }
+    star_rotational_flattening = posidonius.effects.rotational_flattening.CentralBody(star_rotational_flattening_parameters)
+    # star_rotational_flattening = posidonius.effects.rotational_flattening.Disabled()
     #
     star_general_relativity = posidonius.effects.general_relativity.Disabled()
     #
@@ -71,6 +69,24 @@ if __name__ == "__main__":
     star.set_evolution(star_evolution)
     universe.add_particle(star)
 
+    #===============================================================================================
+
+    planet_data_b = np.loadtxt('cases/k2_data/Corot-7-b.txt',comments='#')
+    planet_mass_0, planet_radius_0, planet_gyration_radius_squared_b = planet_data_b[0,:] 
+
+    w_lm_b   = planet_data_b[1:,0]
+    ImK2_b   = planet_data_b[1:,1]
+    ReK2_b   = planet_data_b[1:,2]
+    size_b   = np.size(w_lm_b)
+
+    #===============================================================================================
+    planet_data_c = np.loadtxt('cases/k2_data/Corot-7-b.txt',comments='#')
+    planet_mass_0, planet_radius_0, planet_gyration_radius_squared_c = planet_data_c[0,:] 
+
+    w_lm_c   = planet_data_c[1:,0]
+    ImK2_c   = planet_data_c[1:,1]
+    ReK2_c   = planet_data_c[1:,2]
+    size_c   = np.size(w_lm_c)
 
     ############################################################################
     # Radiuses in R_EARTH
@@ -86,24 +102,30 @@ if __name__ == "__main__":
     # Planet eccentricity
     planet_e = (0.25, 0.1546)                                        
     # Planet argument of pericentre
-    planet_w = (0.0, 0.0)
-    # Uniform viscosity coefficients
-    planet_uniform_viscosity_coefficients = (1.0e12, 1.0e12)        
+    planet_p = (0.0, 0.0)
+    # Love number data
+    planet_w_lm = (w_lm_b, w_lm_c)
+    planet_Imk2 = (ImK2_b, ImK2_c)
+    planet_Rek2 = (ReK2_b, ReK2_c)
+    planet_nm_data = (size_b, size_c)
+    planet_gyration_radius_squared = (planet_gyration_radius_squared_b, planet_gyration_radius_squared_c)   
 
-    for r, m, a, i, l, e, p, eta in zip(planet_radiuses, planet_masses, planet_a, planet_i, planet_l, planet_e, planet_w, planet_uniform_viscosity_coefficients):
+    for r, m, a, i, l, e, p, w_lmpq, ImK2, ReK2, size, gyration_radius_2 in zip(
+        planet_radiuses, planet_masses, planet_a, planet_i, planet_l, planet_e, planet_p, planet_w_lm, planet_Imk2, planet_Rek2, planet_nm_data, planet_gyration_radius_squared):
+    # for r, m, a, i, l, e, p, eta in zip(planet_radiuses, planet_masses, planet_a, planet_i, planet_l, planet_e, planet_w, planet_uniform_viscosity_coefficients):
         planet_mass = m # Solar masses (3.0e-6 solar masses = 1 earth mass)
         planet_radius_factor = r # R Earth
         planet_radius = planet_radius_factor * posidonius.constants.R_EARTH
         planet_radius_of_gyration = 5.75e-01
-        planet_uniform_viscosity_coefficient = eta
 
         #////////// Specify initial position and velocity for a stable orbit
         #////// Keplerian orbital elements, in the `asteroidal' format of Mercury code
-        i = i * posidonius.constants.DEG2RAD;                      # inclination (degrees)
+        i = i * posidonius.constants.DEG2RAD;                       # inclination (degrees)
         n = 0. * posidonius.constants.DEG2RAD;                      # longitude of the ascending node (degrees)
-        l = l * posidonius.constants.DEG2RAD;           # mean anomaly (degrees)
-        p = (p + n) * posidonius.constants.DEG2RAD;                 # Convert to longitude of perihelion !! (CHECK THIS for I not equal to 0)
-        q = a * (1.0 - e);                     # perihelion distance
+        l = l * posidonius.constants.DEG2RAD;                       # mean anomaly (degrees)
+        p = p * posidonius.constants.DEG2RAD;                       # argument of pericentre (degrees)
+        p = (p + n);                                                # Convert to longitude of perihelion !! (CHECK THIS for I not equal to 0)
+        q = a * (1.0 - e);                                          # perihelion distance
         planet_position, planet_velocity = posidonius.calculate_cartesian_coordinates(planet_mass, q, e, i, p, n, l, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
 
         #////// Initialization of planetary spin
@@ -111,7 +133,7 @@ if __name__ == "__main__":
         # Pseudo-synchronization period
         planet_pseudo_synchronization_period = posidonius.calculate_pseudo_synchronization_period(a, e, star_mass, planet_mass) # days
         planet_angular_frequency = 2.0*posidonius.constants.TWO_PI/(planet_pseudo_synchronization_period) # days^-1
-        planet_keplerian_orbital_elements = posidonius.calculate_keplerian_orbital_elements(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
+        planet_keplerian_orbital_elements = posidonius.tools.calculate_keplerian_orbital_elements_2(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
         planet_inclination = planet_keplerian_orbital_elements[3]
         planet_spin = posidonius.calculate_spin(planet_angular_frequency, planet_inclination, planet_obliquity)
 
@@ -122,19 +144,47 @@ if __name__ == "__main__":
        #     "love_number": 0.299,
        # }
 
-        planet_tides_parameters_creep = {
-        "dissipation_factor_scale": 0.0,
-        "dissipation_factor": 0.0,
-        "love_number": 0.0,
-        "uniform_viscosity_coefficient": (planet_uniform_viscosity_coefficient * posidonius.constants.AU * posidonius.constants.DAY / posidonius.constants.M_SUN),
-        # value in kg s^-1 m^-1 => M_SUN day^-1 AU^-1 for the viscosity
+        Tab_size = 32
+        Tab_w_lmpq = np.zeros((Tab_size,Tab_size))
+        Tab_ImK2 = np.zeros((Tab_size,Tab_size))
+        Tab_ReK2 = np.zeros((Tab_size,Tab_size))
+        k = 0
+        for i in range(0,int(size/Tab_size)):
+            Tab_w_lmpq[i,:] = w_lmpq[i*Tab_size : (1+i)*Tab_size]
+            Tab_ReK2[i,:] = ReK2[i*Tab_size : (1+i)*Tab_size]
+            Tab_ImK2[i,:] = ImK2[i*Tab_size : (1+i)*Tab_size]
+            k+=1
+        for i in range (k*Tab_size, size):
+            Tab_w_lmpq[k, i-k*Tab_size] = w_lmpq[i]
+            Tab_ReK2[k, i-k*Tab_size] = ReK2[i]
+            Tab_ImK2[k, i-k*Tab_size] = ImK2[i]
+
+        freq_lmpq = []
+        realK2 = []
+        imagK2 = []
+        freq_lmpq.append(Tab_w_lmpq)
+        realK2.append(Tab_ReK2)
+        imagK2.append(Tab_ImK2)
+
+        planet_tides_parameters_love_number_kaula = {
+            "dissipation_factor_scale": 0.0, #1.0,
+            "dissipation_factor": 0.0, #2. * posidonius.constants.K2 * k2pdelta/(3. * np.power(planet_radius, 5)),
+            "love_number": 0.0, #0.299,
+
+            "love_number_excitation_frequency": Tab_w_lmpq.tolist(), #syntaxe tab [[32]32]
+            "imaginary_part_love_number": Tab_ImK2.tolist(),
+            "real_part_love_number": Tab_ReK2.tolist(),
+            "num_datapoints": size,
         }
+
         #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_parameters)
         #planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_parameters)
-        planet_tides = posidonius.effects.tides.CreepCoplanarOrbitingBody(planet_tides_parameters_creep)
+        planet_tides = posidonius.effects.tides.KaulaCoplanarOrbitingBody(planet_tides_parameters_love_number_kaula)
         #planet_tides = posidonius.effects.tides.Disabled()
         #
-        planet_rotational_flattening = posidonius.effects.rotational_flattening.Disabled()
+        planet_rotational_flattening_parameters = {"love_number": 0.5}
+        planet_rotational_flattening = posidonius.effects.rotational_flattening.OrbitingBody(planet_rotational_flattening_parameters)
+        # planet_rotational_flattening = posidonius.effects.rotational_flattening.Disabled()
         #
         planet_general_relativity = posidonius.effects.general_relativity.Disabled()
         #
