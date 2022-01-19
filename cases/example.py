@@ -144,7 +144,52 @@ if __name__ == "__main__":
         "dissipation_factor": 2. * posidonius.constants.K2 * k2pdelta/(3. * np.power(planet_radius, 5)),
         "love_number": 0.305,
     }
+
+    #===============================================================================================
+    planet_data_venus = np.loadtxt('cases/love_number_data/trappist_T1e_1e18.txt',comments='#') #np.loadtxt('Results_V1_Armann2_atm_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_h = np.loadtxt('Results_Trappist_1h_13.5_150_freq_Imk2_posidonius.txt',comments='#')
+    planet_mass_venus, planet_radius_venus, planet_gyration_radius_squared_venus = planet_data_venus[0,:] 
+
+    w_lm_venus   = planet_data_venus[1:,0]
+    ImK2_venus   = planet_data_venus[1:,1]
+    ReK2_venus   = planet_data_venus[1:,2]
+    size_venus   = np.size(w_lm_venus)
+
+    w_lmpq = w_lm_venus
+    ImK2 = ImK2_venus
+    ReK2 = ReK2_venus
+    size = size_venus
+    gyration_radius_2 = planet_gyration_radius_squared_venus
+
+    Tab_size = 32
+    Tab_w_lmpq = np.zeros((Tab_size,Tab_size))
+    Tab_ImK2 = np.zeros((Tab_size,Tab_size))
+    Tab_ReK2 = np.zeros((Tab_size,Tab_size))
+    k = 0
+    for i in range(0,int(size/Tab_size)):
+        Tab_w_lmpq[i,:] = w_lmpq[i*Tab_size : (1+i)*Tab_size]
+        Tab_ReK2[i,:] = ReK2[i*Tab_size : (1+i)*Tab_size]
+        Tab_ImK2[i,:] = ImK2[i*Tab_size : (1+i)*Tab_size]
+        k+=1
+    for i in range (k*Tab_size, size):
+        Tab_w_lmpq[k, i-k*Tab_size] = w_lmpq[i]
+        Tab_ReK2[k, i-k*Tab_size] = ReK2[i]
+        Tab_ImK2[k, i-k*Tab_size] = ImK2[i]
+
+    freq_lmpq = []
+    realK2 = []
+    imagK2 = []
+    freq_lmpq.append(Tab_w_lmpq)
+    realK2.append(Tab_ReK2)
+    imagK2.append(Tab_ImK2)
+    planet_kaula_tidal_parameters_love_numbers = {
+        "love_number_excitation_frequency": Tab_w_lmpq.tolist(), #syntaxe tab [[32]32]
+        "imaginary_part_love_number": Tab_ImK2.tolist(),
+        "real_part_love_number": Tab_ReK2.tolist(),
+        "num_datapoints": size,
+    }
     planet_tides_model = posidonius.effects.tides.ConstantTimeLag(planet_tides_parameters)
+    planet_tides_model = posidonius.effects.tides.Kaula(planet_kaula_tidal_parameters_love_numbers)
     #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_model)
     planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
     #planet_tides = posidonius.effects.tides.Disabled()

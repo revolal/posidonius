@@ -1,5 +1,6 @@
 import six
 from posidonius.particles.axes import Axes
+import numpy as np
 
 class Tides(object):
     def __init__(self, variant, tidal_model=None):
@@ -20,6 +21,11 @@ class Tides(object):
                     "scalar_product_of_vector_position_with_stellar_spin": 0.0,
                     "scaled_dissipation_factor": 0.0,
                     "shape": Axes(0.0, 0.0, 0.0).get(),
+                    # "love_number_excitation_frequency": np.zeros((32,32)).tolist(),
+                    # "real_part_love_number": np.zeros((32,32)).tolist(),
+                    # "imaginary_part_love_number": np.zeros((32,32)).tolist(),
+                    "num_datapoints": 0.0,
+                    "kaula_tidal_force": Axes( 0.0, 0.0, 0.0).get(),
                 },
                 "output": {
                     "acceleration": Axes(0.0, 0.0, 0.0).get(),
@@ -100,3 +106,25 @@ class CreepCoplanar(object):
         else:
             return self._data.copy()
 
+class Kaula(object):
+    def __init__(self, input_parameters):
+        self._data = {
+            "Kaula": {
+                "love_number_excitation_frequency": np.zeros((32,32)).tolist(), #[[0.]*32]*32,
+                "imaginary_part_love_number": np.zeros((32,32)).tolist(),
+                "real_part_love_number": np.zeros((32,32)).tolist(),
+                "num_datapoints": 0.0,
+            },
+        }
+        # Update default values, ignore non-recognised keys
+        for key, value in six.iteritems(input_parameters):
+            if key in self._data["Kaula"]:
+                self._data["Kaula"][key] = value #float(value)
+            else:
+                print("Ignored parameter: {}".format(key))
+
+    def get(self):
+        if type(self._data) == str:
+            return self._data
+        else:
+            return self._data.copy()

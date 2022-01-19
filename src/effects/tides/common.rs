@@ -2,7 +2,7 @@ use super::super::super::{Particle};
 use super::super::super::{Axes};
 use super::constant_time_lag;
 use super::creep_coplanar;
-
+use super::kaula;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TidesParticleInternalParameters {
@@ -19,6 +19,8 @@ pub struct TidesParticleInternalParameters {
     //
     // Creep coplanar specific:
     pub shape: Axes,
+    // Kaula tidal force:
+    pub kaula_tidal_force: Axes,
     //
     pub denergy_dt: f64, // Only for history output
     pub lag_angle: f64, // Used by EvolutionType::BolmontMathis2016, EvolutionType::GalletBolmont2017 and EvolutionType::LeconteChabrier2013(true)
@@ -48,6 +50,7 @@ pub struct TidesParticleCoordinates {
 pub enum TidalModel {
     ConstantTimeLag(constant_time_lag::ConstantTimeLagParameters),
     CreepCoplanar(creep_coplanar::CreepCoplanarParameters),
+    Kaula(kaula::KaulaParameters),
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
@@ -89,6 +92,7 @@ impl Tides {
                     radial_component_of_the_tidal_force: 0.,
                     radial_component_of_the_tidal_force_dissipative_part_when_star_as_point_mass: 0.,
                     shape: Axes{x: 0., y: 0., z: 0.},
+                    kaula_tidal_force: Axes{x: 0., y: 0., z: 0.},
                     denergy_dt: 0., // Only for history output
                     lag_angle: 0., // It will be initialized the first time the evolver is called
                 },
@@ -194,6 +198,7 @@ pub fn calculate_dangular_momentum_dt_due_to_tides(tidal_host_particle: &mut Par
             let torque_due_to_tides = match tidal_model {
                 TidalModel::ConstantTimeLag(_) => constant_time_lag::calculate_torque_due_to_tides(tidal_host_particle, particle, central_body),
                 TidalModel::CreepCoplanar(_) => creep_coplanar::calculate_torque_due_to_tides(tidal_host_particle, particle, central_body),
+                TidalModel::Kaula(_) => kaula::calculate_torque_due_to_tides(particle),
             };
             // Integration of the spin (total torque tides):
             particle.tides.parameters.output.dangular_momentum_dt.x = factor * torque_due_to_tides.x;
@@ -209,6 +214,7 @@ pub fn calculate_dangular_momentum_dt_due_to_tides(tidal_host_particle: &mut Par
             let torque_due_to_tides = match tidal_model {
                 TidalModel::ConstantTimeLag(_) => constant_time_lag::calculate_torque_due_to_tides(tidal_host_particle, particle, central_body),
                 TidalModel::CreepCoplanar(_) => creep_coplanar::calculate_torque_due_to_tides(tidal_host_particle, particle, central_body),
+                TidalModel::Kaula(_) => kaula::calculate_torque_due_to_tides(particle),
             };
             // Integration of the spin (total torque tides):
             dangular_momentum_dt.x += factor * torque_due_to_tides.x;
@@ -249,9 +255,23 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
 
     for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
         if let TidesEffect::OrbitingBody(tidal_model) = particle.tides.effect {
+
+            // --- Find the Love numbers input for the Kaula tidal model
+            let (number_data_point, excitation_frequency_tab, real_love_number_tab, imag_love_number_tab) = match particle.tides.effect {
+                TidesEffect::CentralBody(tidal_model) | TidesEffect::OrbitingBody(tidal_model) => {
+                    if let TidalModel::Kaula(params) = tidal_model {
+                        (params.num_datapoints, params.love_number_excitation_frequency, params.real_part_love_number, params.imaginary_part_love_number)
+                    } else {
+                        (0., [[0.;32];32], [[0.;32];32], [[0.;32];32])
+                    }
+                },
+                _ => (0., [[0.;32];32],[[0.;32];32], [[0.;32];32]),
+            };
+
             let tidal_force = match tidal_model {
                 TidalModel::ConstantTimeLag(_) => constant_time_lag::calculate_tidal_force(tidal_host_particle, particle),
                 TidalModel::CreepCoplanar(_) => creep_coplanar::calculate_tidal_force(tidal_host_particle, particle),
+                TidalModel::Kaula(_) => kaula::calculate_tidal_force(tidal_host_particle, particle, number_data_point, excitation_frequency_tab, real_love_number_tab, imag_love_number_tab), // !! Only on Orbiting body ? What about central body ?
             };
             let factor1 = 1. / particle.mass;
             sum_tidal_force.x += tidal_force.x;

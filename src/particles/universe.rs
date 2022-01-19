@@ -450,6 +450,20 @@ impl Universe {
                         }
                     }
 
+                    if accelerations && (self.consider_effects.tides || self.consider_effects.rotational_flattening) {
+                        if self.consider_effects.tides {
+                            tides::calculate_radial_component_of_the_tidal_force(&mut tidal_host_particle, &mut particles_left, &mut particles_right, &mut self.pair_dependent_scaled_dissipation_factor);  // Needed for calculate_tidal_acceleration
+                            tides::calculate_tidal_acceleration(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
+                        }
+
+                        if self.consider_effects.rotational_flattening {
+                            rotational_flattening::calculate_radial_component_of_the_force_induced_by_rotational_flattening(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
+                            rotational_flattening::calculate_acceleration_induced_by_rotational_flattering(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
+                        }
+
+
+                    }
+
                     if dangular_momentum_dt && (self.consider_effects.tides || self.consider_effects.rotational_flattening) {
                         // Not needed for additional accelerations
                         {
@@ -464,19 +478,6 @@ impl Universe {
                         }
                     }
 
-                    if accelerations && (self.consider_effects.tides || self.consider_effects.rotational_flattening) {
-                        if self.consider_effects.tides {
-                            tides::calculate_radial_component_of_the_tidal_force(&mut tidal_host_particle, &mut particles_left, &mut particles_right, &mut self.pair_dependent_scaled_dissipation_factor);  // Needed for calculate_tidal_acceleration
-                            tides::calculate_tidal_acceleration(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
-                        }
-
-                        if self.consider_effects.rotational_flattening {
-                            rotational_flattening::calculate_radial_component_of_the_force_induced_by_rotational_flattening(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
-                            rotational_flattening::calculate_acceleration_induced_by_rotational_flattering(&mut tidal_host_particle, &mut particles_left, &mut particles_right);
-                        }
-
-
-                    }
                 }
             }
         }
