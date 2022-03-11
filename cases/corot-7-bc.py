@@ -13,9 +13,9 @@ if __name__ == "__main__":
 
     #initial_time = 4.5e6*365.25 # time [days] where simulation starts
     initial_time = 0.0 # time [days] where simulation starts
-    time_step = 0.1 # days
+    time_step = 0.2 # days
     time_limit   = 365.25*1.0e8 # days
-    historic_snapshot_period = 10.0*1.0e1*time_step # days
+    historic_snapshot_period = 10.0*1.0e4*time_step # days
     recovery_snapshot_period = 1000.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
@@ -182,9 +182,9 @@ if __name__ == "__main__":
         planet_tides = posidonius.effects.tides.KaulaCoplanarOrbitingBody(planet_tides_parameters_love_number_kaula)
         #planet_tides = posidonius.effects.tides.Disabled()
         #
-        planet_rotational_flattening_parameters = {"love_number": 0.5}
-        planet_rotational_flattening = posidonius.effects.rotational_flattening.OrbitingBody(planet_rotational_flattening_parameters)
-        # planet_rotational_flattening = posidonius.effects.rotational_flattening.Disabled()
+        # planet_rotational_flattening_parameters = {"love_number": 0.5}
+        # planet_rotational_flattening = posidonius.effects.rotational_flattening.OrbitingBody(planet_rotational_flattening_parameters)
+        planet_rotational_flattening = posidonius.effects.rotational_flattening.Disabled()
         #
         planet_general_relativity = posidonius.effects.general_relativity.Disabled()
         #
