@@ -122,7 +122,7 @@ pub fn calculate_keplerian_orbital_elements(gm: f64, position: Axes, velocity: A
     // --- Calculate the inclination : i
 
     // The cosine of the inclination by the inclination of the orbital angular momentum
-    let mut longitude_of_ascending_node:f64=0.;
+    let mut longitude_of_ascending_node:f64;
     let cos_i = (hz / h).clamp(-1.,1.) ;
 
     if cos_i.abs() < 1. {
@@ -135,7 +135,7 @@ pub fn calculate_keplerian_orbital_elements(gm: f64, position: Axes, velocity: A
         if longitude_of_ascending_node < 0. {
             longitude_of_ascending_node = longitude_of_ascending_node + TWO_PI;
         }
-        if (inclination == 0) {
+        if inclination == 0_f64 {
             longitude_of_ascending_node = 0.;
         }
     } else {

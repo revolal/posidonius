@@ -303,7 +303,7 @@ fn calculate_normal_component_of_the_tidal_force(
             let distance:f64 = ( particle.tides.coordinates.position.x.powi(2) +particle.tides.coordinates.position.y.powi(2) +particle.tides.coordinates.position.z.powi(2) ).sqrt();
             let cos_theta:f64 = particle.tides.coordinates.position.z / distance;
             let associated_legendre_p_2m  = calculate_associated_legendre_polynomials_p_2m(cos_theta); 
-            // --- Avoid the singularity when the denominator's associated Legendre polynom are 0 
+            // --- Avoid the singularity when the denominator's associated Legendre polynom are 0 --> Take the Normal force to 0 if the particle is in the plane? 
             let tmp1 = match () {
                 _ if (associated_legendre_p_2m[0] == 0.0) => 0.0_f64, 
                 _ => associated_legendre_p_2m[1]/associated_legendre_p_2m[0],
@@ -594,6 +594,7 @@ fn calculate_kaula_numbers(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32
     let mut column_up:usize=0;
     let mut line_down:usize=0;
     let mut column_down:usize=0;
+    let mut in_the_file:bool=true;
 
     let (last_line, last_column):(usize, usize) = match nm_data%32{
         0=> (31, nm_data/32-1 ),
@@ -643,6 +644,7 @@ fn calculate_kaula_numbers(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32
         line_up = last_line;
         column_down = 0;
         line_down = 0;
+        in_the_file = false;
     } else if w_k2 > love_number_excitation_frequency[last_column-1][31] { // --- If is in the last column --- //
         if  w_k2 < love_number_excitation_frequency[last_column][0] { // --- Check is the value is btw the two last column --- //
             let delta = (w_k2 - love_number_excitation_frequency[last_column-1][31]) 
@@ -735,7 +737,7 @@ fn calculate_kaula_numbers(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32
     if parity {
         im_k2 = -im_k2;
     }
-    if (w_k2!=0. && im_k2==0.) || w_k2>love_number_excitation_frequency[column_up][line_up] || w_k2<love_number_excitation_frequency[column_down][line_down] {
+    if ((w_k2!=0. && im_k2==0.) || w_k2>love_number_excitation_frequency[column_up][line_up] || w_k2<love_number_excitation_frequency[column_down][line_down]) && in_the_file {
         panic!("=== Error  in tide.rs :: fail interpolation Imk2 === found btw column&line {} {} < {} {} in frequency: {} < {} < {} \t the ImK2 {}", 
         column_down, line_down, column_up, line_up, love_number_excitation_frequency[column_down][line_down], w_k2, love_number_excitation_frequency[column_up][line_up], im_k2);
     }

@@ -153,7 +153,7 @@ if __name__ == "__main__":
     #////// Initialization of planetary spin
     planet_obliquity = 0. * posidonius.constants.DEG2RAD # 0.2 rad
     orbital_period = 2.*np.pi*(np.sqrt( (a*posidonius.constants.AU)**3. / ( posidonius.constants.G_SI*( star_mass*posidonius.constants.M_SUN + planet_mass*posidonius.constants.M_SUN ) ) ) )/86400.
-    planet_rotation_period = orbital_period/(2.02) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
+    planet_rotation_period = orbital_period/(2.25) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
     planet_angular_frequency = posidonius.constants.TWO_PI/(planet_rotation_period) # days^-1
     # Pseudo-synchronization period
     #planet_keplerian_orbital_elements = posidonius.calculate_keplerian_orbital_elements(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])

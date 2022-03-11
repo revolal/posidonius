@@ -117,6 +117,8 @@ if __name__ == "__main__":
         pseudo_synchronization_period  = 2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY) # Days
         pseudo_synchronization_period[non_zero] = np.nan
         planet_computed_data['pseudo_synchronization_period'] = pseudo_synchronization_period
+        Pseudosynchro_ratio = (1. +(15./2.)*np.power(planet_data['eccentricity'],2.) +(45./8.)*np.power(planet_data['eccentricity'],4.) +(5./16.)*np.power(planet_data['eccentricity'],6.) ) \
+            / ( ( 1. +3.*np.power(planet_data['eccentricity'],3.) +(3./8.)*np.power(planet_data['eccentricity'],4.) ) *np.power(1. -np.power(planet_data['eccentricity'],2.),3./2.) )
 
         if universe_integrator_json['universe']['consider_effects']['tides']:
             ### Calculation of energydot and tidal flux, in W/m2
@@ -268,12 +270,10 @@ if __name__ == "__main__":
 
     plot_2 = True
     if plot_2:
-
         fig = plt.figure(figsize=(16*1.5, 10))
         ligne = 2
         colonne = 3
         i = 0
-
         #-----------------------------------------------------------------------------------
 
         i=i+1
@@ -281,12 +281,17 @@ if __name__ == "__main__":
         field = 'spin/orb $\Omega$/n'
         for key in planets_keys:
             planet_data = planets_data[key]
-            omega_n = (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))/( 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY))
+            x_0 = planet_data['current_time'][0]
+            x_f = planet_data['current_time'][np.size(planet_data['current_time'])-1]
+            ax1.hlines(y=1.0, xmin=x_0, xmax=x_f, label='1:1 SOR', ls='--',  color="black")
+            ax1.hlines(y=1.5, xmin=x_0, xmax=x_f, label='2:1 SOR', ls='--',  color="black")
+            ax1.hlines(y=2.0, xmin=x_0, xmax=x_f, label='3:2 SOR', ls='--',  color="black")
+            # omega_n = (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))/( 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY))
+            omega_n = planets_computed_data[key]['orbital_period'] / planets_computed_data[key]['planet_rotation_period']
+            # pseudo_synchro = planets_computed_data[key]['orbital_period'] / planet_computed_data['pseudo_synchronization_period']
             ax1.plot(planet_data['current_time'], omega_n, label="spin "+key +' Initial = '+str(omega_n[0]))
-            # ax1.plot(planet_data['current_time'], Pseudosynchro_ratio, label='Pseudo-synchro', ls="--", color='green') # Pseudo-sync
-            ax1.plot(planet_data['current_time'], omega_n/omega_n, label='Synchro', ls="--", color='black') # Pseudo-sync
-            # ax1.plot(planet_data['current_time'], Pseudosynchro_ratio/Pseudosynchro_ratio *2., label='1./2. resonnance', ls="--", color='black') # Pseudo-sync
-            # ax1.plot(planet_data['current_time'], Pseudosynchro_ratio/Pseudosynchro_ratio *3./2., label='2./3. resonnance', ls="--", color='black') # Pseudo-sync
+            ax1.plot(planet_data['current_time'], Pseudosynchro_ratio, label='Pseudo-synchro', ls="-.", color='black') # Pseudo-sync
+            # ax1.plot(planet_data['current_time'], pseudo_synchro, "+", label='Pseudo-synchro 2' +str(pseudo_synchro[0]), color='black') # Pseudo-sync
             # ax.plot(planet_data['current_time'], 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY), label=key) 
             # ax.plot(planet_data['current_time'], 2.*np.pi/ (2.*np.pi / (pseudo_rot * (planet_data['semi-major_axis']*posidonius.constants.AU)**(-3./2.) * posidonius.constants.DAY)*posidonius.constants.DAY), label="orbital frequ")
         ax1.set_ylabel(field)
@@ -380,6 +385,6 @@ if __name__ == "__main__":
     output_text_filename = os.path.join(output_text_dirname, os.path.splitext(os.path.basename(filename))[0] + ".txt")
     all_data.to_csv(output_text_filename, sep="\t", index=False)
 
-    print("> Output data written to plain text file: {}".format(output_text_filename))
+    print("> Output data written to plain text file: {}\n".format(output_text_filename))
 
 

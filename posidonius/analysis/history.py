@@ -84,7 +84,9 @@ def classify(n_particles, data, reference_particle_index=0, discard_first_hundre
         velocities.insert(0, zeros) # Star is resting
         a, q, e, i, p, n, l = posidonius.tools.calculate_keplerian_orbital_elements(target_mass, target_position, target_velocity, masses=masses, positions=positions, velocities=velocities)
         #a, q, e, i, p, n, l = posidonius.tools.calculate_keplerian_orbital_elements(target_mass+star_data['mass'], target_position, target_velocity)
-        planets_data[key] = append_fields(planets_data[key], ('semi-major_axis', 'eccentricity', 'inclination'), (a, e, i), usemask=False)
+        planets_data[key] = append_fields(planets_data[key], \
+            ('semi-major_axis', 'eccentricity', 'inclination', 'longitude_of_perihelion', 'longitude_of_ascending_node', 'mean_anomaly'), \
+            (a, e, i, p, n, l), usemask=False)
     star_data['position_x'] = 0.
     star_data['position_y'] = 0.
     star_data['position_z'] = 0.
