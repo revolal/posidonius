@@ -1,0 +1,8 @@
+grep: corot_7bc_tide_7b_tides_05.txt: Aucun fichier ou dossier de ce type
+Do NOT cancel anything, the simulation has not finished
+[INFO 2021.10.20 09:56:14 UTC] WHFAST Integrator.
+[INFO 2021.10.20 09:56:14 UTC] Restored previous simulation from '/home/users/r/revolal/scratch/corot_7bc_tides/corot_7bc_tide_7b_tides_05.bin'.
+[INFO 2021.10.20 09:56:14 UTC] Continuing from year 109514 (1.1e5).
+[INFO 2021.10.20 09:56:14 UTC] A historic snapshot will be saved every 20000 days
+[INFO 2021.10.20 09:56:14 UTC] A recovery snapshot will be saved every 20000000 days
+slurmstepd: error: *** JOB 6780712 ON cpu050 CANCELLED AT 2021-10-24T11:56:17 DUE TO TIME LIMIT ***

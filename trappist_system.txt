@@ -1,0 +1,6 @@
+[INFO 2022.03.09 00:11:29 UTC] WHFAST Integrator.
+[INFO 2022.03.09 00:11:29 UTC] Created new simulation based on 'trappist_system.json'.
+[INFO 2022.03.09 00:11:29 UTC] A historic snapshot will be saved every 10 days
+[INFO 2022.03.09 00:11:29 UTC] A recovery snapshot will be saved every 10000 days
+thread 'main' panicked at '[PANIC 2022.03.09 00:11:29 UTC] File '/home/users/r/revolal/scratch/trappist/trappist_system_history.bin' already exists.', src/main.rs:134:9
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
