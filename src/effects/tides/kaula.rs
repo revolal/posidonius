@@ -149,7 +149,7 @@ fn calculate_radial_component_of_the_tidal_force(
         // let case_2d:bool = true;
 
         if inclination == 0. { // --- if the inclination btw the equatorial plane and the orbital plane is negligible
-            if eccentricity == 0. { // --- If circular orbit
+            if eccentricity == 0. { // --- If circular coplanar orbit
                 let frequ_2010 = calculate_tidal_excitation_frequency_mode_sigma_2mpq(0., 1., 0., spin, orbital_frequency);
                 let frequ_2200 = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., 0., spin, orbital_frequency);
                 let (rek2_2010, _imk2_2010) = calculate_kaula_numbers(frequ_2010, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
@@ -157,7 +157,7 @@ fn calculate_radial_component_of_the_tidal_force(
                 radial_force = cste *( (3_f64/4_f64) *rek2_2010 -(9_f64/4_f64) *imk2_2200 ) ;
                 radial_force_secular = radial_force;
 
-            } else { //  --- If eccentric orbit
+            } else { //  --- If eccentric orbit 
                 let mut sum_over_q:f64 = 0.;
                 let mut sum_over_q_secular:f64 = 0.;
                 for q in -7..8{
