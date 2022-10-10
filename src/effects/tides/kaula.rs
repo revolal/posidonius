@@ -1,14 +1,13 @@
-// Implemented by Alexandre Revol
+// Implemented by Alexandre Revol alexandre.revol@unige.ch
 use super::super::super::constants::{G, TWO_PI, DAY};
 use super::super::super::tools;
 use super::super::super::{Particle};
 use super::super::super::{Axes};
-// use super::common::TidesEffect;
-// use super::common::TidalModel;
 
+// Strucure declare the intput parameters needed for the Kaula calculation
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 pub struct KaulaParameters {
-    // The tidal Love numbers data function of the excitation frequency
+    // The tidal Love numbers function of the excitation frequency
     // the data are stored in 2d array 32 by 32.
     pub love_number_excitation_frequency: [[f64;32];32], // The excitation frequency 
     pub real_part_love_number: [[f64;32];32], // The real part of the complex love number
@@ -16,8 +15,9 @@ pub struct KaulaParameters {
     pub num_datapoints: f64, // The number of point stored in the 32 by 32 array
 }
 
+// Compute the tidal force applied by the host particle to the particle
+// Called from common.rs
 pub fn calculate_tidal_force(tidal_host_particle: &Particle, particle: &mut Particle, number_data_point:f64, excitation_frequency_tab:[[f64;32];32], real_love_number_tab:[[f64;32];32], imag_love_number_tab:[[f64;32];32]) -> Axes {
-
     // --- The spherical coordinate --- //
     // The following elements correspond to the coordinate in the spherical coordinate
     // The coplanar distance is the radial distance projected in the x-y plane
@@ -36,15 +36,15 @@ pub fn calculate_tidal_force(tidal_host_particle: &Particle, particle: &mut Part
     let keplerian_elements = tools::calculate_keplerian_orbital_elements( gm, particle.heliocentric_position, particle.heliocentric_velocity);
 
     // --- The spherical component of the tidal force --- //
-    // The radial component is simply the force applicated through the radial axis
-    // The normal component act through the co longitude axis
-    // The orthogonal component act through the co latitude axis
+    // The radial component is the force applicated through the radial axis
+    // The normal component act on the co longitude axis
+    // The orthogonal component act on the co latitude axis
     // ---
     let (radial_component_of_the_tidal_force, radial_component_of_the_tidal_force_secular) = calculate_radial_component_of_the_tidal_force(tidal_host_particle, particle, keplerian_elements, number_data_point, excitation_frequency_tab, real_love_number_tab, imag_love_number_tab );
     let (normal_component_of_the_tidal_force, normal_component_of_the_tidal_force_secular) = calculate_normal_component_of_the_tidal_force(tidal_host_particle, particle, keplerian_elements, number_data_point, excitation_frequency_tab, real_love_number_tab, imag_love_number_tab );
     let (orthogonal_component_of_the_tidal_force, orthogonal_component_of_the_tidal_force_secular) = calculate_orthogonal_component_of_the_tidal_force(tidal_host_particle, particle, keplerian_elements, number_data_point, excitation_frequency_tab, real_love_number_tab, imag_love_number_tab );
 
-    // --- The tidal force --- // general 
+    // --- The cartesian tidal force --- // computed by projection of the spherical coordinates
     let tidal_force_x = radial_component_of_the_tidal_force
                                 *sin_theta *cos_phi 
                             + normal_component_of_the_tidal_force
@@ -96,7 +96,7 @@ pub fn calculate_tidal_force(tidal_host_particle: &Particle, particle: &mut Part
     //                             *cos_theta
     //                         - normal_component_of_the_tidal_force_secular
     //                             *sin_theta ;
-    // --- The tidal torque --- // secular
+    // --- The tidal torque --- // return the secular part of the tidal torque (simplified from the rapid varying phases)
     particle.tides.parameters.internal.kaula_tidal_force.x = radial_component_of_the_tidal_force_secular
                                 *sin_theta *cos_phi 
                             + normal_component_of_the_tidal_force_secular
@@ -120,6 +120,7 @@ pub fn calculate_tidal_force(tidal_host_particle: &Particle, particle: &mut Part
 
 // ------------------------------------- //
 // --- Calculate tidal force modules --- //
+// Function which compute the components of the tidal torque
 
 // --- The radial (e_{r}) component of tidal force
 fn calculate_radial_component_of_the_tidal_force(
@@ -139,8 +140,7 @@ fn calculate_radial_component_of_the_tidal_force(
         // --- local quantities needed --- //
         let cste:f64 = -(G*tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6)*particle.heliocentric_distance) ;
 
-        // Kaula inclination and eccentricity function
-        // --- 
+        // - Kaula inclination and eccentricity functions
         let eccentricity_function_g_2pq = calculate_eccentricty_function_g_2pq(eccentricity);
 
         // --- summation --- //
@@ -149,51 +149,60 @@ fn calculate_radial_component_of_the_tidal_force(
         // let case_2d:bool = true;
 
         if inclination == 0. { // --- if the inclination btw the equatorial plane and the orbital plane is negligible
-        // if false {
-            let mut sum_over_q:f64 = 0.;
-            let mut sum_over_q_secular:f64 = 0.;
-            for q in -7..8{
-                let frequ_201q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(0., 1., q as f64, spin, orbital_frequency);
-                let frequ_220q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., q as f64, spin, orbital_frequency);
-                let (rek2_201q, imk2_201q) = calculate_kaula_numbers(frequ_201q, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
-                let (rek2_220q, imk2_220q) = calculate_kaula_numbers(frequ_220q, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
+            if eccentricity == 0. { // --- If circular orbit
+                let frequ_2010 = calculate_tidal_excitation_frequency_mode_sigma_2mpq(0., 1., 0., spin, orbital_frequency);
+                let frequ_2200 = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., 0., spin, orbital_frequency);
+                let (rek2_2010, _imk2_2010) = calculate_kaula_numbers(frequ_2010, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
+                let (_rek2_2200, imk2_2200) = calculate_kaula_numbers(frequ_2200, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
+                radial_force = cste *( (3_f64/4_f64) *rek2_2010 -(9_f64/4_f64) *imk2_2200 ) ;
+                radial_force_secular = radial_force;
 
-                let mut sum_over_j_1:f64=0.;
-                let mut sum_over_j_3:f64=0.;
+            } else { //  --- If eccentric orbit
+                let mut sum_over_q:f64 = 0.;
+                let mut sum_over_q_secular:f64 = 0.;
+                for q in -7..8{
+                    let frequ_201q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(0., 1., q as f64, spin, orbital_frequency);
+                    let frequ_220q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., q as f64, spin, orbital_frequency);
+                    let (rek2_201q, imk2_201q) = calculate_kaula_numbers(frequ_201q, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
+                    let (rek2_220q, imk2_220q) = calculate_kaula_numbers(frequ_220q, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
 
-                let mut sum_over_j_1_secular:f64=0.;
-                let mut sum_over_j_3_secular:f64=0.;
-                for j in -7..8{
-                    let alpha_qj = alpha_pqkj(0., q as f64, 0., j as f64, mean_anomaly, argument_perihelion );
-                    let g_21j:f64 = eccentricity_function_g_2pq[1][(j+7) as usize];
-                    let g_20j:f64 = eccentricity_function_g_2pq[0][(j+7) as usize];
+                    let mut sum_over_j_1:f64=0.;
+                    let mut sum_over_j_3:f64=0.;
 
-                    sum_over_j_1 = sum_over_j_1 +g_21j*(
-                        alpha_qj.cos()*rek2_201q 
-                        -alpha_qj.sin()*imk2_201q
+                    let mut sum_over_j_1_secular:f64=0.;
+                    let mut sum_over_j_3_secular:f64=0.;
+                    for j in -7..8{
+                        let alpha_qj = alpha_pqkj(0., q as f64, 0., j as f64, mean_anomaly, argument_perihelion );
+                        let g_21j:f64 = eccentricity_function_g_2pq[1][(j+7) as usize];
+                        let g_20j:f64 = eccentricity_function_g_2pq[0][(j+7) as usize];
+
+                        sum_over_j_1 = sum_over_j_1 +g_21j*(
+                            alpha_qj.cos()*rek2_201q 
+                            -alpha_qj.sin()*imk2_201q
+                        );
+                        sum_over_j_3 = sum_over_j_3 +g_20j*(
+                            alpha_qj.cos()*rek2_220q 
+                            -alpha_qj.sin()*imk2_220q
+                        );
+                        if q==j {
+                            sum_over_j_1_secular = sum_over_j_1_secular +g_21j *rek2_201q ;
+                            sum_over_j_3_secular = sum_over_j_3_secular +g_20j *rek2_220q ;
+                        }
+                    } // end loop over j
+                    let g_21q:f64 = eccentricity_function_g_2pq[1][(q+7) as usize];
+                    let g_20q:f64 = eccentricity_function_g_2pq[0][(q+7) as usize];
+                    sum_over_q = sum_over_q + (
+                        (3_f64/4_f64) *g_21q *sum_over_j_1 
+                        +(9_f64/2_f64)*g_20q *sum_over_j_3
                     );
-                    sum_over_j_3 = sum_over_j_3 +g_20j*(
-                        alpha_qj.cos()*rek2_220q 
-                        -alpha_qj.sin()*imk2_220q
+                    sum_over_q_secular = sum_over_q_secular + (
+                        (3_f64/4_f64) *g_21q *sum_over_j_1_secular
+                        +(9_f64/2_f64)*g_20q *sum_over_j_3_secular
                     );
-                    if q==j {
-                        sum_over_j_1_secular = sum_over_j_1_secular +g_21j *rek2_201q ;
-                        sum_over_j_3_secular = sum_over_j_3_secular +g_20j *rek2_220q ;
-                    }
-                } // end loop over j
-                let g_21q:f64 = eccentricity_function_g_2pq[1][(q+7) as usize];
-                let g_20q:f64 = eccentricity_function_g_2pq[0][(q+7) as usize];
-                sum_over_q = sum_over_q + (
-                    (3_f64/4_f64) *g_21q *sum_over_j_1 
-                    +(9_f64/2_f64)*g_20q *sum_over_j_3
-                );
-                sum_over_q_secular = sum_over_q_secular + (
-                    (3_f64/4_f64) *g_21q *sum_over_j_1_secular
-                    +(9_f64/2_f64)*g_20q *sum_over_j_3_secular
-                );
+                }
+                radial_force = cste *sum_over_q;
+                radial_force_secular = cste *sum_over_q_secular;
             }
-            radial_force = cste *sum_over_q;
-            radial_force_secular = cste *sum_over_q_secular;
         } else { // --- if there s an non-negligible inclination (3D case)
             let inclination_function_f_2mp = calculate_inclination_function_f_2mp(inclination);
             let mut sum_over_p:f64 = 0.;
@@ -436,34 +445,40 @@ fn calculate_orthogonal_component_of_the_tidal_force(
         let orthogonal_force_secular:f64;
 
         if inclination == 0.0 {
-        // if false {
-            let mut sum_over_q:f64=0.;
-            let mut sum_over_q_secular:f64=0.;
-            for q in -7..8{
-                let frequ_220q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., q as f64, spin, orbital_frequency);
-                let (rek2_220q, imk2_220q) = calculate_kaula_numbers(frequ_220q, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
+            if eccentricity == 0.0 {
+                let frequ_2200 = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., 0., spin, orbital_frequency);
+                let (_rek2_2200, imk2_2200) = calculate_kaula_numbers(frequ_2200, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
+                orthogonal_force = - cste *(3_f64/2_f64) *imk2_2200;
+                orthogonal_force_secular = orthogonal_force;
+            } else {
+                let mut sum_over_q:f64=0.;
+                let mut sum_over_q_secular:f64=0.;
+                for q in -7..8{
+                    let frequ_220q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., q as f64, spin, orbital_frequency);
+                    let (rek2_220q, imk2_220q) = calculate_kaula_numbers(frequ_220q, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
 
-                let mut sum_over_j_2:f64=0.;
-                let mut sum_over_j_2_secular:f64=0.;
-                for j in -7..8{
-                    let alpha_qj = alpha_pqkj(0., q as f64, 0., j as f64, mean_anomaly, argument_perihelion );
-                    let g_20j = eccentricity_function_g_2pq[0][(j+7) as usize];
+                    let mut sum_over_j_2:f64=0.;
+                    let mut sum_over_j_2_secular:f64=0.;
+                    for j in -7..8{
+                        let alpha_qj = alpha_pqkj(0., q as f64, 0., j as f64, mean_anomaly, argument_perihelion );
+                        let g_20j = eccentricity_function_g_2pq[0][(j+7) as usize];
 
-                    sum_over_j_2 = sum_over_j_2 +g_20j*(
-                            alpha_qj.sin()*rek2_220q 
-                            +alpha_qj.cos()*imk2_220q
-                            );
-                    if q==j { // --- the secular part of the force 
-                        sum_over_j_2_secular = sum_over_j_2_secular +g_20j *imk2_220q;
-                    }
-                } 
-                let g_20q = eccentricity_function_g_2pq[0][(q+7) as usize];
+                        sum_over_j_2 = sum_over_j_2 +g_20j*(
+                                alpha_qj.sin()*rek2_220q 
+                                +alpha_qj.cos()*imk2_220q
+                                );
+                        if q==j { // --- the secular part of the force 
+                            sum_over_j_2_secular = sum_over_j_2_secular +g_20j *imk2_220q;
+                        }
+                    } 
+                    let g_20q = eccentricity_function_g_2pq[0][(q+7) as usize];
 
-                sum_over_q = sum_over_q +g_20q *(3_f64/2_f64) *sum_over_j_2 ;
-                sum_over_q_secular = sum_over_q_secular +g_20q *(3_f64/2_f64) *sum_over_j_2_secular ;
+                    sum_over_q = sum_over_q +g_20q *(3_f64/2_f64) *sum_over_j_2 ;
+                    sum_over_q_secular = sum_over_q_secular +g_20q *(3_f64/2_f64) *sum_over_j_2_secular ;
+                }
+                orthogonal_force = cste *sum_over_q;
+                orthogonal_force_secular = cste *sum_over_q_secular;
             }
-            orthogonal_force = cste *sum_over_q;
-            orthogonal_force_secular = cste *sum_over_q_secular;
         } else {
             // Kaula inclination function
             let inclination_function_f_2mp = calculate_inclination_function_f_2mp(inclination);
@@ -741,7 +756,7 @@ fn calculate_kaula_numbers(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32
         panic!("=== Error  in tide.rs :: fail interpolation Imk2 === found btw column&line {} {} < {} {} in frequency: {} < {} < {} \t the ImK2 {}", 
         column_down, line_down, column_up, line_up, love_number_excitation_frequency[column_down][line_down], w_k2, love_number_excitation_frequency[column_up][line_up], im_k2);
     }
-    return (re_k2, im_k2)
+    return (-re_k2, im_k2)
 }
 
 // --- The inclination function of the Kaula 1961 developpement Flmp(i)

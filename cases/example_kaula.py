@@ -15,8 +15,8 @@ if __name__ == "__main__":
     time_step = 0.01 # days
     #time_limit   = 4*time_step # days
     time_limit   =  365.25 * 1.0e10 # days
-    historic_snapshot_period = 365.25 * 10. #*time_step # days
-    recovery_snapshot_period = 100.*historic_snapshot_period # days
+    historic_snapshot_period = 365.25  #*10. #*time_step # days
+    recovery_snapshot_period = 10.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
         "rotational_flattening": False,
@@ -140,10 +140,10 @@ if __name__ == "__main__":
 
     #////////// Specify initial position and velocity for a stable orbit
     #////// Keplerian orbital elements, in the `asteroidal' format of Mercury code
-    a = 0.072300062228760203                # semi-major axis (in AU)
-    e = 0.2;                               # eccentricity
+    a = 0.72300062228760203                # semi-major axis (in AU)
+    e = 0.10;                               # eccentricity
     i = 0. * posidonius.constants.DEG2RAD;  # inclination (degrees)
-    p = 0. * posidonius.constants.DEG2RAD;  # argrees)ument of pericentre (deg
+    p = 10. * posidonius.constants.DEG2RAD;  # argrument of pericentre (degrees)
     n = 0. * posidonius.constants.DEG2RAD;  # longitude of the ascending node (degrees)
     l = 0. * posidonius.constants.DEG2RAD;  # mean anomaly (degrees)
     p = (p + n);                            # Convert to longitude of perihelion !!
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     #////// Initialization of planetary spin
     planet_obliquity = 0. * posidonius.constants.DEG2RAD # 0.2 rad
     orbital_period = 2.*np.pi*(np.sqrt( (a*posidonius.constants.AU)**3. / ( posidonius.constants.G_SI*( star_mass*posidonius.constants.M_SUN + planet_mass*posidonius.constants.M_SUN ) ) ) )/86400.
-    planet_rotation_period = orbital_period/(2.25) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
+    planet_rotation_period = orbital_period/(1.1) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
     planet_angular_frequency = posidonius.constants.TWO_PI/(planet_rotation_period) # days^-1
     # Pseudo-synchronization period
     #planet_keplerian_orbital_elements = posidonius.calculate_keplerian_orbital_elements(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])

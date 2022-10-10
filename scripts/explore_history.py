@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
-mpl.use('Agg')
+# mpl.use('Agg')
 mpl.rcParams['agg.path.chunksize'] = 10000
 import matplotlib.pyplot as plt
 import argparse
@@ -454,13 +454,13 @@ if __name__ == "__main__":
     ax.set_ylabel(field)
     ax.set_xscale('log')
 
-    ax.set_xlim([100.0, 1.0e8])
+    # ax.set_xlim([100.0, 1.0e8])
     plt.tight_layout()
 
     output_figure_dirname = os.path.dirname(filename)
     output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + ".png")
     plt.savefig(output_figure_filename)
-    #plt.show()
+    plt.show()
     print("> Output figure file written to: {}".format(output_figure_filename))
 
 
