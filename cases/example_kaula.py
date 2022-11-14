@@ -61,6 +61,51 @@ if __name__ == "__main__":
         "dissipation_factor": 0.0,
         "love_number": 0.0,
     }
+
+    # # --- Kaula's developpement parameters --- #
+    # planet_data_venus = np.loadtxt('./cases/love_number_data/Results_V1_Armann2_atm_freq_Imk2_posidonius.txt',comments='#')
+    # # planet_data_h = np.loadtxt('Results_Trappist_1h_13.5_150_freq_Imk2_posidonius.txt',comments='#')
+    # planet_mass_venus, planet_radius_venus, planet_gyration_radius_squared_venus = planet_data_venus[0,:]
+
+    # w_lm_venus   = planet_data_venus[1:,0]
+    # ImK2_venus   = planet_data_venus[1:,1]
+    # ReK2_venus   = planet_data_venus[1:,2]
+    # size_venus   = np.size(w_lm_venus)
+
+    # w_lmpq = w_lm_venus
+    # ImK2 = ImK2_venus
+    # ReK2 = ReK2_venus
+    # size = size_venus
+    # gyration_radius_2 = planet_gyration_radius_squared_venus
+    # planet_radius_of_gyration = np.sqrt(gyration_radius_2)
+
+    # Tab_size = 32
+    # Tab_w_lmpq = np.zeros((Tab_size,Tab_size))
+    # Tab_ImK2 = np.zeros((Tab_size,Tab_size))
+    # Tab_ReK2 = np.zeros((Tab_size,Tab_size))
+    # k = 0
+    # for i in range(0,int(size/Tab_size)):
+    #     Tab_w_lmpq[i,:] = w_lmpq[i*Tab_size : (1+i)*Tab_size]
+    #     Tab_ReK2[i,:] = ReK2[i*Tab_size : (1+i)*Tab_size]
+    #     Tab_ImK2[i,:] = ImK2[i*Tab_size : (1+i)*Tab_size]
+    #     k+=1
+    # for i in range (k*Tab_size, size):
+    #     Tab_w_lmpq[k, i-k*Tab_size] = w_lmpq[i]
+    #     Tab_ReK2[k, i-k*Tab_size] = ReK2[i]
+    #     Tab_ImK2[k, i-k*Tab_size] = ImK2[i]
+
+    # freq_lmpq = []
+    # realK2 = []
+    # imagK2 = []
+    # freq_lmpq.append(Tab_w_lmpq)
+    # realK2.append(Tab_ReK2)
+    # imagK2.append(Tab_ImK2)
+    # star_tides_parameters = {
+    #     "love_number_excitation_frequency": Tab_w_lmpq.tolist(), #syntaxe tab [[32]32]
+    #     "imaginary_part_love_number": Tab_ImK2.tolist(),
+    #     "real_part_love_number": Tab_ReK2.tolist(),
+    #     "num_datapoints": size,
+    # }
     star_tides_model = posidonius.effects.tides.ConstantTimeLag(star_tides_parameters)
     star_tides = posidonius.effects.tides.CentralBody(star_tides_model)
     #star_tides = posidonius.effects.tides.OrbitingBody(star_tides_model)
@@ -153,7 +198,7 @@ if __name__ == "__main__":
     #////// Initialization of planetary spin
     planet_obliquity = 0. * posidonius.constants.DEG2RAD # 0.2 rad
     orbital_period = 2.*np.pi*(np.sqrt( (a*posidonius.constants.AU)**3. / ( posidonius.constants.G_SI*( star_mass*posidonius.constants.M_SUN + planet_mass*posidonius.constants.M_SUN ) ) ) )/86400.
-    planet_rotation_period = orbital_period/(1.1) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
+    planet_rotation_period = orbital_period/(1.0001) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
     planet_angular_frequency = posidonius.constants.TWO_PI/(planet_rotation_period) # days^-1
     # Pseudo-synchronization period
     #planet_keplerian_orbital_elements = posidonius.calculate_keplerian_orbital_elements(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
@@ -221,13 +266,13 @@ if __name__ == "__main__":
     }
 
     # --- Choose the tidal model to use :
-    # planet_tides_model = posidonius.effects.tides.ConstantTimeLag(planet_tides_parameters)
-    planet_tides_model = posidonius.effects.tides.Kaula(planet_kaula_tidal_parameters_love_numbers)
+    planet_tides_model = posidonius.effects.tides.ConstantTimeLag(planet_tides_parameters)
+    # planet_tides_model = posidonius.effects.tides.Kaula(planet_kaula_tidal_parameters_love_numbers)
 
     # --- Choose the type of particle (central body or orbiting body) :
     #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_model)
-    planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
-    #planet_tides = posidonius.effects.tides.Disabled()
+    # planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
+    planet_tides = posidonius.effects.tides.Disabled()
     #
     # planet_rotational_flattening_parameters = {"love_number": planet_tides_parameters["love_number"]}
     # planet_rotational_flattening_parameters = {"uniform_viscosity_coefficient": 1e14}

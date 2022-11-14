@@ -271,7 +271,7 @@ pub fn calculate_tidal_acceleration(tidal_host_particle: &mut Particle, particle
             let tidal_force = match tidal_model {
                 TidalModel::ConstantTimeLag(_) => constant_time_lag::calculate_tidal_force(tidal_host_particle, particle),
                 TidalModel::CreepCoplanar(_) => creep_coplanar::calculate_tidal_force(tidal_host_particle, particle),
-                TidalModel::Kaula(_) => kaula::calculate_tidal_force(tidal_host_particle, particle, number_data_point, excitation_frequency_tab, real_love_number_tab, imag_love_number_tab), // !! Only on Orbiting body ? What about central body ?
+                TidalModel::Kaula(_) => kaula::calculate_tidal_force(tidal_host_particle, particle, number_data_point, excitation_frequency_tab, real_love_number_tab, imag_love_number_tab),
             };
             let factor1 = 1. / particle.mass;
             sum_tidal_force.x += tidal_force.x;
