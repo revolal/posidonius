@@ -58,7 +58,7 @@ if __name__ == "__main__":
     #star_tides = posidonius.effects.tides.OrbitingBody(star_tides_model)
     #star_tides = posidonius.effects.tides.Disabled()
     #
-    star_rotational_flattening_parameters = {"love_number": star_tides_parameters["love_number"] }
+    # star_rotational_flattening_parameters = {"love_number": star_tides_parameters["love_number"] }
     #star_rotational_flattening_model = posidonius.effects.rotational_flattening.OblateSpheroid(star_rotational_flattening_parameters)
     #star_rotational_flattening = posidonius.effects.rotational_flattening.CentralBody(star_rotational_flattening_model)
     #star_rotational_flattening = posidonius.effects.rotational_flattening.OrbitingBody(star_rotational_flattening_model)
