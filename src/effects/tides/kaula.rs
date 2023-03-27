@@ -141,28 +141,48 @@ fn calculate_radial_component_of_the_tidal_force(
         let cste:f64 = -(G*tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6)*particle.heliocentric_distance) ;
 
         // - Kaula inclination and eccentricity functions
-        let eccentricity_function_g_2pq = calculate_eccentricty_function_g_2pq(eccentricity);
+        // let eccentricity_function_g_2pq = calculate_eccentricty_function_g_2pq(eccentricity);
 
         // --- summation --- //
         let radial_force:f64;
         let radial_force_secular:f64;
         // let case_2d:bool = true;
 
-        if inclination == 0. { // --- if the inclination btw the equatorial plane and the orbital plane is negligible
-            if eccentricity == 0. { // --- If circular coplanar orbit
+        if true { // --- if the inclination btw the equatorial plane and the orbital plane is negligible
+            if eccentricity == 0.0 { // --- If circular coplanar orbit
                 let frequ_2010 = calculate_tidal_excitation_frequency_mode_sigma_2mpq(0., 1., 0., spin, orbital_frequency);
                 let frequ_2200 = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., 0., spin, orbital_frequency);
                 let (rek2_2010, _imk2_2010) = calculate_kaula_numbers(frequ_2010, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
                 let (_rek2_2200, imk2_2200) = calculate_kaula_numbers(frequ_2200, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
-                radial_force = cste *( (3_f64/4_f64) *rek2_2010 -(9_f64/4_f64) *imk2_2200 ) ;
+                radial_force = cste *( (3_f64/4_f64) *rek2_2010 +(9_f64/4_f64) *imk2_2200 ) ;
                 radial_force_secular = radial_force;
 
             } else { //  --- If eccentric orbit 
+                let eccentricity_function_g_20q = calculate_eccentricty_function_g_20q(eccentricity);
+                let eccentricity_function_g_21q = calculate_eccentricty_function_g_21q(eccentricity);
                 let mut sum_over_q:f64 = 0.;
                 let mut sum_over_q_secular:f64 = 0.;
-                for q in -7..8{
-                    let frequ_201q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(0., 1., q as f64, spin, orbital_frequency);
-                    let frequ_220q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., q as f64, spin, orbital_frequency);
+
+                let order = match () { // Select the order of the summation q over the eccentricity function G_lpq
+                    _ if (eccentricity > 0.3 ) => 7, // if ecc > 0.20 take q btw -7 and 7
+                    _ if (eccentricity > 0.25) => 6, // if ecc > 0.20 take q btw -6 and 6
+                    _ if (eccentricity > 0.2 ) => 5, // if ecc > 0.20 take q btw -5 and 5
+                    _ if (eccentricity > 0.15) => 4, // if ecc > 0.15 take q btw -4 and 4
+                    _ if (eccentricity > 0.1 ) => 3, // if ecc > 0.10 take q btw -3 and 3 
+                    _ if (eccentricity <= 0.1 ) => 2, // if ecc > 0.10 take q btw -2 and 2
+                    _ => 0,
+                };
+                // let q_max = [7-order, 2*order+1];
+                let q_min =7-order;
+                let q_max =2*order+1;
+
+                // for q in -7..8{
+                // for (q, g_201q) in eccentricity_function_g_20q.iter().zip(eccentricity_function_g_21q.iter()).skip(q_max[0]).take(q_max[1]).enumerate(){
+                for (q, g_201q) in eccentricity_function_g_20q.iter().zip(eccentricity_function_g_21q.iter()).skip(q_min).take(q_max).enumerate(){
+                    // let frequ_201q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(0., 1., q as f64, spin, orbital_frequency);
+                    // let frequ_220q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., q as f64, spin, orbital_frequency);
+                    let frequ_201q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(0., 1., q as f64 -order as f64, spin, orbital_frequency);
+                    let frequ_220q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., q as f64 -order as f64, spin, orbital_frequency);
                     let (rek2_201q, imk2_201q) = calculate_kaula_numbers(frequ_201q, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
                     let (rek2_220q, imk2_220q) = calculate_kaula_numbers(frequ_220q, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
 
@@ -171,10 +191,13 @@ fn calculate_radial_component_of_the_tidal_force(
 
                     let mut sum_over_j_1_secular:f64=0.;
                     let mut sum_over_j_3_secular:f64=0.;
-                    for j in -7..8{
-                        let alpha_qj = alpha_pqkj(0., q as f64, 0., j as f64, mean_anomaly, argument_perihelion );
-                        let g_21j:f64 = eccentricity_function_g_2pq[1][(j+7) as usize];
-                        let g_20j:f64 = eccentricity_function_g_2pq[0][(j+7) as usize];
+                    // for j in -7..8{
+                    for (j, g_201j) in eccentricity_function_g_20q.iter().zip(eccentricity_function_g_21q.iter()).skip(q_min).take(q_max).enumerate(){
+                        // let alpha_qj = alpha_pqkj(0., q as f64, 0., j as f64, mean_anomaly, argument_perihelion );
+                        let alpha_qj = alpha_pqkj(0., q as f64 -order as f64, 0., j as f64 -order as f64, mean_anomaly, argument_perihelion );
+                        // let g_21j:f64 = eccentricity_function_g_2pq[1][(j+7) as usize];
+                        // let g_20j:f64 = eccentricity_function_g_2pq[0][(j+7) as usize];
+                        let (g_20j, g_21j) = g_201j;
 
                         sum_over_j_1 = sum_over_j_1 +g_21j*(
                             alpha_qj.cos()*rek2_201q 
@@ -189,21 +212,23 @@ fn calculate_radial_component_of_the_tidal_force(
                             sum_over_j_3_secular = sum_over_j_3_secular +g_20j *rek2_220q ;
                         }
                     } // end loop over j
-                    let g_21q:f64 = eccentricity_function_g_2pq[1][(q+7) as usize];
-                    let g_20q:f64 = eccentricity_function_g_2pq[0][(q+7) as usize];
+                    // let g_21q:f64 = eccentricity_function_g_2pq[1][(q+7) as usize];
+                    // let g_20q:f64 = eccentricity_function_g_2pq[0][(q+7) as usize];
+                    let (g_20q, g_21q) = g_201q;
                     sum_over_q = sum_over_q + (
                         (3_f64/4_f64) *g_21q *sum_over_j_1 
-                        +(9_f64/2_f64)*g_20q *sum_over_j_3
+                        +(9_f64/4_f64)*g_20q *sum_over_j_3
                     );
                     sum_over_q_secular = sum_over_q_secular + (
                         (3_f64/4_f64) *g_21q *sum_over_j_1_secular
-                        +(9_f64/2_f64)*g_20q *sum_over_j_3_secular
+                        +(9_f64/4_f64)*g_20q *sum_over_j_3_secular
                     );
                 }
                 radial_force = cste *sum_over_q;
                 radial_force_secular = cste *sum_over_q_secular;
             }
         } else { // --- if there s an non-negligible inclination (3D case)
+            let eccentricity_function_g_2pq = calculate_eccentricty_function_g_2pq(eccentricity);
             let inclination_function_f_2mp = calculate_inclination_function_f_2mp(inclination);
             let mut sum_over_p:f64 = 0.;
             let mut sum_over_p_secular:f64 = 0.;
@@ -262,7 +287,6 @@ fn calculate_radial_component_of_the_tidal_force(
                             sum_over_k_2_secular = sum_over_k_2_secular +inclination_function_f_2mp[1][k as usize] *sum_over_j_2_secular;
                             sum_over_k_3_secular = sum_over_k_3_secular +inclination_function_f_2mp[2][k as usize] *sum_over_j_3_secular;
                         }
-
                     }
                     sum_over_q = sum_over_q +eccentricity_function_g_2pq[p as usize][(q+7) as usize] *(
                         3_f64*inclination_function_f_2mp[0][p as usize]*sum_over_k_1
@@ -300,7 +324,7 @@ fn calculate_normal_component_of_the_tidal_force(
         let normal_force:f64;
         let normal_force_secular:f64;
 
-        if inclination == 0.0 {
+        if true {
         // if false {
             normal_force = 0.;
             normal_force_secular = 0.;
@@ -438,30 +462,49 @@ fn calculate_orthogonal_component_of_the_tidal_force(
         let cste:f64 = -(G*tidal_host_particle.mass.powi(2)* particle.radius.powi(5)) / (semi_major_axis.powi(6)*particle.heliocentric_distance*sin_theta) ;
 
         // Kaula eccentricity function
-        let eccentricity_function_g_2pq = calculate_eccentricty_function_g_2pq(eccentricity);
+        // let eccentricity_function_g_2pq = calculate_eccentricty_function_g_2pq(eccentricity);
 
         // --- summation --- //
         let orthogonal_force:f64;
         let orthogonal_force_secular:f64;
 
-        if inclination == 0.0 {
-            if eccentricity == 0.0 {
+        if true {
+            if eccentricity == 0. {
                 let frequ_2200 = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., 0., spin, orbital_frequency);
                 let (_rek2_2200, imk2_2200) = calculate_kaula_numbers(frequ_2200, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
-                orthogonal_force = - cste *(3_f64/2_f64) *imk2_2200;
+                orthogonal_force = cste *(3_f64/2_f64) *imk2_2200;
                 orthogonal_force_secular = orthogonal_force;
             } else {
+                let eccentricity_function_g_20q = calculate_eccentricty_function_g_20q(eccentricity);
                 let mut sum_over_q:f64=0.;
                 let mut sum_over_q_secular:f64=0.;
-                for q in -7..8{
-                    let frequ_220q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., q as f64, spin, orbital_frequency);
+
+                let order = match () { // Select the order of the summation q over the eccentricity function G_lpq
+                    _ if (eccentricity > 0.3 ) => 7, // if ecc > 0.20 take q btw -7 and 7
+                    _ if (eccentricity > 0.25) => 6, // if ecc > 0.20 take q btw -6 and 6
+                    _ if (eccentricity > 0.2 ) => 5, // if ecc > 0.20 take q btw -5 and 5
+                    _ if (eccentricity > 0.15) => 4, // if ecc > 0.15 take q btw -4 and 4
+                    _ if (eccentricity > 0.1 ) => 3, // if ecc > 0.10 take q btw -3 and 3 
+                    _ if (eccentricity <= 0.1 ) => 2, // if ecc > 0.10 take q btw -2 and 2
+                    _ => 0,
+                };
+                // let q_max = [7-order, 2*order+1];
+                let q_min = 7-order;
+                let q_max = 2*order+1;
+                
+                // for q in -7..8{
+                for (q, g_20q) in eccentricity_function_g_20q.iter().skip(q_min).take(q_max).enumerate(){
+                    // let frequ_220q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., q as f64, spin, orbital_frequency);
+                    let frequ_220q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2., 0., q as f64 -order as f64, spin, orbital_frequency);
                     let (rek2_220q, imk2_220q) = calculate_kaula_numbers(frequ_220q, number_data_point, real_love_number_tab, imag_love_number_tab, excitation_frequency_tab );
 
                     let mut sum_over_j_2:f64=0.;
                     let mut sum_over_j_2_secular:f64=0.;
-                    for j in -7..8{
-                        let alpha_qj = alpha_pqkj(0., q as f64, 0., j as f64, mean_anomaly, argument_perihelion );
-                        let g_20j = eccentricity_function_g_2pq[0][(j+7) as usize];
+                    // for j in -7..8{
+                    for (j, g_20j) in eccentricity_function_g_20q.iter().skip(q_min).take(q_max).enumerate(){
+                        // let alpha_qj = alpha_pqkj(0., q as f64, 0., j as f64, mean_anomaly, argument_perihelion );
+                        let alpha_qj = alpha_pqkj(0., q as f64 -order as f64, 0., j as f64 -order as f64, mean_anomaly, argument_perihelion );
+                        // let g_20j = eccentricity_function_g_2pq[0][(j+7) as usize];
 
                         sum_over_j_2 = sum_over_j_2 +g_20j*(
                                 alpha_qj.sin()*rek2_220q 
@@ -471,7 +514,7 @@ fn calculate_orthogonal_component_of_the_tidal_force(
                             sum_over_j_2_secular = sum_over_j_2_secular +g_20j *imk2_220q;
                         }
                     } 
-                    let g_20q = eccentricity_function_g_2pq[0][(q+7) as usize];
+                    // let g_20q = eccentricity_function_g_2pq[0][(q+7) as usize];
 
                     sum_over_q = sum_over_q +g_20q *(3_f64/2_f64) *sum_over_j_2 ;
                     sum_over_q_secular = sum_over_q_secular +g_20q *(3_f64/2_f64) *sum_over_j_2_secular ;
@@ -482,6 +525,7 @@ fn calculate_orthogonal_component_of_the_tidal_force(
         } else {
             // Kaula inclination function
             let inclination_function_f_2mp = calculate_inclination_function_f_2mp(inclination);
+            let eccentricity_function_g_2pq = calculate_eccentricty_function_g_2pq(eccentricity);
             let mut sum_over_p:f64=0.;
             let mut sum_over_p_secular:f64=0.;
             for p in 0..3{
@@ -617,6 +661,7 @@ fn calculate_kaula_numbers(wk2:f64, nm_data:f64, real_part_love_number: [[f64;32
     };
     let case_oneline_last_col:bool = match last_line{
         0=>true,
+        1=>true,
         _=>false,
     };
     let (parity, w_k2):(bool, f64) = match (){
@@ -859,6 +904,101 @@ fn calculate_eccentricty_function_g_2pq(eccentricity: f64) -> [[f64; 15]; 3]{
     eccentricity_function[2][12] =eccentricity_function[0][2] ;
     eccentricity_function[2][13] =eccentricity_function[0][1] ;
     eccentricity_function[2][14] =eccentricity_function[0][0] ;
+
+    return eccentricity_function;
+}
+
+// --- The eccentricity function of the Kaula 1961 developpement Glpq(e) from the Hensen coeff [?] (see Cayley table [?] )
+fn calculate_eccentricty_function_g_20q(eccentricity: f64) -> [f64; 15]{
+
+    let mut eccentricity_function = [0.0;15];
+    // in this notation:
+    // [0] is -7
+    // [1] is -6
+    // [2] is -5
+    // [3] is -4
+    // [4] is -3
+    // [5] is -2
+    // [6] is -1
+    // [7] is 0
+    // [8] is 1
+    // [9] is 2
+    // [10] is 3   
+    // [11] is 4
+    // [12] is 5
+    // [13] is 6
+    // [14] is 7
+
+    let ecc:f64=eccentricity;
+    let ecc_2:f64=ecc*ecc;
+    let ecc_3:f64=ecc_2*ecc;
+    let ecc_4:f64=ecc_3*ecc;
+    let ecc_5:f64=ecc_4*ecc;
+    let ecc_6:f64=ecc_5*ecc;
+    let ecc_7:f64=ecc_6*ecc;
+
+    eccentricity_function[0] = (15625./129024.)*ecc_7 ;
+    eccentricity_function[1] = (4./45.)*ecc_6 ;
+    eccentricity_function[2] = (81./1280.)*ecc_5     +(81./2048.)*ecc_7 ;
+    eccentricity_function[3] = (1./24.)*ecc_4        +(7./240.)*ecc_6 ;
+    eccentricity_function[4] = (1./48.)*ecc_3        +(11./768.)*ecc_5       +(313./30720.)*ecc_7 ;
+    eccentricity_function[5] = 0.;
+    eccentricity_function[6] = -0.5*ecc              +(1./16.)*ecc_3         -(5./384.)*ecc_5        -(143./18432.)*ecc_7 ;
+    eccentricity_function[7] = 1.                    -(5./2.)*ecc_2          +(13./16.)*ecc_4        -(35./288.)*ecc_6 ;
+    eccentricity_function[8] = (7./2.)*ecc           -(123./16.)*ecc_3       +(489./128.)*ecc_5      -(1763./2048.)*ecc_7 ;
+    eccentricity_function[9] = (17./2.)*ecc_2        -(115./16.)*ecc_4       +(601./48.)*ecc_6 ;
+    eccentricity_function[10] = (845./48.)*ecc_3     -(32525./768.)*ecc_5    +(208225./6144.)*ecc_7 ;
+    eccentricity_function[11] = (533./16.)*ecc_4     -(13827./160.)*ecc_6 ;
+    eccentricity_function[12] = (228347./3840.)*ecc_5 -(3071075./18432.)*ecc_7 ;
+    eccentricity_function[13] = (73369./720.)*ecc_6 ;
+    eccentricity_function[14] = (12144273./71680.)*ecc_7 ;
+
+    return eccentricity_function;
+}
+
+fn calculate_eccentricty_function_g_21q(eccentricity: f64) -> [f64; 15]{
+
+    let mut eccentricity_function = [0.0;15];
+    // in this notation:
+    // [0] is -7
+    // [1] is -6
+    // [2] is -5
+    // [3] is -4
+    // [4] is -3
+    // [5] is -2
+    // [6] is -1
+    // [7] is 0
+    // [8] is 1
+    // [9] is 2
+    // [10] is 3   
+    // [11] is 4
+    // [12] is 5
+    // [13] is 6
+    // [14] is 7
+
+    let ecc:f64=eccentricity;
+    let ecc_2:f64=ecc*ecc;
+    let ecc_3:f64=ecc_2*ecc;
+    let ecc_4:f64=ecc_3*ecc;
+    let ecc_5:f64=ecc_4*ecc;
+    let ecc_6:f64=ecc_5*ecc;
+    let ecc_7:f64=ecc_6*ecc;
+
+    eccentricity_function[0] = (432091./30720.)*ecc_7 ;
+    eccentricity_function[1] = (3167./320.)*ecc_6 ;
+    eccentricity_function[2] = (1773./256.)*ecc_5    -(4987./6144.)*ecc_7 ;
+    eccentricity_function[3] = (77./16.)*ecc_4       +(129./160.)*ecc_6 ;
+    eccentricity_function[4] = (53./16.)*ecc_3       +(393./256.)*ecc_5      +(24753./10240.)*ecc_7;
+    eccentricity_function[5] = (9./4.)*ecc_2         +(7./4.)*ecc_4          +(141./64.)*ecc_6 ;
+    eccentricity_function[6] = (3./2.)*ecc           +(27./16.)*ecc_3        +(261./128.)*ecc_5      +(14309./6144.)*ecc_7 ;
+    eccentricity_function[7] = (1.-ecc_2).powf(-3./2.) ;
+    eccentricity_function[8] = eccentricity_function[6] ;
+    eccentricity_function[9] = eccentricity_function[5] ;
+    eccentricity_function[10] = eccentricity_function[4] ;
+    eccentricity_function[11] = eccentricity_function[3] ;
+    eccentricity_function[12] = eccentricity_function[2] ;
+    eccentricity_function[13] = eccentricity_function[1] ;
+    eccentricity_function[14] = eccentricity_function[0] ;
 
     return eccentricity_function;
 }

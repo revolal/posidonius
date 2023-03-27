@@ -109,11 +109,12 @@ if __name__ == "__main__":
     star.set_evolution(star_evolution)
     universe.add_particle(star)
 
-
+    pwd = './cases/Trappist_1_BurnMan/'
     #===============================================================================================
-    pwd = './cases/love_number_data/'
-    planet_data_b = np.loadtxt(pwd+'Results_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
+    # pwd = './cases/love_number_data/'
+    # planet_data_b = np.loadtxt(pwd+'Results_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_b = np.loadtxt('Results_Trappist_1b_20.5_100_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_b = np.loadtxt(pwd+'Results_Trappist_1b_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_b, planet_radius_b, planet_gyration_radius_squared_b = planet_data_b[0,:] 
     w_lm_b   = planet_data_b[1:,0]
     ImK2_b   = planet_data_b[1:,1]
@@ -121,8 +122,9 @@ if __name__ == "__main__":
     size_b   = np.size(w_lm_b)
 
     #===============================================================================================
-    planet_data_c = np.loadtxt(pwd+'Results_Trappist_1c_07.5_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_c = np.loadtxt(pwd+'Results_Trappist_1c_07.5_100_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_c = np.loadtxt('Results_Trappist_1c_07.5_100_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_c = np.loadtxt(pwd+'Results_Trappist_1c_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_c, planet_radius_c, planet_gyration_radius_squared_c = planet_data_c[0,:] 
     w_lm_c   = planet_data_c[1:,0]
     ImK2_c   = planet_data_c[1:,1]
@@ -130,8 +132,9 @@ if __name__ == "__main__":
     size_c   = np.size(w_lm_c)
 
     #===============================================================================================
-    planet_data_d = np.loadtxt(pwd+'Results_Trappist_1d_19.5_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_d = np.loadtxt(pwd+'Results_Trappist_1d_19.5_100_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_d = np.loadtxt('Results_Trappist_1d_19.5_100_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_d = np.loadtxt(pwd+'Results_Trappist_1d_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_d, planet_radius_d, planet_gyration_radius_squared_d = planet_data_d[0,:] 
     w_lm_d   = planet_data_d[1:,0]
     ImK2_d   = planet_data_d[1:,1]
@@ -139,8 +142,9 @@ if __name__ == "__main__":
     size_d   = np.size(w_lm_d)
 
     #===============================================================================================
-    planet_data_e = np.loadtxt(pwd+'Results_Trappist_1e_00.0_138_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_e = np.loadtxt(pwd+'Results_Trappist_1e_00.0_138_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_e = np.loadtxt('Results_Trappist_1e_05.0_150_freq_Imk2_posidonius.txt',comments='#') 
+    planet_data_e = np.loadtxt(pwd+'Results_Trappist_1e_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_e, planet_radius_e, planet_gyration_radius_squared_e = planet_data_e[0,:] 
     w_lm_e   = planet_data_e[1:,0]
     ImK2_e   = planet_data_e[1:,1]
@@ -148,8 +152,9 @@ if __name__ == "__main__":
     size_e   = np.size(w_lm_e)
 
     #===============================================================================================
-    planet_data_f = np.loadtxt(pwd+'Results_Trappist_1f_11.0_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_f = np.loadtxt(pwd+'Results_Trappist_1f_11.0_100_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_f = np.loadtxt('Results_Trappist_1f_14.5_150_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_f = np.loadtxt(pwd+'Results_Trappist_1f_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_f, planet_radius_f, planet_gyration_radius_squared_f = planet_data_f[0,:] 
     w_lm_f   = planet_data_f[1:,0]
     ImK2_f   = planet_data_f[1:,1]
@@ -157,8 +162,9 @@ if __name__ == "__main__":
     size_f   = np.size(w_lm_f)
 
     #===============================================================================================
-    planet_data_g = np.loadtxt(pwd+'Results_Trappist_1g_19.0_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_g = np.loadtxt(pwd+'Results_Trappist_1g_19.0_100_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_g = np.loadtxt('Results_Trappist_1g_22.5_150_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_g = np.loadtxt(pwd+'Results_Trappist_1g_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_g, planet_radius_g, planet_gyration_radius_squared_g = planet_data_g[0,:] 
     w_lm_g   = planet_data_g[1:,0]
     ImK2_g   = planet_data_g[1:,1]
@@ -166,8 +172,9 @@ if __name__ == "__main__":
     size_g   = np.size(w_lm_g)
 
     #===============================================================================================
-    planet_data_h = np.loadtxt(pwd+'Results_Trappist_1h_10.0_100_freq_Imk2_posidonius.txt',comments='#')
+    # planet_data_h = np.loadtxt(pwd+'Results_Trappist_1h_10.0_100_freq_Imk2_posidonius.txt',comments='#')
     # planet_data_h = np.loadtxt('Results_Trappist_1h_13.5_150_freq_Imk2_posidonius.txt',comments='#')
+    planet_data_h = np.loadtxt(pwd+'Results_Trappist_1h_freq_Imk2_posidonius.txt',comments='#')
     planet_mass_h, planet_radius_h, planet_gyration_radius_squared_h = planet_data_h[0,:] 
     w_lm_h   = planet_data_h[1:,0]
     ImK2_h   = planet_data_h[1:,1]
@@ -214,8 +221,6 @@ if __name__ == "__main__":
 
         # --- Specify initial position and velocity for a stable orbit
         # -- Keplerian orbital elements, in the `asteroidal' format of Mercury code
-        #a = 0.01111;                             # semi-major axis (in AU)
-        # e = 0.0000010;                              # eccentricity
         i = i * posidonius.constants.DEG2RAD;   # inclination (degrees)
         p = p * posidonius.constants.DEG2RAD;   # argument of pericentre (degrees)
         n = 0. * posidonius.constants.DEG2RAD;  # longitude of the ascending node (degrees)

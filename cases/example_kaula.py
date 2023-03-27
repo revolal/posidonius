@@ -14,9 +14,9 @@ if __name__ == "__main__":
     initial_time = 4.5e6*365.25 # time [days] where simulation starts
     time_step = 0.01 # days
     #time_limit   = 4*time_step # days
-    time_limit   =  365.25 * 1.0e10 # days
-    historic_snapshot_period = 365.25  #*10. #*time_step # days
-    recovery_snapshot_period = 10.*historic_snapshot_period # days
+    time_limit   =  100*time_step # 365.25 * 1.0e10 # days
+    historic_snapshot_period = time_step# 365.25  #*10. #*time_step # days
+    recovery_snapshot_period = time_step # 10.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
         "rotational_flattening": False,
@@ -266,13 +266,13 @@ if __name__ == "__main__":
     }
 
     # --- Choose the tidal model to use :
-    planet_tides_model = posidonius.effects.tides.ConstantTimeLag(planet_tides_parameters)
-    # planet_tides_model = posidonius.effects.tides.Kaula(planet_kaula_tidal_parameters_love_numbers)
+    # planet_tides_model = posidonius.effects.tides.ConstantTimeLag(planet_tides_parameters)
+    planet_tides_model = posidonius.effects.tides.Kaula(planet_kaula_tidal_parameters_love_numbers)
 
     # --- Choose the type of particle (central body or orbiting body) :
     #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_model)
-    # planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
-    planet_tides = posidonius.effects.tides.Disabled()
+    planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
+    # planet_tides = posidonius.effects.tides.Disabled()
     #
     # planet_rotational_flattening_parameters = {"love_number": planet_tides_parameters["love_number"]}
     # planet_rotational_flattening_parameters = {"uniform_viscosity_coefficient": 1e14}
