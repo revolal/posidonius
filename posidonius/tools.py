@@ -456,8 +456,36 @@ def _calculate_keplerian_orbital_elements(gm, position, velocity):
         p[big_eccentricity] = np.arctan2(ey[big_eccentricity],ex[big_eccentricity]) 
         p[big_eccentricity] = modulus((p[big_eccentricity] + TWO_PI + TWO_PI), TWO_PI)
         # p[big_eccentricity] = np.arctan2(ey[big_eccentricity],ex[big_eccentricity]) %(2.*np.pi)
-       
+
+    non_zero_long_asc_node = n >=1e-8
+    arg_peri = np.zeros(len(eccentricity))
+    long_asc_node = np.zeros(len(eccentricity))
+    if np.any(non_zero_long_asc_node):
+        long_asc_node = n[non_zero_long_asc_node]
+        incl = i[non_zero_long_asc_node]
+        ex_rot = ex*np.cos(long_asc_node) +ey*np.sin(long_asc_node)
+        ey_rot = -ex*np.sin(long_asc_node) +ey*np.cos(long_asc_node)
+        ez_rot = ez
+        ex_rot_2 = ex_rot
+        ey_rot_2 = ey_rot*np.cos(incl) + ez_rot*np.sin(incl)
+        _ez_rot_2 = -ey_rot*np.sin(incl) + ez_rot*np.cos(incl)
+
+        arg_peri = np.arctan2(ey_rot_2,ex_rot_2)
+        p[non_zero_long_asc_node] = long_asc_node + arg_peri
+
     ###-------------------------------------------------------------------------
+    """
+    Returns:
+
+    - a: semi-major axis (in AU)
+    - q: perihelion distance
+    - eccentricity: eccentricity
+    - i: inclination
+    - p: longitude of perihelion (NOT the argument of perihelion)
+    - n: longitude of ascending node
+    - l: mean anomaly (or mean longitude if eccentricity < 1.e-8)
+    - f: true anomaly
+    """
 
     if len(a) == 1:
         return (a[0], q[0], eccentricity[0], i[0], p[0], n[0], l[0], f[0])
