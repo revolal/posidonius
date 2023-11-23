@@ -45,21 +45,31 @@ def read(filename):
     data = data.to_records()
     return n_particles, data
 
-def classify(n_particles, data, reference_particle_index=0, discard_first_hundred_years=False):
+def classify(n_particles, data, reference_particle_index=0, discard_first_years=False, first_years=0., discard_last_years=False, last_years=0.):
+    print("\t\t Discard years : ", discard_first_years, first_years, discard_last_years, last_years)
     # Ignore first 100 years
     data['current_time'] /= 365.25 # From days to years
-    if discard_first_hundred_years:
-        data = data[data['current_time'] >= 100.]
-
+    if discard_first_years:
+        # data = data[data['current_time'] >= 24150. ]
+        # data = data[data['current_time'] <= 24154. ]
+        # data = data[data['current_time'] <= 1. ]
+        # data = data[data['current_time'] <= 1./365.25 ]
+        # data = data[data['current_time'] <= 30000. ]
+        # data = data[data['current_time'] <= 1000.2]
+        data = data[data['current_time'] >= first_years]
+        print(f'\t\t   discard the {first_years} firsts yrs ')
+    if discard_last_years:
+        data = data[data['current_time'] <= last_years ]
+        print(f'\t\t   discard after {last_years} yrs ')
     star = data['particle'] == reference_particle_index
     star_data = data[star]
-
+    print("\t\t Data planet")
     planets_data = {}
     planets_keys = [] # To ensure the order
     for i in range(n_particles-1):
         planets_data["{}".format(i+1)] = data[data['particle'] == i+1]
         planets_keys.append("{}".format(i+1))
-
+    print("\t\t Computation")
     # From inertial to heliocentric coordinates
     n_data_points = len(star_data['position_x'])
     zeros = Axes(np.zeros(n_data_points), np.zeros(n_data_points), np.zeros(n_data_points))
@@ -82,11 +92,12 @@ def classify(n_particles, data, reference_particle_index=0, discard_first_hundre
         positions.insert(0, zeros) # Star is at the center
         velocities = [Axes(planets_data[k]['velocity_x'], planets_data[k]['velocity_y'], planets_data[k]['velocity_z']) for k in planets_keys if k != key]
         velocities.insert(0, zeros) # Star is resting
-        a, q, e, i, p, n, l = posidonius.tools.calculate_keplerian_orbital_elements(target_mass, target_position, target_velocity, masses=masses, positions=positions, velocities=velocities)
+        # a, q, e, i, p, n, l = posidonius.tools.calculate_keplerian_orbital_elements(target_mass, target_position, target_velocity, masses=masses, positions=positions, velocities=velocities)
+        a, q, e, i, p, n, l, f = posidonius.tools.calculate_keplerian_orbital_elements(target_mass+star_data['mass'], target_position, target_velocity)
         #a, q, e, i, p, n, l = posidonius.tools.calculate_keplerian_orbital_elements(target_mass+star_data['mass'], target_position, target_velocity)
         planets_data[key] = append_fields(planets_data[key], \
-            ('semi-major_axis', 'eccentricity', 'inclination', 'longitude_of_perihelion', 'longitude_of_ascending_node', 'mean_anomaly'), \
-            (a, e, i, p, n, l), usemask=False)
+            ('semi-major_axis', 'eccentricity', 'inclination', 'longitude_of_perihelion', 'longitude_of_ascending_node', 'mean_anomaly', 'true_anomaly'), \
+            (a, e, i, p, n, l, f), usemask=False)
     star_data['position_x'] = 0.
     star_data['position_y'] = 0.
     star_data['position_z'] = 0.

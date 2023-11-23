@@ -3,6 +3,39 @@ import numpy as np
 from posidonius.constants import *
 from posidonius.particles.axes import Axes
 
+def calculate_eccentricity_vector(gm, position, velocity):
+
+        # // --- Input --- //
+        x = position.x()
+        y = position.y()
+        z = position.z()
+        u = velocity.x()
+        v = velocity.y()
+        w = velocity.z()
+        
+        # // --- Output --- //
+        # eccentricity_vector
+        
+        # // --- Local --- //
+        # // Angular momentum
+        hx = y * w  -  z * v
+        hy = z * u  -  x * w
+        hz = x * v  -  y * u
+        # // v vectorial h
+        v_vect_h_x = v * hz - w * hy
+        v_vect_h_y = w * hx - u * hz
+        v_vect_h_z = u * hy - v * hx
+        # // distance
+        r = np.sqrt(np.power(x,2) + np.power(y,2) + np.power(z,2) )
+        # // eccentricity componant
+        eccentricity_vector = []
+        eccentricity_vector.append( (v_vect_h_x / gm) - (x / r))
+        eccentricity_vector.append( (v_vect_h_y / gm) - (y / r))
+        eccentricity_vector.append( (v_vect_h_z / gm) - (z / r))
+
+        return eccentricity_vector
+
+
 def _find_indices_around_target_value(target_x, x):
     positions = np.where(x >= np.asarray(target_x))[0]
     if len(positions) > 0:
@@ -124,6 +157,7 @@ def mass_radius_relation(planet_mass, planet_mass_type='factor', planet_percent_
         raise Exception("Unknown planet mass type: {}".format(planet_mass_type))
     return planet_radius_factor # Factor to be multiplied by R_EARTH
 
+
 def calculate_keplerian_orbital_elements(target_mass, target_position, target_velocity, masses=[], positions=[], velocities=[]):
     """
     Calculate the keplerian orbital elements
@@ -151,6 +185,7 @@ def calculate_keplerian_orbital_elements(target_mass, target_position, target_ve
     - p: longitude of perihelion (NOT the argument of perihelion)
     - n: longitude of ascending node
     - l: mean anomaly (or mean longitude if eccentricity < 1.e-8)
+    - f: true anomaly
     """
 
     if not isinstance(masses, list):
@@ -170,14 +205,14 @@ def calculate_keplerian_orbital_elements(target_mass, target_position, target_ve
         target_velocity = Axes(target_velocity.x()-center_of_mass_velocity.x(), target_velocity.y()-center_of_mass_velocity.y(), target_velocity.z()-center_of_mass_velocity.z())
 
     gm = G*(sum(masses)+target_mass)
-    a, q, eccentricity, i, p, n, l = _calculate_keplerian_orbital_elements(gm, target_position, target_velocity)
+    a, q, eccentricity, i, p, n, l, f = _calculate_keplerian_orbital_elements(gm, target_position, target_velocity)
 
     if len(positions) > 0:
         delta_a = np.sqrt(center_of_mass_position.x()**2 + center_of_mass_position.y()**2 + center_of_mass_position.z()**2)
         delta_q = delta_a * (1.0 - eccentricity);                     # perihelion distance
         a += delta_a
         q += delta_q
-    return (a, q, eccentricity, i, p, n, l)
+    return (a, q, eccentricity, i, p, n, l, f)
 
 def _calculate_keplerian_orbital_elements(gm, position, velocity):
     # ! Based on the implementation of Chambers in Mercury
@@ -216,6 +251,7 @@ def _calculate_keplerian_orbital_elements(gm, position, velocity):
     r = np.sqrt(x*x + y*y + z*z)
     h = np.sqrt(h2)
     s = h2 / gm
+    (ex, ey, ez) = calculate_eccentricity_vector(gm, position, velocity)
 
     ###-------------------------------------------------------------------------
     ### a: Semi-major axis
@@ -402,8 +438,10 @@ def _calculate_keplerian_orbital_elements(gm, position, velocity):
 
         #p = true_longitude - f
         #p = modulus((p + TWO_PI + TWO_PI), TWO_PI)
+    # f = 0.
     p = np.zeros(len(eccentricity))
     big_eccentricity = eccentricity >= 3.0e-8
+    f = np.zeros(len(eccentricity))
     if np.any(big_eccentricity):
         cf = np.zeros(len(eccentricity))
         cf[big_eccentricity] = (s[big_eccentricity] - r[big_eccentricity]) / (eccentricity[big_eccentricity]*r[big_eccentricity])
@@ -414,15 +452,18 @@ def _calculate_keplerian_orbital_elements(gm, position, velocity):
         negative_rv = rv < 0.
         if np.any(negative_rv):
             f[negative_rv] = TWO_PI - f[negative_rv]
-        p[big_eccentricity] = true_longitude[big_eccentricity] - f[big_eccentricity]
+        # p[big_eccentricity] = true_longitude[big_eccentricity] - f[big_eccentricity]
+        p[big_eccentricity] = np.arctan2(ey[big_eccentricity],ex[big_eccentricity]) 
         p[big_eccentricity] = modulus((p[big_eccentricity] + TWO_PI + TWO_PI), TWO_PI)
-
+        # p[big_eccentricity] = np.arctan2(ey[big_eccentricity],ex[big_eccentricity]) %(2.*np.pi)
+       
     ###-------------------------------------------------------------------------
 
     if len(a) == 1:
-        return (a[0], q[0], eccentricity[0], i[0], p[0], n[0], l[0])
+        return (a[0], q[0], eccentricity[0], i[0], p[0], n[0], l[0], f[0])
     else:
-        return (a, q, eccentricity, i, p, n, l)
+        return (a, q, eccentricity, i, p, n, l, f)
+
 
 def calculate_cartesian_coordinates(target_mass, q, e, i0, p, n0, l, masses=[], positions=[], velocities=[]):
     """
