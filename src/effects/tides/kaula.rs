@@ -34,9 +34,9 @@ pub fn calculate_tidal_force(tidal_host_particle: &Particle, particle: &mut Part
     // --- The Keplerian orbital elements --- //
     let gm = G*(tidal_host_particle.mass+particle.mass);
     let keplerian_elements = tools::calculate_keplerian_orbital_elements( gm, particle.heliocentric_position, particle.heliocentric_velocity);
-    let (a, _q, eccentricity, inclination,longitude_perihelion, longitude_of_ascending_node, mean_anomaly, _orbital_period) = keplerian_elements;
-    println!("\n|\t sma {} \n|\t ecc {} \n|\t incl {} \n|\t long_peri {} {} \n|\t long_asc_node {} {}  \n|\t mean_ano {}", a, eccentricity, inclination, longitude_perihelion, TWO_PI+longitude_perihelion, longitude_of_ascending_node, TWO_PI+longitude_of_ascending_node, mean_anomaly);
-    panic!("At the disco");
+    // let (a, _q, eccentricity, inclination,longitude_perihelion, longitude_of_ascending_node, mean_anomaly, _orbital_period) = keplerian_elements;
+    // println!("\n|\t sma {} \n|\t ecc {} \n|\t incl {} \n|\t long_peri {} {} \n|\t long_asc_node {} {}  \n|\t mean_ano {}", a, eccentricity, inclination, longitude_perihelion, TWO_PI+longitude_perihelion, longitude_of_ascending_node, TWO_PI+longitude_of_ascending_node, mean_anomaly);
+    // panic!("At the disco");
     // --- The spherical component of the tidal force --- //
     // The radial component is the force applicated through the radial axis
     // The normal component act on the co longitude axis

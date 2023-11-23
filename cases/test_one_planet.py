@@ -21,7 +21,7 @@ if __name__ == "__main__":
     historic_snapshot_period = 1. #0.01*365.25 # days
     recovery_snapshot_period = historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
-        "tides": True,
+        "tides": False,
         "rotational_flattening": False,
         "general_relativity": False,
         "disk": False,
@@ -54,9 +54,9 @@ if __name__ == "__main__":
         "love_number": 0.0,
     }
     star_tides_model = posidonius.effects.tides.ConstantTimeLag(star_tides_parameters)
-    star_tides = posidonius.effects.tides.CentralBody(star_tides_model)
+    # star_tides = posidonius.effects.tides.CentralBody(star_tides_model)
     #star_tides = posidonius.effects.tides.OrbitingBody(star_tides_model)
-    # star_tides = posidonius.effects.tides.Disabled()
+    star_tides = posidonius.effects.tides.Disabled()
     #
     # star_rotational_flattening_parameters = {"love_number": star_tides_parameters["love_number"] }
     #star_rotational_flattening_model = posidonius.effects.rotational_flattening.OblateSpheroid(star_rotational_flattening_parameters)
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     # --- Semi-major axis in AU
     planet_a = ( 0.0115418669425055, 0.0158094975622961, 0.0222700389997286, 0.0292694953252985, 0.0385106150958128, 0.0468445028220842, 0.0619224236258543 ) # in AU From AS Libert
     # --- Inclination in degrees
-    planet_i = (0., 0., 0., 0., 0., 0., 14.)
+    planet_i = (0., 0., 0., 0., 0., 0., 0.)
     # --- Eccentricity
     planet_e = ( 0.0066945347902135, 0.0019585600861175, 0.0072217598426537, 0.0052151102407526, 0.0095027023237257, 0.0032634092345139, 0.0044037179966920) # From AS Libert 
     # --- Mean longitude 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     # --- Argument of pericentre
     # planet_p = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     # --- longitude of ascending node
-    planet_n = (0., 0., 0., 0., 0., 0., 20.)
+    planet_n = (0., 0., 0., 0., 0., 0., 0.)
     # --- longitude of pericentre = argument of pericenter + longitude ascending node
     planet_p = ( 3.9138033639162217, 3.9568810173922708, 3.6462719004641233, 0.9017217708596807, 3.1105825606949371, 5.8092293524825127, 3.2359374491128419) # in rad From AS Libert 
     # planet_p = (0., 0., 0., 0., 0., 0., 0.)
@@ -263,8 +263,8 @@ if __name__ == "__main__":
 
     # --- Choose the type of particle (central body or orbiting body) :
     #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_model)
-    planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
-    # planet_tides = posidonius.effects.tides.Disabled()
+    # planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
+    planet_tides = posidonius.effects.tides.Disabled()
     # ---
     #planet_rotational_flattening_parameters = {"love_number": 0.9532}
     #planet_rotational_flattening_model = posidonius.effects.rotational_flattening.OblateSpheroid(planet_rotational_flattening_parameters)
