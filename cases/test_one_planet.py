@@ -13,15 +13,15 @@ if __name__ == "__main__":
 
     #initial_time = 4.5e6*365.25 # time [days] where simulation starts
     initial_time = 1.0*365.25 # time [days] where simulation starts
-    time_step = 0.02 # days
+    time_step = 0.001 # days
     #time_step = 0.07 # days
     #time_limit   = 4*time_step # days
     #time_limit   = 365.25 * 1.0e8 # days
-    time_limit   = 2.*365.25 #* 1.0e2 # days
-    historic_snapshot_period = 1. #0.01*365.25 # days
+    time_limit   = 18.772866 *100.# 2.*365.25 #* 1.0e2 # days
+    historic_snapshot_period = 0.1 #0.01*365.25 # days
     recovery_snapshot_period = historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
-        "tides": False,
+        "tides": True,
         "rotational_flattening": False,
         "general_relativity": False,
         "disk": False,
@@ -54,9 +54,9 @@ if __name__ == "__main__":
         "love_number": 0.0,
     }
     star_tides_model = posidonius.effects.tides.ConstantTimeLag(star_tides_parameters)
-    # star_tides = posidonius.effects.tides.CentralBody(star_tides_model)
+    star_tides = posidonius.effects.tides.CentralBody(star_tides_model)
     #star_tides = posidonius.effects.tides.OrbitingBody(star_tides_model)
-    star_tides = posidonius.effects.tides.Disabled()
+    # star_tides = posidonius.effects.tides.Disabled()
     #
     # star_rotational_flattening_parameters = {"love_number": star_tides_parameters["love_number"] }
     #star_rotational_flattening_model = posidonius.effects.rotational_flattening.OblateSpheroid(star_rotational_flattening_parameters)
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     planet_radius = r / posidonius.constants.AU # planet_radius_factor * posidonius.constants.R_EARTH
     planet_radius_of_gyration = np.sqrt(gyration_radius_2) #5.75e-01
 
-    # e = 0.16
+    e = 0.2
 
     # --- Specify initial position and velocity for a stable orbit
     # -- Keplerian orbital elements, in the `asteroidal' format of Mercury code
@@ -195,7 +195,7 @@ if __name__ == "__main__":
     planet_obliquity = 0.0 # 1.0e-4 # rad
     # --- Initialize spin
     orbital_period = 2.*np.pi*(np.sqrt( (a*posidonius.constants.AU)**3. / ( posidonius.constants.G_SI*( star_mass*posidonius.constants.M_SUN + planet_mass*posidonius.constants.M_SUN ) ) ) )/86400.
-    planet_rotation_period = orbital_period/(1.0) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
+    planet_rotation_period = orbital_period/(1.0 +2e-5) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
     planet_angular_frequency = posidonius.constants.TWO_PI/(planet_rotation_period) # days^-1
     # --- Pseudo-synchronization period
     # planet_pseudo_synchronization_period = posidonius.calculate_pseudo_synchronization_period(a, e, star_mass, planet_mass) # days
@@ -263,8 +263,8 @@ if __name__ == "__main__":
 
     # --- Choose the type of particle (central body or orbiting body) :
     #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_model)
-    # planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
-    planet_tides = posidonius.effects.tides.Disabled()
+    planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
+    # planet_tides = posidonius.effects.tides.Disabled()
     # ---
     #planet_rotational_flattening_parameters = {"love_number": 0.9532}
     #planet_rotational_flattening_model = posidonius.effects.rotational_flattening.OblateSpheroid(planet_rotational_flattening_parameters)

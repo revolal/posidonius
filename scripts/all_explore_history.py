@@ -68,7 +68,7 @@ def calculate_eccentricity_function_g_20q(eccentricity):
     eccentricity_function[2] = (81. / 1280.) * ecc_5 + (81. / 2048.) * ecc_7
     eccentricity_function[3] = (1. / 24.) * ecc_4 + (7. / 240.) * ecc_6
     eccentricity_function[4] = (1. / 48.) * ecc_3 + (11. / 768.) * ecc_5 + (313. / 30720.) * ecc_7
-    eccentricity_function[5] = 0.0
+    eccentricity_function[5] = 0.0 * ecc
     eccentricity_function[6] = -0.5 * ecc + (1. / 16.) * ecc_3 - (5. / 384.) * ecc_5 - (143. / 18432.) * ecc_7
     eccentricity_function[7] = 1.0 - (5. / 2.) * ecc_2 + (13. / 16.) * ecc_4 - (35. / 288.) * ecc_6
     eccentricity_function[8] = (7. / 2.) * ecc - (123. / 16.) * ecc_3 + (489. / 128.) * ecc_5 - (1763. / 2048.) * ecc_7
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     n_particles, data = posidonius.analysis.history.read(filename)
     most_massive_particle_index = universe_integrator_json['universe']['hosts']['index']['most_massive']
     print("\t Transforming positions/velocities to heliocentric coordinates using the most masssive particle at index '{}'...".format(most_massive_particle_index))
-    star_data, planets_data, planets_keys = posidonius.analysis.history.classify(n_particles, data, reference_particle_index=most_massive_particle_index, discard_first_years=False, first_years=0., discard_last_years=False, last_years=0.0)
+    star_data, planets_data, planets_keys = posidonius.analysis.history.classify(n_particles, data, reference_particle_index=most_massive_particle_index, discard_first_years=False, first_years=0., discard_last_years=False, last_years=20.0/365.25)
     # star_data, planets_data, planets_keys = posidonius.analysis.history.classify(n_particles, data, reference_particle_index=most_massive_particle_index, discard_first_hundred_years=False)
     # star_data = star_data[star_data['current_time'] >= 10. ]
     for key in planets_keys:
@@ -185,18 +185,20 @@ if __name__ == "__main__":
 
 
     ################################################################################
-
-    plot_2      = True # Plot data
+    plot_1      = False # Plot AM conservation
+    plot_2      = False # Plot data
     plot_21     = False # Plot positions
     plot_22     = False # Plot data sma period p2/p1 
-    plot_23     = True # Print data 
-    plot_3      = False # plot spin data
+    plot_23     = False # Print data 
+    plot_3e     = False # plot ecc data
+    plot_3s     = False # plot spin data
     plot_30     = False # plot spin / mean motion
     plot_31     = False # plot sub-stellar point 
     plot_31b    = False # plot sub-stellar point for planet b
     plot_31all  = False # plot sub-stellar point for each planet
-    plot_32     = False # plot sub-stellar point 2 calculs
-    plot_33     = False # Check angles
+    plot_32     = True # plot sub-stellar point 2 calculs
+    plot_33     = True # Check angles
+    plot_33_1p  = True # Check angles
     plot_34     = False # Plot Spin each planet 
     plot_4      = False # compare spin mean motion
     plot_41     = False # compare mean motion 
@@ -213,7 +215,7 @@ if __name__ == "__main__":
     plot_10     = False # Resonance angle 2 bodies
     plot_101    = False # Resonance angle 2 planets 2 bodies
     plot_11     = False # Resonance modes lmpq frequency angle two bodies
-    plot_12     = True # test NAFF
+    plot_12     = False # Print Hansen coeff
 
     ################################################################################
     ## Planets
@@ -225,7 +227,7 @@ if __name__ == "__main__":
     total_planets_orbital_angular_momentum = 0.
     planets_computed_data = {}
     for key in planets_keys:
-        print("\n >>> Compute for planet ", key)
+        print("\n| ===== Compute for planet ", key, " ===== | ")
         planet_data = planets_data[key]
         planet_computed_data = {}
 
@@ -356,7 +358,9 @@ if __name__ == "__main__":
         #AU        =  1.49598e11               # m
         #Msun      =  1.98892e30               # kg
         planet_orbital_period = 2*np.pi*np.sqrt(np.power(planet_data['semi-major_axis']*posidonius.constants.AU, 3)/(posidonius.constants.G_SI*posidonius.constants.M_SUN*(star_data['mass']+planet_data['mass'])))
-        planet_computed_data['orbital_period'] = planet_orbital_period/(posidonius.constants.DAY) # days to sec
+        planet_computed_data['orbital_period'] = planet_orbital_period/(posidonius.constants.DAY) # in days  
+        planet_computed_data['mean_motion'] = 2.0*np.pi / planet_computed_data['orbital_period'] # in rad / days
+        print(f"|\t Orbital period (t=0) : {planet_computed_data['orbital_period'][0]} days ")
 
         ################################################################################
         # 
@@ -417,46 +421,34 @@ if __name__ == "__main__":
             planet_computed_data['synodic_period_mean'] = (2.*np.pi / planet_computed_data['synodic_frequency'])/365.25  # in days 
 
             time = planet_data['current_time']
-            time_to_integrate = [t*365.25 for t in time]
-            sub_stellar_integrated = cumtrapz(planet_computed_data['synodic_frequency'], x=time_to_integrate, initial=0.)
+            time_day = [ t*365.25 for t in time]
+            sub_stellar_integrated = cumtrapz(planet_computed_data['synodic_frequency'], x=time_day, initial=0.)
             planet_computed_data['synodic_rotation'] = sub_stellar_integrated # in rad
 
             # Compute Sub-stellar points
-            print('> Compute Sub-stellar point')
-            # print('>> >> END TIME', planet_data['current_time'])
-            
-            # time = planet_data['current_time']
-            sz = planet_data['spin_z']
-            
-            # - Position of abritrary point on the planet
-            angle_planet_position = np.arctan2(y[0],x[0])
-            print("  Spin Init :", angle_planet_position+np.pi,(angle_planet_position+np.pi)*180./np.pi )
-            angle = []
-            tangle = []
-            angle.append(0.)
-            # angle.append(angle_planet_position+np.pi) # < -- why?
-            tangle.append(0.)
-            atmp = 0.
-            tmp = 0. 
-            for t in range(0,len(time)-1):
-                ts = time[t+1]*365.25
-                ts0 = time[t]*365.25
-                dangle = sz[t]*(ts-ts0) 
-                tmp+= (ts-ts0)
-                atmp = dangle + angle[len(angle)-1]
-                angle.append(atmp)
-                tangle.append(tmp /365.25)
-            spin_angle = [ (tt*180./np.pi) for tt in angle]
-            planet_computed_data['spin_angle'] = spin_angle   
-
-            angular_velocities = sz  # Array of angular velocities planet_data['true_anomaly']
-            time_integ = [t*365.25 for t in time]  # Array of corresponding time points
-            # Numerical integration using cumtrap
-            init = planet_data['true_anomaly'][0]
-            angles_integration = cumtrapz(angular_velocities, time_integ, initial=0.)
-            # The first element of angles_integration will be 0, you can remove it
-            angles =  angles_integration +init
-            planet_computed_data['spin_angle2'] = [a*180./np.pi for a in angles]
+            print('|\t > Compute Sub-stellar point')
+        
+            # sz = planet_computed_data['omega']
+            # # - Position of abritrary point on the planet
+            # angle_planet_position = np.arctan2(y[0],x[0])
+            # print("  Spin Init :", angle_planet_position+np.pi,(angle_planet_position+np.pi)*180./np.pi )
+            # angle = []
+            # tangle = []
+            # angle.append(0.)
+            # # angle.append(angle_planet_position+np.pi) # < -- why?
+            # tangle.append(0.)
+            # atmp = 0.
+            # tmp = 0. 
+            # for t in range(0,len(time)-1):
+            #     ts = time[t+1]*365.25
+            #     ts0 = time[t]*365.25
+            #     dangle = sz[t]*(ts-ts0) 
+            #     tmp+= (ts-ts0)
+            #     atmp = dangle + angle[len(angle)-1]
+            #     angle.append(atmp)
+            #     tangle.append(tmp /365.25)
+            # spin_angle = [ (tt*180./np.pi) for tt in angle]
+            # planet_computed_data['spin_angle'] = spin_angle   
 
             # - Stellar position in the sky
             anglet = np.arctan2(y,x)*180./np.pi
@@ -477,44 +469,76 @@ if __name__ == "__main__":
                     bef = angle_cumul[len(angle_cumul)-1]
                     angle_cumul.append(delta +bef)
             # ---
+            # test _spin angle integrated 
+            spin = planet_computed_data['omega']
+            time_day = [ t*365.25 for t in planet_data['current_time']]
+            theta = cumtrapz(spin, x=time_day, initial=0.)
+            theta = [t*180./np.pi for t in theta]
             planet_computed_data['angle_cumul'] = angle_cumul
-            diff = [ a-b for (a,b) in zip(angle_cumul,spin_angle)]
+            diff = [ a-b for (a,b) in zip(angle_cumul,theta)] # diff = [ a-b for (a,b) in zip(angle_cumul,spin_angle)]
             init = diff[0]
             diff = [d - init for d in diff]
             planet_computed_data['substellar_point'] = diff
 
-        if plot_33: # Check orbital angles
-            # --- compute true anomaly cumulated
+        if plot_33 or plot_33_1p: # Check orbital angles | Compute angle sub-stellar
+            # --- compute cartesian position angle
+            anglet = np.arctan2(y,x)*180./np.pi
+            tmp = (anglet)+np.abs(anglet[0])
+            print(f"|\t Cartesian position angle : {anglet[0]} deg |\t Computed init: {tmp[0]/180.*np.pi} rad  {tmp[0]} deg " )
+            cartesian_position_angle = []
+            # angle_cumul.append(tmp[0])
+            cartesian_position_angle.append(0.)
+            for dd in range(1,len(tmp)):
+                if tmp[dd] > tmp[dd-1]:
+                    bef = cartesian_position_angle[len(cartesian_position_angle)-1]
+                    delta = bef + (tmp[dd] - tmp[dd-1])
+                    cartesian_position_angle.append(delta)
+                else:
+                    d1 = 360.- tmp[dd-1]
+                    d2 = tmp[dd]
+                    delta = d1 +d2
+                    bef = cartesian_position_angle[len(cartesian_position_angle)-1]
+                    cartesian_position_angle.append(delta +bef)
+            # ---
+            planet_computed_data['cartesian_position_angle'] = cartesian_position_angle
+
             true_anomaly = planet_data['true_anomaly']
-            init = 0.
+            # time = [ t*365.25 for t in planet_data['current_time']]
+            spin = planet_computed_data['omega']
+            mean_motion = planet_computed_data['mean_motion']
+            # Compute true ano cumul
+            true0 = true_anomaly[0]
             count = 0.
             table = []
-            for tmp in true_anomaly:
-                if (tmp < init) :
+            for true1 in true_anomaly:
+                if (np.abs(true1-true0)>np.pi) :
                     count +=1.
-                init = tmp
+                true0 = true1
                 table.append(count)
-            true_ano_cumul = [(tr +ta*2.*np.pi)*180./np.pi for (tr,ta) in zip(true_anomaly, table)]
+            true_ano_cumul = [(tr +ta*2.*np.pi) for (tr,ta) in zip(true_anomaly, table)]
             planet_computed_data['true_anomaly_cumul'] = true_ano_cumul
-            # --- compute true anomaly cumulated corrected from logniture pericenter
-            u = planet_data['true_anomaly']
-            true_ano_corrected = u+g
-            planet_computed_data['true_anomaly_corrected'] = true_ano_corrected
-            init = 0.
-            count = 0.
-            table = []
-            for tmp in true_ano_corrected:
-                if (tmp < init) :
-                    count +=1.
-                init = tmp
-                table.append(count)
-            true_ano_corrected_cumul = [(tr +ta*2.*np.pi)*180./np.pi for (tr,ta) in zip(true_ano_corrected, table)]
-            planet_computed_data['true_anomaly_cumul_recomputed'] = true_ano_corrected_cumul
-        
-            diff2 = [ a-b for (a,b) in zip(true_ano_cumul,planet_computed_data['spin_angle2'])]
-            init = diff2[0]
-            diff2 = [d - init for d in diff2]
-            planet_computed_data['substellar_point2'] = diff2
+            # Compute theta | Integrate Spin rate
+            theta = cumtrapz(spin, x=time_day, initial=0.)
+            planet_computed_data['theta'] = theta
+            # Compute mean ano cumul
+            mean_ano_cumul = cumtrapz(mean_motion, x=time_day, initial=0.)
+            planet_computed_data['mean_ano_cumul'] = mean_ano_cumul
+            # Compute true ano - theta
+            theta_true_ano = [o-f for o,f in zip(theta, true_ano_cumul)]
+            planet_computed_data['theta_true_ano'] = [t-theta_true_ano[0] for t in theta_true_ano]
+            # Compute theta true ano (long asc node correction) - theta
+            long_peri = planet_data['longitude_of_perihelion']
+            long_peri = [(l+4.*np.pi*np.pi)%(2.0*np.pi) for l in long_peri]
+            l0 = long_peri[0]
+            long_peri_0 = [l-l0 for l in long_peri]
+            planet_computed_data['longitude_of_perihelion_rescaled'] = long_peri_0
+            theta_true_ano_long_peri = [ f-l for f,l in zip(planet_computed_data['theta_true_ano'], long_peri_0)]
+            planet_computed_data['theta_true_ano_long_peri'] = theta_true_ano_long_peri
+
+            theta_mean_ano = [o-n for o,n in zip(theta, mean_ano_cumul)]
+            planet_computed_data['theta_mean_ano'] = [t-theta_mean_ano[0] for t in theta_mean_ano]
+            theta_cartesian_position_angle = [o-(n*np.pi/180.) for o,n in zip(theta, cartesian_position_angle)]
+            planet_computed_data['theta_cartesian_position_angle'] = [t-theta_cartesian_position_angle[0] for t in theta_cartesian_position_angle]
 
         ################################################################################
 
@@ -566,9 +590,9 @@ if __name__ == "__main__":
             planet_computed_data['period_mode_201q'] = period_mode_201q
             planet_computed_data['period_mode_220q'] = period_mode_220q
 
-        if plot_12:
+        if plot_12: # Print Hansen coeff 
             print('\n--- --- --- Frequency analysis --- --- --- ')
-            # (naff_frequ, naff_amp) = posidonius.tools.naf(time, 2.*(true_anomaly-spin_angle_rad), nfreqs = 1000)
+            print('\n --- --- Hansen Coef --- --- ')
             print('|\t > Compute order ')
             print('|\t   is any ecc > 0.3 :',  np.any(eccentricity > 0.3))
             order = 0
@@ -586,47 +610,57 @@ if __name__ == "__main__":
                 order = 2
             else:
                 order = 0
+            # order = 2
             planet_computed_data['order'] = order
-            q_min = -(7-order)
-            q_max = 2*order+2
-            print(f'|\t > order : {order} | q from {q_min} to {q_max} ')
+            q_min = -order # -(7-order)
+            q_max = order #2*order+2
+            print(f'|\t > order : {order} | q from {q_min} to {q_max}  || {(7-order)} {(7+order)} ')
+            # for ordr in np.arange(0, 7):
+                # print(f'|\t > idx : {(7-ordr)} {(7+ordr)} ')
 
             # Spin and mean_motion are in rad/days
-            spin = planet_data['spin_z']
+            spin = planet_computed_data['omega']
             mean_motion = planet_computed_data['mean_motion']
+
+            g_220q = calculate_eccentricity_function_g_20q(eccentricity)
+            g_201q = calculate_eccentricity_function_g_21q(eccentricity)
+            amp_mode_201q = []
+            amp_mode_220q = []
+            for q in np.arange(7-order, 7+order+1):
+                print(f"|\t take {q}")
+                amp_201q = g_201q[q]
+                amp_220q = g_220q[q]
+                amp_mode_201q.append((3./4.)*median(amp_201q)*median(amp_201q))
+                amp_mode_220q.append((3./2.)*median(amp_220q)*median(amp_220q)+(9./4.)*median(amp_220q)*median(amp_220q))
 
             frequ_mode_201q = []
             frequ_mode_220q = []
-            amp_mode_201q = []
-            amp_mode_220q = []
-            for q in np.arange(q_min, q_max):
+            for q in np.arange(q_min, q_max+1):
                 print(f'|\t  > - compute order {q} ')
-                q_201 = calculate_tidal_excitation_frequency_mode_sigma_2mpq(0, 1, q, spin, mean_motion)
-                q_220 = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2, 0, q, spin, mean_motion)
-                frequ_mode_201q.append(q_201)
-                frequ_mode_220q.append(q_220)
-                amp_mode_201q.append(calculate_eccentricity_function_g_21q(eccentricity))
-                amp_mode_220q.append(calculate_eccentricity_function_g_20q(eccentricity))
-            print(f'|\t > Control frequ len | 201q : {len(frequ_mode_201q)} | 220q : {len(frequ_mode_220q)}')
+                w_201q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(0, 1, q, spin, mean_motion)
+                w_220q = calculate_tidal_excitation_frequency_mode_sigma_2mpq(2, 0, q, spin, mean_motion)
+                frequ_mode_201q.append(median(w_201q))
+                frequ_mode_220q.append(median(w_220q))
+                
+            print(f'|\t > Control frequ len | 201q : {len(frequ_mode_201q)} | 220q : {len(frequ_mode_220q)} | ')
             planet_computed_data['frequ_mode_201q'] = frequ_mode_201q
             planet_computed_data['frequ_mode_220q'] = frequ_mode_220q
+            planet_computed_data['amp_mode_201q'] = amp_mode_201q
+            planet_computed_data['amp_mode_220q'] = amp_mode_220q
 
-        # ################################################################################
-
-        # time = planet_data['current_time']
-        # true_anomaly =  planet_data['true_anomaly']
-        # spin_angle = planet_computed_data['spin_angle']
-        # spin_angle_rad = [(s*np.pi/180.) %(2.*np.pi) for s in spin_angle]
-
-        # (naff_frequ, naff_amp) = posidonius.tools.naf(time, 2.*(true_anomaly-spin_angle_rad), nfreqs = 100)
-
-        # print('>> --- >> len frequ ', len(naff_frequ))
-
-        # planet_computed_data['naff_frequ'] = naff_frequ
-        # planet_computed_data['naff_amp'] = naff_amp
-
-        # print('worked')
-
+            print('\n --- --- NAF Coef --- --- ')
+            true_anomaly = planet_data['true_anomaly']
+            mean_anomaly = planet_data['mean_anomaly']
+            time = planet_data['current_time']
+            theta_true_ano = planet_computed_data['theta_true_ano']
+            theta_mean_ano = planet_computed_data['theta_mean_ano']
+            (naff_frequs, naff_amps) = posidonius.tools.naf(time, true_anomaly, nfreqs = 18)
+            # (naff_frequs, naff_amps) = posidonius.tools.naf(time, theta_true_ano, nfreqs = 18)
+            naff_periods = [2.0*np.pi / f *365.25 for f in naff_frequs]
+            print(f"|\t frequ {naff_frequs} \n|\t periods {naff_periods} \n|\t amp {naff_amps} \n|\t {np.sqrt(np.power(naff_amps.real,2) +np.power(naff_amps.imag,2))} ")
+            planet_computed_data['naff_frequs'] = naff_frequs
+            planet_computed_data['naff_periods'] = naff_periods
+            planet_computed_data['naff_amps'] = np.sqrt(np.power(naff_amps.real,2) +np.power(naff_amps.imag,2))
 
         ################################################################################
         ## Sum over all the planets values:
@@ -705,6 +739,33 @@ if __name__ == "__main__":
 
     print("\n< Let's plot > ")
 
+    if plot_1:# Plot AM conservation
+        fig = plt.figure(figsize=(16, 8))
+        ligne = 1
+        colonne = 1
+        i = 0
+
+        i=i+1
+        ax = fig.add_subplot(ligne,colonne,i,)
+        field = '$\Delta L/L_{0}$'
+        for key in planets_keys:
+            ax.plot(planet_data['current_time'], conservation_of_angular_momentum, label=key)
+        ax.set_ylabel(field)
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+        ax.legend(loc=0, prop={'size':8})
+
+        #-----------------------------------------------------------------------------------
+        ax.legend(loc=0, prop={'size':8})
+        plt.tight_layout()
+
+        output_figure_dirname = os.path.dirname(filename)
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_AM_conservation" +".png")
+        # plt.show()
+        plt.savefig(output_figure_filename)
+        plt.close()
+        print("> Output figure file written to: {}".format(output_figure_filename))
+      
     if plot_2:# Plot data
         fig = plt.figure(figsize=(16, 8))
         ligne = 2
@@ -782,14 +843,21 @@ if __name__ == "__main__":
 
         i=i+1
         ax = fig.add_subplot(ligne,colonne,i,)
-        field = '$\Delta L/L_{0}$'
+        field = ' delta semi-major_axis'
         for key in planets_keys:
-            ax.plot(planet_data['current_time'], conservation_of_angular_momentum, label=key)
-        ax.set_ylabel(field)
+            planet_data = planets_data[key]
+            time = planet_data['current_time']
+            sma = planet_data['semi-major_axis']
+            sma0 = sma[0]
+            d_sma  = [(sam - sma0) / sma0 for sam in sma]
+            ax.plot(time, d_sma, label=" planet "+key)
+        ax.set_ylabel(field, fontsize=16)
         ax.set_xscale('log')
-        ax.set_yscale('log')
-        ax.legend(loc=0, prop={'size':8})
-
+        # ax.set_yscale('log')
+        ax.set_xlabel('years')
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        ax.legend(loc=0, prop={'size':12})
         #-----------------------------------------------------------------------------------
         ax.legend(loc=0, prop={'size':8})
         plt.tight_layout()
@@ -997,7 +1065,7 @@ if __name__ == "__main__":
         # plt.show()
         print("> Output figure file written to: {}".format(output_figure_filename))
 
-    if plot_3:# plot spin data
+    if plot_3e:# plot ecc data
         lab={}
         lab[1]='T1-b'
         lab[2]='T1-c'
@@ -1006,33 +1074,11 @@ if __name__ == "__main__":
         lab[5]='T1-f'
         lab[6]='T1-g'
         lab[7]='T1-h'
-        fig = plt.figure(figsize=(20, 10))
+        fig = plt.figure(figsize=(18, 10))
         ligne = 2
-        colonne = 3
+        colonne = 2
         i = 0
         #-----------------------------------------------------------------------------------
-
-        i=i+1
-        ax1 = fig.add_subplot(ligne,colonne,i,)
-        field = 'Rotation state $\Omega$/n'
-        tmp = planets_computed_data['1']['planet_rotation_period']
-        aa = 1.0
-        for key in planets_keys:
-            # if key == '2':
-            planet_data = planets_data[key]
-            time = planet_data['current_time']
-            period = planets_computed_data[key]['planet_rotation_period']
-            omega = 2.0*np.pi / period
-            mean_motion = planets_computed_data[key]['mean_motion'] # rad/day
-            rr0 = period[0] / tmp[0]
-            rr1 = period[len(period)-1] / tmp[len(tmp)-1]
-            ax1.plot(time, omega/mean_motion,  label='P: %5.5f'%(period[0])+'d , ratio > '+'%5.5f'%((rr0))+ ' || %5.5f'%((rr1)), alpha=aa )
-            aa-=0.10
-            tmp = period
-        ax1.set_ylabel(field)
-        # ax1.set_yscale('log')
-        ax1.set_xlabel('years')
-        ax1.legend(loc=0, prop={'size':8})
         
         i=i+1
         ax1 = fig.add_subplot(ligne,colonne,i,)
@@ -1114,7 +1160,106 @@ if __name__ == "__main__":
         #-----------------------------------------------------------------------------------
         plt.tight_layout()
         output_figure_dirname = os.path.dirname(filename)
-        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_data" +".png")
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_orbit_ecc_data" +".png")
+        plt.savefig(output_figure_filename, dpi=200)
+        plt.close()
+        # plt.show()
+        print("> Output figure file written to: {}".format(output_figure_filename))
+
+    if plot_3s:# plot spin data
+        lab={}
+        lab[1]='T1-b'
+        lab[2]='T1-c'
+        lab[3]='T1-d'
+        lab[4]='T1-e'
+        lab[5]='T1-f'
+        lab[6]='T1-g'
+        lab[7]='T1-h'
+        fig = plt.figure(figsize=(20, 10))
+        ligne = 3
+        colonne = 3
+        i = 0
+        #-----------------------------------------------------------------------------------
+
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'Rotation state $\Omega$/n'
+        aa = 1.0
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            time = planet_data['current_time']
+            period = planet_computed_data['planet_rotation_period']
+            omega = planet_computed_data['omega']
+            mean_motion = planet_computed_data['mean_motion'] # rad/day
+            ax1.plot(time, omega/mean_motion,  label='planet '+key, alpha=aa )
+            aa-=0.10
+        ax1.set_ylabel(field, fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':12})
+        
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'spin x'
+        aa=1.0
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            #tmp = 9.0
+            time = planet_data['current_time']
+            sx = planet_data['spin_x']
+            ax1.plot(time, sx, alpha=aa)
+            aa-=0.1
+        ax1.set_ylabel(field, fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':12})
+
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'spin y'
+        aa=1.0
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            #tmp = 9.0
+            time = planet_data['current_time']
+            sx = planet_data['spin_x']
+            ax1.plot(time, sx, alpha=aa)
+            aa-=0.1
+        ax1.set_ylabel(field, fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':12})
+
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'spin z'
+        aa=1.0
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            #tmp = 9.0
+            time = planet_data['current_time']
+            sx = planet_data['spin_x']
+            ax1.plot(time, sx, alpha=aa)
+            aa-=0.1
+        ax1.set_ylabel(field, fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':12})
+
+
+        #-----------------------------------------------------------------------------------
+        plt.tight_layout()
+        output_figure_dirname = os.path.dirname(filename)
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_spin_data" +".png")
         plt.savefig(output_figure_filename, dpi=200)
         plt.close()
         # plt.show()
@@ -1246,7 +1391,7 @@ if __name__ == "__main__":
         # plt.show()
         print("> Output figure file written to: {}".format(output_figure_filename))
 
-    if plot_31:# Plot sub-stellar point 
+    if plot_31:# Plot sub-stellar point for paper
         lab={}
         lab[1]='T1-b'
         lab[2]='T1-c'
@@ -1445,7 +1590,7 @@ if __name__ == "__main__":
         lab[5]='T1-f'
         lab[6]='T1-g'
         lab[7]='T1-h'
-        fig = plt.figure(figsize=(20, 12))
+        fig = plt.figure(figsize=(30, 12))
         ligne = 4
         colonne = 1
         p = 0
@@ -1455,8 +1600,8 @@ if __name__ == "__main__":
         # ax = fig.add_subplot(ligne,colonne,p,)
         # fig2, ax = fig.add_subplot(ligne,colonne,)
         fig, ax = plt.subplots(ligne, colonne, figsize=(15, 15))
-        tmp = [ 10. for i in np.arange(7) ]
-        tmp_integ = [ 10. for i in np.arange(7) ]
+        tmp = [ 0. for i in np.arange(7) ]
+        tmp_integ = [ 0. for i in np.arange(7) ]
         print(tmp)
         # table_times = {}
         table_times = {}
@@ -1480,18 +1625,18 @@ if __name__ == "__main__":
                     # print("Planet: ", key, t, tmp[int(key)-1], np.abs(s) )
                     ax[0].axhline(y=s, ls=':', color='black')
                     ax[0].axvline(x=t, ls=':', color=ls.get_color())
-                    tmp[int(key)-1]+=10.
+                    tmp[int(key)-1]+=360.
                     table_times['planet'].append(key)
                     table_times['time'].append(t)
                     table_times['sub'].append(s)
 
-            sub_stellar_integrated = planets_computed_data[key]['synodic_rotation'] *180./np.pi
+            sub_stellar_integrated = [ p *180./np.pi for p in planets_computed_data[key]['theta_true_ano_long_peri'] ] 
             ls2, = ax[2].plot(time, sub_stellar_integrated, label=key) 
             for t,s in zip(time, sub_stellar_integrated):
                 if np.abs(s) > tmp_integ[int(key)-1]:
                     ax[2].axhline(y=s, ls=':', color='black')
                     ax[2].axvline(x=t, ls=':', color=ls.get_color())
-                    tmp_integ[int(key)-1]+=10.
+                    tmp_integ[int(key)-1]+=360.
                     table_times['planet_integr'].append(key)
                     table_times['time_integr'].append(t)
                     table_times['sub_integr'].append(s)
@@ -1509,12 +1654,12 @@ if __name__ == "__main__":
         ax[3].axis('tight')
         ax[3].axis('off')
 
-        ax[0].set_ylabel('Sub-stellar point position (degrees) ', fontsize=15)
+        ax[0].set_ylabel('Sub-stellar point position (degrees) - Cartesian ', fontsize=15)
         ax[0].set_xlabel('Time (days)', fontsize=15)
         ax[0].tick_params(axis='both', labelsize=15)
         ax[0].legend(loc=0, prop={'size':12})
 
-        ax[2].set_ylabel('Sub-stellar point position (degrees) ', fontsize=15)
+        ax[2].set_ylabel('Sub-stellar point position (degrees) - True anomaly ', fontsize=15)
         ax[2].set_xlabel('Time (days)', fontsize=15)
         ax[2].tick_params(axis='both', labelsize=15)
         ax[2].legend(loc=0, prop={'size':12})
@@ -1523,11 +1668,12 @@ if __name__ == "__main__":
         # plt.tight_layout()
 
         output_figure_dirname = os.path.dirname(filename)
-        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_substellar_data" +".png")
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_substellar_data_2calculs" +".png")
         plt.savefig(output_figure_filename)
         plt.close()
         # plt.show()
         print("> Output figure file written to: {}".format(output_figure_filename))
+
 
     if plot_33: # Check orbital angles 
 
@@ -1540,159 +1686,173 @@ if __name__ == "__main__":
         lab[6]='T1-g'
         lab[7]='T1-h'
 
-        fig = plt.figure(figsize=(20, 45))
-        ligne = 8
-        colonne = 3
+        
+        fig = plt.figure(figsize=(25, 6*len(planets_keys)))
+        ligne = len(planets_keys)
+        colonne = 4
         i = 0
         #-----------------------------------------------------------------------------------
 
-        planet_period = (1.510826, 2.421937, 4.049219, 6.101013, 9.207540, 12.352446, 18.772866)
-        planet_period = [p/365.25 for p in planet_period ]
-
         for key in planets_keys:
 
             planet_data = planets_data[key]
-            time = planet_data['current_time']
-            mean_motion = 2.0*np.pi / (planets_computed_data[key]['orbital_period'][0] *86400.)
-            mean_longitude = planets_computed_data[key]['mean_longitude']
-            true_ano =  planet_data['true_anomaly']
-            angle_sol = planets_computed_data[key]['angle_cumul']
-            angle_sol_rad = [(s*np.pi/180.) %(2.*np.pi) for s in angle_sol]
-            spin_angle = planets_computed_data[key]['spin_angle']
-            spin_angle2 = planets_computed_data[key]['spin_angle2'] #2
-            spin_angle_rad = [(s*np.pi/180.) %(2.*np.pi) for s in spin_angle]
+            planet_computed_data = planets_computed_data[key]
 
-            true_ano_corrected = planets_computed_data[key]['true_anomaly_corrected']
-            true_ano_cumul = planets_computed_data[key]['true_anomaly_cumul']
-            true_ano_corrected_cumul = planets_computed_data[key]['true_anomaly_cumul_recomputed']
-            t0 = true_ano_corrected_cumul[0]
-            true_ano_corrected_cumul = [t - t0 for t in true_ano_corrected_cumul]
+            time = [t*365.25 for t in planet_data['current_time']]
+            true_ano =  planet_data['true_anomaly']
+            mean_ano =  planet_data['mean_anomaly']
+            long_peri = planet_data['longitude_of_perihelion']
+
+            mean_motion = planet_computed_data['mean_motion']
+            mean_longitude = planet_computed_data['mean_longitude']
+            true_ano_cumul = planet_computed_data['true_anomaly_cumul']
+            cartesian_angle_cumul = [p*np.pi/180. for p in planet_computed_data['cartesian_position_angle']]
+            theta = planet_computed_data['theta']
+            mean_ano_cumul = planet_computed_data['mean_ano_cumul']
+            theta_true_ano = planet_computed_data['theta_true_ano'] 
+            long_peri_rescaled = planet_computed_data['longitude_of_perihelion_rescaled'] 
+            theta_true_ano_long_peri = planet_computed_data['theta_true_ano_long_peri']
+            theta_mean_ano = planet_computed_data['theta_mean_ano'] 
+            theta_cartesian_position_angle = planet_computed_data['theta_cartesian_position_angle']
 
             i+=1 # --- 1
             ax1 = fig.add_subplot(ligne,colonne,i,)
-            field = ' angle mean long '+lab[int(key)]
-            # ax1.plot(time,true_ano_cumul,'+',label='true anomaly cumul ')
-            ax1.plot(time,angle_sol_rad,label=f'angle sol : init {angle_sol_rad[0]} ')
-            ax1.plot(time,mean_longitude,label=f'mean longitude : init {mean_longitude[0]}')
-            ax1.plot(time,true_ano,label=f'true anomaly : init {true_ano[0]}')
-            ax1.plot(time,spin_angle_rad,label=f'spin angle : init {spin_angle_rad[0]}')
-            ax1.plot(time,true_ano_corrected,label=f'true ano recomput : init {true_ano_corrected[0]}')
-            ax1.axvline(x=planet_period[int(key)-1], ls=':', color='black')
+            field = '  '+lab[int(key)]
+            ax1.plot(time, true_ano,label=f'true anomaly')
+            ax1.plot(time, true_ano_cumul,label=f'true anomaly cumul')
+            ax1.plot(time, cartesian_angle_cumul, '+',label=f'cartesian angle cumul')
+            ax1.axhline(y=0., ls=':', color='black')
             ax1.set_ylabel(field+'  ')
-            ax1.set_xlabel('years')
+            ax1.set_xlabel('days')
             ax1.legend(loc=0, prop={'size':8})
 
-            i+=1 # --- 2
+            i+=1 # --- 1
             ax1 = fig.add_subplot(ligne,colonne,i,)
-            field = ' angle spin angle '+lab[int(key)]
-            ax1.plot(time,spin_angle,label='spin angle init ='+str(spin_angle[0]))
-            ax1.plot(time,spin_angle2, label='spin angle2 init ='+str(spin_angle2[0]))
-            ax1.plot(time,angle_sol, label='angle sol init ='+str(angle_sol[0]))
-            ax1.plot(time,true_ano_cumul, label='true anomaly cumul : '+str(true_ano_cumul[0]))
-            # ax1.plot(time,true_ano_corrected_cumul, label='true anomaly corrected : '+str(true_ano_cumul[0]))
+            field = '  '+lab[int(key)]
+            ax1.plot(time, theta,label=f'theta')
+            t0 = true_ano_cumul[0]
+            true_ano_cumul_0 = [t-t0 for t in true_ano_cumul]
+            ax1.plot(time, true_ano_cumul_0,'+',label=f'true anomaly cumul (init 0)')
+            ax1.plot(time, mean_ano_cumul,label=f'mean_ano_cumul ')
             ax1.set_ylabel(field+'  ')
-            ax1.set_xlabel('years')
-            ax1.set_yscale('log')
+            ax1.set_xlabel('days')
             ax1.legend(loc=0, prop={'size':8})
 
-            i+=1 # --- 3
+            i+=1 # --- 1
             ax1 = fig.add_subplot(ligne,colonne,i,)
-            field = ' angle diff '+key
-            diff = [ a - s  for (s,a) in zip(spin_angle, angle_sol)]
-            ax1.plot(time,diff,label='sol angle -spin angle |')
-            diff = [ a - s  for (s,a) in zip(spin_angle2, angle_sol)]
-            ax1.plot(time,diff,label='sol angle -spin angle |')
-
-            # diff = [ s - a for (s,a) in zip(spin_angle2, true_ano_cumul)]
-            # init = diff[0]
-            # diff = [d - init for d in diff ]
-            # ax1.plot(time,diff,label=' true_ano-spin angle |')
-            # diff = [ s - a for (s,a) in zip(spin_angle2, true_ano_corrected_cumul)]
-            # init = diff[0]
-            # diff = [d - init for d in diff ]
-            # ax1.plot(time,diff,label=' true_ano corr -spin angle |')
+            field = '  '+lab[int(key)]
+            ax1.plot(time, theta_true_ano,label=f'theta true anomaly ')
+            ax1.plot(time, theta_mean_ano,'+',label=f'theta mean ano')
+            ax1.plot(time, theta_cartesian_position_angle,'+',label=f'theta cartesian position angle')
+            ax1.plot(time, theta_true_ano_long_peri, label=f'theta threano-longperi corrected')
             ax1.set_ylabel(field+'  ')
-            ax1.set_xlabel('years')
+            ax1.set_xlabel('days')
             ax1.legend(loc=0, prop={'size':8})
 
-        i+=1
-        ax = fig.add_subplot(ligne,colonne,i,)
-        diff_anglesol_spin_Angle = []
-        for key in planets_keys:
-            planet_data = planets_data[key]
-            time = planet_data['current_time']
-            sub_stellar = planets_computed_data[key]['substellar_point']
-            
-            # angle_sol = planets_computed_data[key]['angle_cumul']
-            # spin_angle = planets_computed_data[key]['spin_angle']
-            # diff = [ a - s  for (s,a) in zip(spin_angle, angle_sol)]
-            # ls, = ax.plot(time, diff,label=lab[int(key)])
-            # diff_anglesol_spin_Angle.append(diff)
-            ls, = ax.plot(time,sub_stellar,label=lab[int(key)])
-
-        ax.axhline(y=0., ls=':', color='black')
-        # ax.set_ylabel('Sub-stellar point position (degrees) angle_sol - spin angle ', fontsize=15)
-        ax.set_ylabel('Sub-stellar point position', fontsize=15)
-        ax.set_xlabel('Time (year)', fontsize=15)
-        ax.tick_params(axis='both', labelsize=15)
-        ax.legend(loc=0, prop={'size':12})
-
-        i+=1
-        ax = fig.add_subplot(ligne,colonne,i,)
-        diff_trueano_spinangle2 = []
-        for key in planets_keys:
-            planet_data = planets_data[key]
-            time = planet_data['current_time']
-            sub_stellar = planets_computed_data[key]['substellar_point2']
-
-            # spin_angle2 = planets_computed_data[key]['spin_angle2']
-            # angle_sol = planets_computed_data[key]['angle_cumul']
-            # # true_ano =  planet_data['true_anomaly']
-            # # true_ano_cumul = planets_computed_data[key]['true_anomaly_cumul']
-            # # true_ano_corrected_cumul = planets_computed_data[key]['true_anomaly_cumul_recomputed']
-            # # diff = [ s - a for (s,a) in zip(true_ano_cumul, spin_angle2)]
-            # # diff = [ s - a for (s,a) in zip(true_ano_corrected_cumul, spin_angle2)]
-            # diff = [ a - s  for (s,a) in zip(spin_angle2, angle_sol)]
-            # init = diff[0]
-            # diff = [d - init for d in diff ]
-            # diff_trueano_spinangle2.append(diff)
-            ls, = ax.plot(time, sub_stellar, label=lab[int(key)])
-        ax.axhline(y=0., ls=':', color='black')
-        # ax.set_ylabel('Sub-stellar point position (degrees)  true_ano-spin angle 2 ', fontsize=15)
-        ax.set_ylabel('Sub-stellar point position 2 - from true anomaly', fontsize=15)
-        ax.set_xlabel('Time (year)', fontsize=15)
-        ax.tick_params(axis='both', labelsize=15)
-        ax.legend(loc=0, prop={'size':12})
-
-        i+=1
-        ax = fig.add_subplot(ligne,colonne,i,)
-        for key in planets_keys:
-            planet_data = planets_data[key]
-            time = planet_data['current_time']
-            # angle_sol = planets_computed_data[key]['angle_cumul']
-            # true_ano =  planet_data['true_anomaly']
-            # diff  = [a - t for a, t in zip(angle_sol, true_ano)]
-            # diff =  [(s*np.pi/180.) %(2.*np.pi) for s in diff]
-            # ls, = ax.plot(time, diff,label=lab[int(key)])
-
-        for (key, diff1, diff2) in zip(planets_keys, diff_anglesol_spin_Angle, diff_trueano_spinangle2):
-            planet_data = planets_data[key]
-            time = planet_data['current_time']
-            diff = [d1 - d2 for d1, d2, in zip(diff1, diff2)]
-            ls, = ax.plot(time, diff,label=lab[int(key)])
-        ax.set_ylabel('1 - 2 ', fontsize=15)
-        ax.set_xlabel('Time (year)', fontsize=15)
-        ax.tick_params(axis='both', labelsize=15)
-        ax.legend(loc=0, prop={'size':12})
-
+            i+=1 # --- 1
+            ax1 = fig.add_subplot(ligne,colonne,i,)
+            field = '  '+lab[int(key)]
+            tmp = [t-c for t,c in zip(theta_true_ano,theta_cartesian_position_angle)]
+            ax1.plot(time, tmp,label=f'true anomaly - cartesian position angle  ')
+            ax1.plot(time, long_peri_rescaled,label=f'long peri')
+            ax1.set_ylabel(field+'  ')
+            ax1.set_xlabel('days')
+            ax1.legend(loc=0, prop={'size':8})
+        
         #-----------------------------------------------------------------------------------
         plt.tight_layout()
 
         output_figure_dirname = os.path.dirname(filename)
-        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_angles"+".png")
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_true_mean_cartesian_angles"+".png")
         plt.savefig(output_figure_filename)
-        plt.close()
         # plt.show()
+        plt.close()
+        print("> Output figure file written to: {}".format(output_figure_filename))
+
+    if plot_33_1p: # Check true anomaly
+
+        lab={}
+        lab[1]='T1-b'
+        lab[2]='T1-c'
+        lab[3]='T1-d'
+        lab[4]='T1-e'
+        lab[5]='T1-f'
+        lab[6]='T1-g'
+        lab[7]='T1-h'
+
+        
+        fig = plt.figure(figsize=(20, 6*len(planets_keys)))
+        ligne = len(planets_keys)
+        colonne = 3
+        i = 0
+        #-----------------------------------------------------------------------------------
+
+        # planet_period = (18.772866/365.25)
+
+        for key in planets_keys:
+
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+
+            time = [t*365.25 for t in planet_data['current_time']]
+            true_ano = planet_data['true_anomaly']
+            mean_ano =  planet_data['mean_anomaly']
+
+            mean_motion = planet_computed_data['mean_motion']
+            mean_longitude = planet_computed_data['mean_longitude']
+            true_ano_cumul = planet_computed_data['true_anomaly_cumul']
+            cartesian_angle_cumul = [p*np.pi/180. for p in planet_computed_data['cartesian_position_angle']]
+            theta = planet_computed_data['theta']
+            theta_true_ano = planet_computed_data['theta_true_ano'] 
+            theta_mean_ano = planet_computed_data['theta_mean_ano'] 
+
+            i+=1 # --- 1
+            ax1 = fig.add_subplot(ligne,colonne,i,)
+            field = '  '+lab[int(key)]
+            ax1.plot(time,true_ano,label=f'true anomaly')
+            # ax1.plot(time,mean_ano,label=f'mean anomaly')
+            # ax1.plot(time,true_ano_cumul,label=f'true anomaly cumul')
+            # ax1.plot(time,cartesian_angle_cumul,label=f'cartesian anomaly cumul')
+            # ax1.axvline(x=planet_period, ls=':', color='black')
+            ax1.axhline(y=0., ls=':', color='black')
+            ax1.set_ylabel(field+'  ')
+            ax1.set_xlabel('days')
+            ax1.legend(loc=0, prop={'size':8})
+
+            i+=1 # --- 1
+            ax1 = fig.add_subplot(ligne,colonne,i,)
+            field = '  '+lab[int(key)]
+            # ax1.plot(time,true_ano,label=f'true anomaly')
+            # ax1.plot(time,mean_ano,label=f'mean anomaly')
+            ax1.plot(time,true_ano_cumul,label=f'true anomaly cumul')
+            # ax1.plot(time,cartesian_angle_cumul,label=f'cartesian anomaly cumul')
+            # ax1.axvline(x=planet_period, ls=':', color='black')
+            ax1.axhline(y=0., ls=':', color='black')
+            ax1.set_ylabel(field+'  ')
+            ax1.set_xlabel('days')
+            ax1.legend(loc=0, prop={'size':8})
+
+            i+=1 # --- 1
+            ax1 = fig.add_subplot(ligne,colonne,i,)
+            field = '  '+lab[int(key)]
+            # ax1.plot(time,true_ano,label=f'true anomaly')
+            # ax1.plot(time,mean_ano,label=f'mean anomaly')
+            # ax1.plot(time,true_ano_cumul,label=f'true anomaly cumul')
+            ax1.plot(time,cartesian_angle_cumul,label=f'cartesian anomaly cumul')
+            # ax1.axvline(x=planet_period, ls=':', color='black')
+            ax1.axhline(y=0., ls=':', color='black')
+            ax1.set_ylabel(field+'  ')
+            ax1.set_xlabel('days')
+            ax1.legend(loc=0, prop={'size':8})
+        
+        #-----------------------------------------------------------------------------------
+        plt.tight_layout()
+
+        output_figure_dirname = os.path.dirname(filename)
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_true_anomaly_angles"+".png")
+        plt.savefig(output_figure_filename)
+        # plt.show()
+        plt.close()
         print("> Output figure file written to: {}".format(output_figure_filename))
 
     if plot_34: # plot eccentricities
@@ -2947,41 +3107,95 @@ if __name__ == "__main__":
         # plt.show()
         print("> Output figure file written to: {}".format(output_figure_filename))
 
-    if False: # test NAFF code 
-
-
-        fig = plt.figure(figsize=(20, 45))
-        ligne = 1
-        colonne = 1
-        i = 0
-        #-----------------------------------------------------------------------------------
+    if plot_12: # Print Hansen coeff 
+        
+        lab={}
+        lab[1]='T1-b'
+        lab[2]='T1-c'
+        lab[3]='T1-d'
+        lab[4]='T1-e'
+        lab[5]='T1-f'
+        lab[6]='T1-g'
+        lab[7]='T1-h'
 
         for key in planets_keys:
             planet_data = planets_data[key]
-            time = planet_data['current_time']
-            true_anomaly =  planet_data['true_anomaly']
+            planet_computed_data = planets_computed_data[key]
+            frequ_mode_201q = planet_computed_data['frequ_mode_201q']
+            frequ_mode_220q = planet_computed_data['frequ_mode_220q']
+            amp_mode_201q = planet_computed_data['amp_mode_201q']
+            amp_mode_220q = planet_computed_data['amp_mode_220q']
+            order = planet_computed_data['order']
+            print("--- Control modes --- Planet ", lab[int(key)])
+            print(f"|\t mode 201q | order {order} | ")
+            q = (7-order)
+            for fr_mode, amp_mode in zip(frequ_mode_201q, amp_mode_201q):
+                print(f"|\t > {q} \n|\t frequ {(fr_mode)} \n|\t amp {(amp_mode)} ")
+                q+=1
 
-            print("> Compute Naff 2 true ano - spin angnel ")
-            (naff_frequ, naff_amp) = posidonius.tools.naf(time, 2.*(true_anomaly-spin_angle_rad), nfreqs = 1000)
-            print('>> --- >> len frequ ', len(naff_frequ))
+            #----------------------------------
+            fig = plt.figure(figsize=(10, 10))
+            ligne = 2
+            colonne = 1
+            fig, ax = plt.subplots(ligne, colonne, figsize=(15, 15))
 
-            i=i+1
-            ax1 = fig.add_subplot(ligne,colonne,i,)
-            field = ' NAFF 2 true ano - spin angnel   '+key
-            ax1.plot(naff_frequ/mean_motion -1., naff_amp, marker='+', label="N="+str(len(naff_frequ)),linestyle='None', markersize=20,)
-            ax1.set_ylabel(field+'  ')
-            ax1.set_xlabel('years')
-            ax1.legend(loc=0, prop={'size':8})
+            
+            table_frequ = frequ_mode_201q + frequ_mode_220q
+            table_amp = amp_mode_201q + amp_mode_220q
+            table_period = [2.*np.pi /t for t in table_frequ]
+            print("EVALUATE")
+            print(table_frequ,'\n=\n', frequ_mode_201q,'\n+\n', frequ_mode_220q, len(table_frequ), len(table_period))
+            columns = ( 'frequ', 'period', 'amp' )
+            rows1 = [ "201 "+str(idx) for idx in np.arange(-order,order+1)]
+            rows2 = [ "220 "+str(idx) for idx in np.arange(-order,order+1)]
+            rows = rows1 + rows2
+            table = np.transpose((table_frequ, table_period, table_amp))
 
-        #-----------------------------------------------------------------------------------
-        plt.tight_layout()
+            the_table = ax[0].table(cellText=table, loc='center', colLabels=columns, rowLabels=rows)
+            ax[0].axis('tight')
+            ax[0].axis('off')
 
-        output_figure_dirname = os.path.dirname(filename)
-        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_naff" +".png")
-        plt.savefig(output_figure_filename)
-        plt.close()
-        # plt.show()
-        print("> Output figure file written to: {}".format(output_figure_filename))
+            
+            naff_frequs = planet_computed_data['naff_frequs']
+            naff_periods = planet_computed_data['naff_periods']
+            naff_amps = planet_computed_data['naff_amps']
+            rows_naff = [str(p) for p in np.arange(1,len(naff_amps)+1)]
+            table = np.transpose((naff_frequs, naff_periods, naff_amps))
+
+            print(f"| Rows naff {rows_naff}  {len(rows_naff)}")
+            print(f"| naff {naff_periods}  {len(naff_periods)}")
+            print(f"| naff {naff_amps}  {len(naff_amps)}")
+
+            the_table = ax[1].table(cellText=table, loc='center', colLabels=columns, rowLabels=rows_naff)
+            ax[1].axis('tight')
+            ax[1].axis('off')
+
+            #-----------------------------------------------------------------------------------
+            # plt.tight_layout()
+            output_figure_dirname = os.path.dirname(filename)
+            output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_planet_"+str(key)+"_table_modes_data" +".png")
+            plt.savefig(output_figure_filename, dpi=150)
+            plt.close()
+            # plt.show()
+            print("> Output figure file written to: {}".format(output_figure_filename))
+
+            table_frequ = [t for t in table_frequ]
+            naff_frequs = [t for t in naff_frequs]
+            results_frequ = table_frequ + naff_frequs 
+
+            results_periods = table_period + naff_periods
+
+            rows = rows+rows_naff
+
+            result=np.array([
+                                rows,
+                                results_frequ,
+                            ])
+
+            # file_name = f'./results_Trappist1_{lab[int(key)]}_list_solutions.csv'
+            # header = ['frequ', 'period', 'amplitude']
+            # df = pd.DataFrame(results, columns=header)
+            # df.to_csv(file_name, sep="\t" )
 
 
     # print(">> Preparing text output...")

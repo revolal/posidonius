@@ -50,12 +50,6 @@ def classify(n_particles, data, reference_particle_index=0, discard_first_years=
     # Ignore first 100 years
     data['current_time'] /= 365.25 # From days to years
     if discard_first_years:
-        # data = data[data['current_time'] >= 24150. ]
-        # data = data[data['current_time'] <= 24154. ]
-        # data = data[data['current_time'] <= 1. ]
-        # data = data[data['current_time'] <= 1./365.25 ]
-        # data = data[data['current_time'] <= 30000. ]
-        # data = data[data['current_time'] <= 1000.2]
         data = data[data['current_time'] >= first_years]
         print(f'\t\t   discard the {first_years} firsts yrs ')
     if discard_last_years:

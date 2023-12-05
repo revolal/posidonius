@@ -374,9 +374,9 @@ impl WHFast {
             // - Updates velocity/spin in self.universe.particles (i.e., particles_avg)
             self.average_particles_for_velocity_dependent_forces_integration(&particles_orig, &particles_final, integrate_spin);
         }
-        if !converged {
-            println!("[WARNING {} UTC] WHFast convergence issue with the integration of the additional forces. Most probably the perturbation is too strong.", time::now_utc().strftime("%Y.%m.%d %H:%M:%S").unwrap());
-        }
+        // if !converged {
+            // println!("[WARNING {} UTC] WHFast convergence issue with the integration of the additional forces. Most probably the perturbation is too strong.", time::now_utc().strftime("%Y.%m.%d %H:%M:%S").unwrap());
+        // }
         // 
         for ((((((particle, particle_final), particle_orig), inertial_velocity_error), angular_momentum_error), inertial_velocity_change), angular_momentum_change) in self.universe.particles[..self.universe.n_particles].iter_mut().zip(particles_final[..self.universe.n_particles].iter()).zip(particles_orig[..self.universe.n_particles].iter()).zip(self.inertial_velocity_errors[..self.universe.n_particles].iter_mut()).zip(self.particle_angular_momentum_errors[..self.universe.n_particles].iter_mut()).zip(inertial_velocity_changes[..self.universe.n_particles].iter()).zip(angular_momentum_changes[..self.universe.n_particles].iter_mut()) {
             // Inertial positions and accelerations didn't change

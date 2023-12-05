@@ -35,7 +35,6 @@ def calculate_eccentricity_vector(gm, position, velocity):
 
         return eccentricity_vector
 
-
 def _find_indices_around_target_value(target_x, x):
     positions = np.where(x >= np.asarray(target_x))[0]
     if len(positions) > 0:
@@ -156,7 +155,6 @@ def mass_radius_relation(planet_mass, planet_mass_type='factor', planet_percent_
     else:
         raise Exception("Unknown planet mass type: {}".format(planet_mass_type))
     return planet_radius_factor # Factor to be multiplied by R_EARTH
-
 
 def calculate_keplerian_orbital_elements(target_mass, target_position, target_velocity, masses=[], positions=[], velocities=[]):
     """
@@ -452,6 +450,7 @@ def _calculate_keplerian_orbital_elements(gm, position, velocity):
         negative_rv = rv < 0.
         if np.any(negative_rv):
             f[negative_rv] = TWO_PI - f[negative_rv]
+        f = modulus((f+ TWO_PI + TWO_PI), TWO_PI)
         # p[big_eccentricity] = true_longitude[big_eccentricity] - f[big_eccentricity]
         p[big_eccentricity] = np.arctan2(ey[big_eccentricity],ex[big_eccentricity]) 
         p[big_eccentricity] = modulus((p[big_eccentricity] + TWO_PI + TWO_PI), TWO_PI)
@@ -472,6 +471,7 @@ def _calculate_keplerian_orbital_elements(gm, position, velocity):
 
         arg_peri = np.arctan2(ey_rot_2,ex_rot_2)
         p[non_zero_long_asc_node] = long_asc_node + arg_peri
+        p = modulus((p + TWO_PI + TWO_PI), TWO_PI)
 
     ###-------------------------------------------------------------------------
     """
@@ -1099,8 +1099,207 @@ def calculate_pseudo_synchronization_period(semi_major_axis, eccentricity, star_
 
 
 
-def calculate_spin(angular_frequency, inclination, obliquity):
-    x = 0.
-    y = -1.*angular_frequency * np.sin(obliquity+inclination)
+def calculate_spin(angular_frequency, inclination, obliquity, long_asc_node):
+    """Compute the spin vector
+
+    Args:
+        angular_frequency (_type_): the spin rmodulus, i.e. the angular frequency
+        inclination (_type_): the ortibal inclination of the orbit with respect to the reference planet (x,y) 
+        obliquity (_type_): the obliquity of the planet with respect to the orbital plane
+        long_asc_node (_type_): the longitude of ascending node of the orbital plant
+
+    Returns:
+        spin vector: the axes of the spin
+    """
+    # x = 0.
+    # y = -1.*angular_frequency * np.sin(obliquity+inclination)
+    # z = angular_frequency * np.cos(obliquity+inclination)
+    # x_rot = x*np.cos(long_asc_node) -y*np.sin(long_asc_node)
+    # y_rot = x*np.sin(long_asc_node) +y*np.cos(long_asc_node)
+    # z_rot = z
+    # optimization of the calcul
+    x = angular_frequency * np.sin(obliquity+inclination) *np.sin(long_asc_node)
+    y = -1.*angular_frequency * np.sin(obliquity+inclination) *np.cos(long_asc_node)
     z = angular_frequency * np.cos(obliquity+inclination)
     return Axes(x, y, z)
+
+
+# --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- 
+# NAFF Algorithm for frequency decomposition of a quasiperiodic signal
+# Ref: Laskar (2003) Freqency map analysis and quasiperiodic decompositions
+# Author: J-B Delisle 19/01/2015
+# Last modified 06/11/2015
+
+
+
+def naf(t,f,nfreqs=5,circ=2*np.pi,tstep=None,secant_xtol=1e-15,secant_relftol=1,secant_Nmax=10,basis_maxprod=0.5): ## TAKES t[TIME] f[]
+  """NAFF algorithm (see Laskar, 2003)
+  t, f are arrays of time (equally spaced) and signal values.
+  nfreqs is the maximum desired number of frequencies in the decomposition.
+  Depending on the signal the algorithm may return less terms than nfreqs.
+  circ is the circumference of a unit circle (default is 2.pi but can be 360, 1, etc.)
+  tstep = is the time step. If not provided it is set to t[1]-t[0].
+  """
+  N = len(t)
+  N = N - N%6
+  step = t[1]-t[0] if tstep is None else tstep
+  T = N/2*step
+  x = t[:N]
+  g = f[:N].astype(complex)
+  nf = nfreqs
+  freqs = np.empty(nf)
+  amps = np.empty(nf,dtype=complex)
+  vecs = np.empty((nf,N),dtype=complex)
+  basis = np.zeros((nf,nf),dtype=complex)
+  no_more_freq=False
+  for n in range(nf):
+    freqs[n], vecs[n,:], amps[n] = _naf_findmax(x,g*_naf_xi((x-x[0])/T-1),step,N,secant_xtol,secant_relftol,secant_Nmax)
+    # Check if frequency has already been detected
+    for k in range(n):
+      basis[n,k] = _naf_prod(vecs[n,:]*_naf_xi((x-x[0])/T-1),vecs[k,:])
+      if abs(basis[n,k])>basis_maxprod:
+        no_more_freq=True
+    # stop the algorithm if it is the case
+    if no_more_freq:
+      nf = n
+      freqs = freqs[:n]
+      amps = amps[:n]
+      basis = basis[:n,:n]
+      break
+    # completing orthonormal basis and projecting
+    # module of the orthogonal vector
+    mod = np.sqrt(1 - np.sum(abs(basis[n,k])**2 for k in range(n)))
+    # complete basis matrix and nth vector
+    basis[n,n] = mod
+    vecs[n,:] = vecs[n,:]/mod
+    amps[n] = amps[n]/mod
+    for k in range(n):
+      vecs[n,:] -= basis[n,k]*vecs[k,:]/mod
+    g -= amps[n]*vecs[n,:]
+  # perform the basis change
+  amps = np.linalg.solve(basis.T,amps)
+  return(freqs*circ/(2*np.pi),amps) ## <-- RETURN( FREQUENCY[ LEN(N frequ in decomposition) ] , AMPLUTUDE[CMPLX] ) 
+
+def identify_freqs(freqs,fundfreqs,degmax=5,prec=1e-3):
+  """Identify the frequencies in freqs as combinations of the fundamental frequencies
+  given in fundreqs.
+  degmax is the maximum degree of the combinations.
+  prec is the maximum residual between the frequency and the associated combination.
+  """
+  gcoefs, gcomb, _ = _generate_combs(fundfreqs,degmax)
+  nf = len(freqs)
+  nff = len(fundfreqs)
+  coefs = np.zeros((nf,nff))
+  res = np.empty(nf)
+  for k,f in enumerate(freqs):
+    best = np.argmin(abs(f-gcomb))
+    res[k] = f-gcomb[best]
+    if (abs(res[k]) < prec):
+      coefs[k,:] = gcoefs[:,best]
+    else:
+      res[k] = 0
+  return(coefs,res)
+
+def nafprint_header(fundnames,fundfreqs,outfile=None):
+  """Write the header of a naf output file
+  If outfile is not provided, the standard output is used
+  """
+  print("Fundamental frequencies",file=outfile)
+  for k in range(len(fundfreqs)):
+    print(fundnames[k]+":",fundfreqs[k],file=outfile)
+
+def nafprint_combs(name,freqs,amps,fundnames,coefs,res,outfile=None):
+  """Write the list of frequencies and identified combinations
+  If outfile is not provided, the standard output is used
+  """
+  print("Decomposition of "+name+":",file=outfile)
+  print(50*" "+"Combinations",file=outfile)
+  print("   Amplitude     Frequency   Residual frequency   ",end="",file=outfile)
+  for fname in fundnames:
+    print((fname+" ").center(6," "), end="",file=outfile)
+  print("",file=outfile)
+  for k in range(len(freqs)):
+    print("%12.6g  %12.6g         %12.6g" % (abs(amps[k]),freqs[k],res[k]), end="",file=outfile)
+    for c in coefs[k,:]:
+      print("%6.0f" % c, end="",file=outfile)
+    print("",file=outfile)
+
+def _naf_xi(t):
+  """Weight function for the NAFF algorithm (see Laskar, 2003).
+  """
+  return(1+np.cos(np.pi*t))
+
+def _naf_findmax(t,f,step,N,xtol,relftol,Nmax):
+  """Find the maximum amplitude of the Fourier transform of f
+  """
+  # Derivative of the amplitude
+  def dAmp(nu):
+    einu = np.exp(1j*nu*t)
+    return(2*np.real(1j*_naf_prod(f,einu)*np.conj(_naf_prod(t*f,einu))))
+  # ifft of f to find a starting value for the secant method
+  Amp = np.abs(np.fft.ifft(f))
+  # Frequencies given by the ifft
+  nus = -2*np.pi/step*np.fft.fftfreq(N)
+  dnu = 2*np.pi/step/N
+  # Frequency at the ifft maximum
+  nu0 = nus[np.argmax(Amp)]
+  # Derivative of amplitude
+  dA0 = dAmp(nu0)
+  # Find the zero of the derivative (maximum of amplitude)
+  if dA0>0:
+    nu = _naf_secant(dAmp,nu0+dnu,nu0,xtol,relftol,Nmax)
+  else:
+    nu = _naf_secant(dAmp,nu0-dnu,nu0,xtol,relftol,Nmax)
+  einut = np.exp(1j*nu*t)
+  return(nu,einut,_naf_prod(f,einut))
+
+def _naf_prod(f,g):
+  """Integral of f * conj(g)
+  """
+  return(np.sum(f*np.conj(g))/len(f))
+
+def _naf_secant(f,a0,b0,xtol,relftol,Nmax):
+  """Secant method to find the zero of f
+  """
+  a = a0
+  b = b0
+  fa = f(a0)
+  fb = f(b0)
+  N = 0
+  while (fb!=0 and abs(a-b)>xtol and abs(fa/fb-1)>relftol and N < Nmax):
+    c = b + (a-b)*fb/(fb-fa)
+    a = b
+    fa = fb
+    b = c
+    fb = f(b)
+    N += 1
+  return(b)
+
+def _generate_combs(fundfreqs,degmax):
+  """Generate all possible combinations of the given fundamental frequencies
+  whose degree is smaller than degmax.
+  """
+  n = len(fundfreqs)
+  if n==1:
+    coefs = np.empty((1,2*degmax+1),dtype=int)
+    coefs[0,:] = range(-degmax,degmax+1)
+    comb = coefs[0,:]*fundfreqs[0]
+    deg = abs(coefs[0,:])
+  else:
+    tcoefs, tcomb, tdeg = _generate_combs(fundfreqs[1:],degmax)
+    nmax = (2*degmax+1)*len(tcomb)
+    coefs = np.empty((n,nmax),dtype=int)
+    comb = np.empty(nmax)
+    deg = np.empty(nmax,dtype=int)
+    ind = 0
+    for k in range(len(tdeg)):
+      for c0 in range(-degmax+tdeg[k],degmax-tdeg[k]+1):
+        coefs[1:,ind] = tcoefs[:,k]
+        coefs[0,ind] = c0
+        deg[ind] = tdeg[k] + abs(c0)
+        comb[ind] = tcomb[k] + c0*fundfreqs[0]
+        ind += 1
+    coefs = coefs[:,:ind]
+    comb = comb[:ind]
+    deg = deg[:ind]
+  return(coefs,comb,deg)
