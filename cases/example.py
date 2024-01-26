@@ -136,7 +136,7 @@ if __name__ == "__main__":
     #planet_angular_frequency = posidonius.constants.TWO_PI/(planet_pseudo_synchronization_period/24.) # days^-1
     planet_keplerian_orbital_elements = posidonius.calculate_keplerian_orbital_elements(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
     planet_inclination = planet_keplerian_orbital_elements[3]
-    planet_spin = posidonius.calculate_spin(planet_angular_frequency, planet_inclination, planet_obliquity)
+    planet_spin = posidonius.calculate_spin(planet_angular_frequency, planet_inclination, planet_obliquity,0.)
 
     k2pdelta = 2.465278e-3 # Terrestrial planets (no gas)
     planet_tides_parameters = {

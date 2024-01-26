@@ -16,16 +16,18 @@ from matplotlib.ticker import (MultipleLocator,
 from sklearn.linear_model import LinearRegression
 from sklearn import datasets, linear_model
 from scipy.integrate import cumtrapz
+from pylaplace import LaplaceCoefficient
+from numpy import diff
 
-def calculate_eccentricity_vector(gm, position, velocity):
+def calculate_eccentricity_vector(gm, x, y, z, u, v, w):
 
     # // --- Input --- //
-    x = position[0]
-    y = position[1]
-    z = position[2]
-    u = velocity[0]
-    v = velocity[1]
-    w = velocity[2]
+    # x = position[0]
+    # y = position[1]
+    # z = position[2]
+    # u = velocity[0]
+    # v = velocity[1]
+    # w = velocity[2]
     
     # // --- Output --- //
     # eccentricity_vector
@@ -80,7 +82,6 @@ def calculate_eccentricity_function_g_20q(eccentricity):
     eccentricity_function[14] = (12144273. / 71680.) * ecc_7
 
     return eccentricity_function
-
 
 def calculate_eccentricity_function_g_21q(eccentricity):
     eccentricity_function = [0.0] * 15
@@ -157,7 +158,7 @@ if __name__ == "__main__":
     n_particles, data = posidonius.analysis.history.read(filename)
     most_massive_particle_index = universe_integrator_json['universe']['hosts']['index']['most_massive']
     print("\t Transforming positions/velocities to heliocentric coordinates using the most masssive particle at index '{}'...".format(most_massive_particle_index))
-    star_data, planets_data, planets_keys = posidonius.analysis.history.classify(n_particles, data, reference_particle_index=most_massive_particle_index, discard_first_years=False, first_years=0., discard_last_years=False, last_years=20.0/365.25)
+    star_data, planets_data, planets_keys = posidonius.analysis.history.classify(n_particles, data, reference_particle_index=most_massive_particle_index, discard_first_years=False, first_years=4., discard_last_years=False, last_years=0.)
     # star_data, planets_data, planets_keys = posidonius.analysis.history.classify(n_particles, data, reference_particle_index=most_massive_particle_index, discard_first_hundred_years=False)
     # star_data = star_data[star_data['current_time'] >= 10. ]
     for key in planets_keys:
@@ -188,17 +189,18 @@ if __name__ == "__main__":
     plot_1      = False # Plot AM conservation
     plot_2      = False # Plot data
     plot_21     = False # Plot positions
-    plot_22     = False # Plot data sma period p2/p1 
+    plot_22     = False # Plot precession periods
     plot_23     = False # Print data 
     plot_3e     = False # plot ecc data
     plot_3s     = False # plot spin data
     plot_30     = False # plot spin / mean motion
-    plot_31     = False # plot sub-stellar point 
+    plot_31     = True # plot sub-stellar point 
     plot_31b    = False # plot sub-stellar point for planet b
     plot_31all  = False # plot sub-stellar point for each planet
-    plot_32     = True # plot sub-stellar point 2 calculs
-    plot_33     = True # Check angles
-    plot_33_1p  = True # Check angles
+    plot_32     = False # plot sub-stellar point 2 calculs
+    plot_33     = False # Check angles
+    plot_33_1p  = False # Check true anomaly
+    plot_33_meanano = False
     plot_34     = False # Plot Spin each planet 
     plot_4      = False # compare spin mean motion
     plot_41     = False # compare mean motion 
@@ -216,6 +218,7 @@ if __name__ == "__main__":
     plot_101    = False # Resonance angle 2 planets 2 bodies
     plot_11     = False # Resonance modes lmpq frequency angle two bodies
     plot_12     = False # Print Hansen coeff
+    history_output = True
 
     ################################################################################
     ## Planets
@@ -375,27 +378,6 @@ if __name__ == "__main__":
 
         ################################################################################
 
-        # print('> Comtpute True anomaly ')
-        # gm = posidonius.constants.G *(star_mass+planet_mass)
-        # vec_position = [x, y, z]
-        # vec_velocity = [vx, vy, vz]
-        # (ex, ey, ez) = calculate_eccentricity_vector(gm, vec_position, vec_velocity)
-        # print(f"Check gm {gm} ")
-        
-        # e_scal_r = ex*x + ey*y + ez*z
-        # cos_f = (e_scal_r / (eccentricity * r))
-        # true_anomaly = np.arccos(cos_f) %2.*np.pi
-        # planet_computed_data['true_anomaly'] = true_anomaly
-
-        # check_long_per = np.arctan2(ey,ex)
-        # planet_computed_data['check_longitude_of_perihelion'] = check_long_per
-
-        # l = planet_data['mean_anomaly']
-        # g = check_long_per%(2.*np.pi)
-        # long_peri = planet_data['longitude_of_perihelion']
-        # print(f"\n\t check long peri {g[0]} == ? {long_peri[0]}")
-
-        # mean_longitude = planet_data['mean_anomaly'] + planet_data['longitude_of_perihelion']
         planet_computed_data['mean_longitude'] = planet_data['mean_anomaly'] + planet_data['longitude_of_perihelion']
 
         planet_computed_data['omega'] = np.sqrt( np.power(planet_data['spin_x'],2) +np.power(planet_data['spin_y'],2) +np.power(planet_data['spin_z'],2)  ) # in rad / days
@@ -403,10 +385,29 @@ if __name__ == "__main__":
         planet_computed_data['mean_motion'] = 2.0*np.pi / planet_computed_data['orbital_period'] # in rad / days
 
 
-
         ################################################################################
 
-        if plot_31 or plot_31b or plot_31all or plot_32 or plot_33: # Check orbital angles
+        if plot_22: # Plot precession periods
+            print('|\t Compute Laplace coeff')
+
+            k2 = planet_data['love_number']
+            planet_mass = planet_data['mass'][0]
+            planet_radius = planet_data['radius'][0]
+            rg_2 = np.power(planet_data['radius'],2)*planet_data['radius_of_gyration_2']
+            C = rg_2 * planet_data['mass'] / np.power(planet_data['radius'],2) / planet_data['mass']
+            precess_cste = 0.5*(star_mass/planet_mass) *np.power((planet_radius/planet_data['semi-major_axis']),3) *planet_computed_data['omega']*k2 / C
+            print(f'|\t For precess cste = {precess_cste} | check k2 {k2[0]} and C {C[0]} ')
+            planet_computed_data['spin_precession_cste'] = precess_cste # in rad/days (from omega)
+            planet_computed_data['spin_precession_period'] = 2.0*np.pi / (precess_cste*np.cos(planet_computed_data['planet_obliquity']*np.pi/180.)) # in years
+
+            # time = planet_data['current_time']
+            # long_asc_node  = planet_data['longitude_of_ascending_node']
+            # g = diff(long_asc_node) / diff(time)
+            # print(f"|\t len g {len(g)} len time {len(time)} ")
+            planet_computed_data['node_precession_period'] = 0.#2.0*np.pi / g
+
+
+        if plot_31 or plot_31b or plot_31all or plot_32 or plot_33 or history_output: # Check orbital angles
             # Check Synodic period
             print('> Compute synodic frequency')
             # planet_computed_data['omega'] = np.sqrt( np.power(planet_data['spin_x'],2) +np.power(planet_data['spin_y'],2) +np.power(planet_data['spin_z'],2)  ) # in rad / days
@@ -428,28 +429,6 @@ if __name__ == "__main__":
             # Compute Sub-stellar points
             print('|\t > Compute Sub-stellar point')
         
-            # sz = planet_computed_data['omega']
-            # # - Position of abritrary point on the planet
-            # angle_planet_position = np.arctan2(y[0],x[0])
-            # print("  Spin Init :", angle_planet_position+np.pi,(angle_planet_position+np.pi)*180./np.pi )
-            # angle = []
-            # tangle = []
-            # angle.append(0.)
-            # # angle.append(angle_planet_position+np.pi) # < -- why?
-            # tangle.append(0.)
-            # atmp = 0.
-            # tmp = 0. 
-            # for t in range(0,len(time)-1):
-            #     ts = time[t+1]*365.25
-            #     ts0 = time[t]*365.25
-            #     dangle = sz[t]*(ts-ts0) 
-            #     tmp+= (ts-ts0)
-            #     atmp = dangle + angle[len(angle)-1]
-            #     angle.append(atmp)
-            #     tangle.append(tmp /365.25)
-            # spin_angle = [ (tt*180./np.pi) for tt in angle]
-            # planet_computed_data['spin_angle'] = spin_angle   
-
             # - Stellar position in the sky
             anglet = np.arctan2(y,x)*180./np.pi
             tmp = (anglet)+np.abs(anglet[0])
@@ -480,7 +459,7 @@ if __name__ == "__main__":
             diff = [d - init for d in diff]
             planet_computed_data['substellar_point'] = diff
 
-        if plot_33 or plot_33_1p: # Check orbital angles | Compute angle sub-stellar
+        if plot_33 or plot_33_1p or plot_32 or history_output: # Check orbital angles | Compute angle sub-stellar
             # --- compute cartesian position angle
             anglet = np.arctan2(y,x)*180./np.pi
             tmp = (anglet)+np.abs(anglet[0])
@@ -532,6 +511,8 @@ if __name__ == "__main__":
             l0 = long_peri[0]
             long_peri_0 = [l-l0 for l in long_peri]
             planet_computed_data['longitude_of_perihelion_rescaled'] = long_peri_0
+            true_ano_longperi_corrected = [t - l for t,l in zip(true_ano_cumul,long_peri_0)]
+            planet_computed_data['true_ano_longperi_corrected'] = true_ano_longperi_corrected
             theta_true_ano_long_peri = [ f-l for f,l in zip(planet_computed_data['theta_true_ano'], long_peri_0)]
             planet_computed_data['theta_true_ano_long_peri'] = theta_true_ano_long_peri
 
@@ -540,6 +521,52 @@ if __name__ == "__main__":
             theta_cartesian_position_angle = [o-(n*np.pi/180.) for o,n in zip(theta, cartesian_position_angle)]
             planet_computed_data['theta_cartesian_position_angle'] = [t-theta_cartesian_position_angle[0] for t in theta_cartesian_position_angle]
 
+        if plot_33_meanano:
+            # semi_major_axis = planet_data['semi-major_axis']
+            # eccentricity = planet_data['eccentricity']
+            # (new_x, new_y, new_z) = (x, y, z)
+
+            # long_asc_node = planet_data['longitude_of_ascending_node']
+            # long_peri = planet_data['longitude_of_perihelion']
+            # arg_peri = long_peri - long_asc_node
+
+            gm = posidonius.constants.G*( star_mass + planet_data['mass'][0] )
+            ( ex , ey, ez ) = calculate_eccentricity_vector(gm, x, y, z, vx, vy, vz)
+            check_long_peri = (np.arctan2(ey,ex))%(2.0*np.pi)
+            # check_long_peri = (-np.arctan2(ey,ex)+2.0*np.pi )%(2.0*np.pi)
+            planet_computed_data['check_longitude_of_perihelion'] = (check_long_peri)#+np.pi)%(2.0*np.pi)
+            # (new_x, new_y, new_z) = ( ex , ey, ez )
+            # planet_computed_data['semi-minor_axis'] = np.sqrt( np.power(planet_data['semi-major_axis'],2) *(1.0 -np.power(planet_data['eccentricity'],2) ) )
+
+            # nom = ey * planet_data['semi-major_axis']
+            # denom = ex * planet_computed_data['semi-minor_axis']
+            # planet_computed_data['eccentric_anomaly'] = np.arctan2(nom,denom)
+            rv = x * vx  +  y * vy  +  z * vz
+            v2 = np.power(vx,2) +np.power(vy,2) +np.power(vz,2)
+            nom = r*v2 - gm
+            denom = eccentricity*gm
+            ce = nom/denom
+            change_sign = np.logical_and(eccentricity, np.abs(ce) > 1.)
+            if np.any(change_sign):
+                ce[change_sign] = np.sign(ce[change_sign])
+
+            bige = np.arccos(ce)
+            negative_rv = rv < 0.
+            if np.any(negative_rv):
+                bige[negative_rv] = 2.0*np.pi - bige[negative_rv]
+                # check_long_peri[negative_rv] = (2.0*np.pi - check_long_peri[negative_rv] )%(2.0*np.pi)
+            bige = (bige)%(2.0*np.pi)
+            planet_computed_data['eccentric_anomaly'] = bige
+            ff = planet_computed_data['eccentric_anomaly']
+            m = planet_data['mass'][0]
+            print(f'|\t test {ff[0]} mass star {star_mass} planet{m} position {r[0]} cos {ce[0]}')
+
+            planet_computed_data['check_mean_anomaly'] = (planet_computed_data['eccentric_anomaly'] - planet_data['eccentricity']*np.sin(planet_computed_data['eccentric_anomaly']) )
+            # sin_bige = ey / planet_computed_data['semi-minor_axis']
+            # planet_computed_data['check_mean_anomaly'] = (planet_computed_data['eccentric_anomaly'] - planet_data['eccentricity']*sin_bige )
+
+            # planet_computed_data['mean_longitude'] = (planet_computed_data['check_mean_anomaly'] + planet_data['longitude_of_perihelion'])
+            planet_computed_data['mean_longitude'] = (planet_computed_data['check_mean_anomaly'] + planet_computed_data['check_longitude_of_perihelion'])
         ################################################################################
 
 
@@ -767,15 +794,82 @@ if __name__ == "__main__":
         print("> Output figure file written to: {}".format(output_figure_filename))
       
     if plot_2:# Plot data
-        fig = plt.figure(figsize=(16, 8))
-        ligne = 2
+        fig = plt.figure(figsize=(16, 22))
+        ligne = 4
         colonne = 2
         i = 0
-        #-----------------------------------------------------------------------------------
+        #-----------------------------------------------------------------------------------    
+        i=i+1
+        ax = fig.add_subplot(ligne,colonne,i,)
+        field = 'semi-major_axis'
+        mu = []
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            time = planet_data['current_time']
+            sma = planet_data[field]
+            ecc = planet_data['eccentricity']
+            peri = sma *(1-ecc)
+            apo = sma *(1+ecc)
+            ls, = ax.plot(time, sma, label=field+"AU "+key)
+            ax.fill_between(time, apo, peri, color=ls.get_color(), alpha=0.1)
+            planet_mass = planets_data[key]['mass'][0]
+            mu.append(posidonius.constants.G_SI*( star_mass*posidonius.constants.M_SUN + planet_mass*posidonius.constants.M_SUN ))
+        # planet_period = (1.510826, 2.421937, 4.049219, 6.101013, 9.207540, 12.352446, 18.772866)
+        # tmp = [ np.power(t*86400. /(2.0*np.pi),2)*m for t,m in zip(planet_period,mu)]
+        # planet_a = (1.154e-2, 1.580e-2, 2.227e-2, 2.925e-2, 3.849e-2, 4.683e-2, 6.189e-2)
+        # planet_a = [np.power(n,1./3.) / posidonius.constants.AU for n in tmp]
+        # for sma in planet_a:
+        #     ax.axhline(y=sma, ls=':', color="black")
+        ax.set_ylabel(field+' (AU)', fontsize=14)
+        ax.set_xscale('log')
+        ax.set_xlabel('years')
+        plt.yticks(fontsize=14)
+        plt.xticks(fontsize=14)
+        ax.legend(loc=0, prop={'size':8})
+
+        # i=i+1
+        # ax = fig.add_subplot(ligne,colonne,i,)
+        a = plt.axes([0.12, 0.80, .18, .10],) # ( position[x,y], size[x,y] )
+        field = ' $\Delta$ sma'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            time = planet_data['current_time']
+            sma = planet_data['semi-major_axis']
+            sma0 = sma[0]
+            d_sma  = [(sam - sma0) / sma0 for sam in sma]
+            plt.plot(time, d_sma, label=" planet "+key)
+        plt.ylabel(field, fontsize=14)
+        plt.xscale('log')
+        # ax.set_yscale('log')
+        # plt.xlabel('years')
+        plt.yticks(fontsize=14)
+        plt.xticks(fontsize=14)
+        # plt.tight_layout()
+
+        i=i+1
+        ax = fig.add_subplot(ligne,colonne,i,)
+        field = 'period ratio'
+        time = planets_data['1']['current_time']
+        period_tmp = planets_computed_data['1']['orbital_period']
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            period = planet_computed_data['orbital_period']
+            ratio = period/ period_tmp
+            ax.plot(time, ratio, label=" period ration $p_{i+1}$/$p_i$ ")
+        ax.set_ylabel(field, fontsize=14)
+        ax.set_xscale('log')
+        # ax.set_yscale('log')
+        ax.set_xlabel('years')
+        plt.yticks(fontsize=14)
+        plt.xticks(fontsize=14)
+        ax.legend(loc=0, prop={'size':12})
+        ax.legend(loc=0, prop={'size':8})
+        plt.tight_layout()
 
         i=i+1
         ax1 = fig.add_subplot(ligne,colonne,i,)
-        field = 'Planet rotation period (days)'
+        field = 'Planet rotation state Omega/n '
         for key in planets_keys:
             print('> Planet Mass', planet_data['mass'][0])
             planet_data = planets_data[key]
@@ -785,47 +879,12 @@ if __name__ == "__main__":
             n = ( 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY))
             frequ_on = 2.0*(omega - n)
             ax1.plot(planet_data['current_time'], omega_n, label=key +' Pinit= %10.3e'%(planets_computed_data[key]['planet_rotation_period'][0]*24.)+"hrs")
-
-        ax1.set_ylabel(field, fontsize=16)
-        plt.yticks(fontsize=16)
-        plt.xticks(fontsize=16)
+        ax1.set_ylabel(field, fontsize=14)
+        plt.yticks(fontsize=14)
+        plt.xticks(fontsize=14)
         ax1.set_xscale('log')
         ax1.set_xlabel('years')
         ax1.legend(loc=0, prop={'size':12})
-        
-        i=i+1
-        ax = fig.add_subplot(ligne,colonne,i,)
-        field = 'semi-major_axis'
-        mu = []
-        for key in planets_keys:
-            # if (int(key) == 2):
-            planet_data = planets_data[key]
-            time = planet_data['current_time']
-            sma = planet_data[field]
-            ecc = planet_data['eccentricity']
-            peri = sma *(1-ecc)
-            apo = sma *(1+ecc)
-
-            ls, = ax.plot(time, sma, label=field+"AU "+key)
-            ax.fill_between(time, apo, peri, color=ls.get_color(), alpha=0.1)
-            # ax.plot(time, peri,':', color=ls.get_color())
-            # ax.plot(time, apo,':', color=ls.get_color())
-            planet_mass = planets_data[key]['mass'][0]
-            mu.append(posidonius.constants.G_SI*( star_mass*posidonius.constants.M_SUN + planet_mass*posidonius.constants.M_SUN ))
-            # ax.plot(planet_data['current_time'], planet_keplerian_orbital_elements[0], label=field+" ReCAlAU")
-        
-        planet_period = (1.510826, 2.421937, 4.049219, 6.101013, 9.207540, 12.352446, 18.772866)
-        tmp = [ np.power(t*86400. /(2.0*np.pi),2)*m for t,m in zip(planet_period,mu)]
-        planet_a = (1.154e-2, 1.580e-2, 2.227e-2, 2.925e-2, 3.849e-2, 4.683e-2, 6.189e-2)
-        planet_a = [np.power(n,1./3.) / posidonius.constants.AU for n in tmp]
-        # for sma in planet_a:
-            # ax.axhline(y=sma, ls=':', color="black")
-        ax.set_ylabel(field+' (AU)')
-        # ax.set_xscale('log')
-        ax.set_xlabel('years')
-        plt.yticks(fontsize=16)
-        plt.xticks(fontsize=16)
-        ax.legend(loc=0, prop={'size':8})
 
         i=i+1
         ax = fig.add_subplot(ligne,colonne,i,)
@@ -834,38 +893,100 @@ if __name__ == "__main__":
             planet_data = planets_data[key]
             # if (int(key) == 2):
             ax.plot(planet_data['current_time'], planet_data[field], label="Planet " +key)
-        ax.set_ylabel(field, fontsize=16)
+        ax.set_ylabel(field, fontsize=14)
         # ax.set_xscale('log')
         # ax.set_yscale('log')
-        plt.yticks(fontsize=16)
-        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=14)
+        plt.xticks(fontsize=14)
         ax.legend(loc=0, prop={'size':12})
 
         i=i+1
         ax = fig.add_subplot(ligne,colonne,i,)
-        field = ' delta semi-major_axis'
+        field = 'planet obliquity deg'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            obliquity = planets_computed_data[key]['planet_obliquity']
+            ax.plot(planet_data['current_time'], obliquity, label=field+" "+key +f" init : {round(obliquity[0],3)} deg| final : {round(obliquity[-1],3)} deg")
+            # ax.plot(planet_data['current_time'], planet_keplerian_orbital_elements[0], label=field+" ReCAlAU")
+        ax.set_ylabel(field, fontsize=14)
+        ax.set_xscale('log')
+        ax.set_xlabel('years')
+        plt.yticks(fontsize=14)
+        plt.xticks(fontsize=14)
+        ax.legend(loc=0, prop={'size':12})
+
+        # i=i+1
+        # ax = fig.add_subplot(ligne,colonne,i,)
+        a = plt.axes([0.12, 0.35, .18, .10],) # ( position[x,y], size[x,y] )
+        field = ' $\Delta$ Obliquity'
         for key in planets_keys:
             planet_data = planets_data[key]
             time = planet_data['current_time']
-            sma = planet_data['semi-major_axis']
-            sma0 = sma[0]
-            d_sma  = [(sam - sma0) / sma0 for sam in sma]
-            ax.plot(time, d_sma, label=" planet "+key)
-        ax.set_ylabel(field, fontsize=16)
+            obliquity = planets_computed_data[key]['planet_obliquity']
+            ob0 = obliquity[0]
+            d_obl  = [(ob - ob0) / ob0 for ob in obliquity]
+            plt.plot(time, d_obl, label=" planet "+key)
+        plt.ylabel(field, fontsize=14)
+        plt.xscale('log')
+        # ax.set_yscale('log')
+        # plt.xlabel('years')
+        plt.yticks(fontsize=14)
+        plt.xticks(fontsize=14)
+        # plt.tight_layout()
+
+        i=i+1
+        ax = fig.add_subplot(ligne,colonne,i,)
+        field = 'inclination'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            inclination = [i*180./np.pi for i in planet_data[field]]
+            ax.plot(planet_data['current_time'], inclination, label="Planet "+key+f" init : {round(planet_data[field][0]*180/np.pi,3)} deg | final : {round(planet_data[field][-1]*180./np.pi,3)} deg")
+        ax.set_ylabel(field, fontsize=14)
         ax.set_xscale('log')
         # ax.set_yscale('log')
-        ax.set_xlabel('years')
-        plt.yticks(fontsize=16)
-        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=14)
+        plt.xticks(fontsize=14)
         ax.legend(loc=0, prop={'size':12})
-        #-----------------------------------------------------------------------------------
-        ax.legend(loc=0, prop={'size':8})
+
+
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'Precession angle'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            time = planet_data['current_time']
+            precession_angle = planet_computed_data['planet_precession_angle']
+            ax1.plot(time, precession_angle)
+        ax1.set_ylabel(field, fontsize=14)
+        plt.yticks(fontsize=14)
+        plt.xticks(fontsize=14)
+        # ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':8})
+        
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'long perihelion'
+        aa=1.0
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            time = planet_data["current_time"]
+            ecc = planet_data['eccentricity']
+            longitude_peri = planet_data['longitude_of_perihelion']
+            ax1.plot(time,longitude_peri, '+', alpha=aa)
+            aa-=0.1
+        ax1.set_ylabel('longitude peri', fontsize=14)
+        # ax1.set_xscale('log')
+        ax1.set_xlabel('Time years')
+        # ax1.legend(loc=0, prop={'size':8})
+
         plt.tight_layout()
 
         output_figure_dirname = os.path.dirname(filename)
         output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_orbit_data" +".png")
-        # plt.show()
         plt.savefig(output_figure_filename)
+        # plt.show()
         plt.close()
         print("> Output figure file written to: {}".format(output_figure_filename))
       
@@ -908,59 +1029,43 @@ if __name__ == "__main__":
         plt.close()
         print("> Output figure file written to: {}".format(output_figure_filename))
       
-    if plot_22:# Plot data
-        fig = plt.figure(figsize=(16, 8))
-        ligne = 2
+    if plot_22:# Plot precession periods
+        # Parameters for b_s^m (alpha_12)
+        p=1
+        q=1
+        s=3./2.
+        m=1
+        alpha = planets_data['1']['semi-major_axis']/planets_data['2']['semi-major_axis']
+        n1 = planets_computed_data['1']['mean_motion']
+        n2 = planets_computed_data['2']['mean_motion']
+        m1 = planets_data['1']['mass']
+        m2 = planets_data['2']['mass']
+        
+        laplace = LaplaceCoefficient()
+        b = [-0.25*laplace(a, s, m, p, q) for a in alpha]
+        g_ll =  b *alpha *( alpha*n1*m2/(star_mass+m1) +n2*m1/(star_mass+m2) )
+        node_precession_period = 2.0*np.pi /g_ll
+        print(f'|\t Compare frequencies g_LL {g_ll[0]} and period {node_precession_period[0]} ')
+
+        fig = plt.figure(figsize=(16, 13))
+        ligne = 3
         colonne = 2
         i = 0
-        #-----------------------------------------------------------------------------------
-        
+
         i=i+1
         ax = fig.add_subplot(ligne,colonne,i,)
-        field = 'semi-major_axis'
+        field = 'semi-major_axis' 
         for key in planets_keys:
-            # if (int(key) == 2):
             planet_data = planets_data[key]
             time = planet_data['current_time']
             sma = planet_data[field]
             ecc = planet_data['eccentricity']
             peri = sma *(1-ecc)
             apo = sma *(1+ecc)
-
             ls, = ax.plot(time, sma, label=field+"AU "+key)
             ax.fill_between(time, apo, peri, color=ls.get_color(), alpha=0.1)
             planet_mass = planets_data[key]['mass'][0]
-        ax.set_ylabel(field, fontsize=16)
-        ax.set_xscale('log')
-        # ax.set_yscale('log')
-        plt.yticks(fontsize=16)
-        plt.xticks(fontsize=16)
-        ax.legend(loc=0, prop={'size':12})
-        
-        i=i+1
-        ax = fig.add_subplot(ligne,colonne,i,)
-        field = 'eccentricity'
-        for key in planets_keys:
-            planet_data = planets_data[key]
-            # if (int(key) == 2):
-            ax.plot(planet_data['current_time'], planet_data[field], label="Planet " +key)
-        ax.set_ylabel(field, fontsize=16)
-        ax.set_xscale('log')
-        # ax.set_yscale('log')
-        ax.set_xlabel('years')
-        plt.yticks(fontsize=16)
-        plt.xticks(fontsize=16)
-        ax.legend(loc=0, prop={'size':12})
-
-        i=i+1
-        ax = fig.add_subplot(ligne,colonne,i,)
-        field = 'planet_obliquity_deg'
-        for key in planets_keys:
-            planet_data = planets_data[key]
-            obliquity = planets_computed_data[key]['planet_obliquity']
-            ax.plot(planet_data['current_time'], obliquity, label=field+"deg "+key +f" init : {round(obliquity[0],3)} | final : {round(obliquity[-1],3)}")
-            # ax.plot(planet_data['current_time'], planet_keplerian_orbital_elements[0], label=field+" ReCAlAU")
-        ax.set_ylabel(field+'')
+        ax.set_ylabel(field+' (AU)', fontsize=16)
         ax.set_xscale('log')
         ax.set_xlabel('years')
         plt.yticks(fontsize=16)
@@ -972,20 +1077,90 @@ if __name__ == "__main__":
         field = 'inclination'
         for key in planets_keys:
             planet_data = planets_data[key]
-            ax.plot(planet_data['current_time'], planet_data[field], label="Planet "+key+f" init : {planet_data[field][0]} | final : {planet_data[field][-1]}")
-        ax.set_ylabel(field, fontsize=16)
+            inclination = [i*180./np.pi for i in planet_data[field]]
+            ax.plot(planet_data['current_time'], inclination, label="Planet "+key+f" init : {round(planet_data[field][0]*180/np.pi,3)} deg | final : {round(planet_data[field][-1]*180./np.pi,3)} deg")
+        ax.set_ylabel(field, fontsize=10)
         ax.set_xscale('log')
         # ax.set_yscale('log')
+        plt.yticks(fontsize=14)
+        plt.xticks(fontsize=14)
+        ax.legend(loc=0, prop={'size':12})
+        
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'Obliquity'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            time = planet_data['current_time']
+            orbital_inclination = [p*180./np.pi for p in planet_data['inclination']]
+            obliquity = planet_computed_data['planet_obliquity']
+            ls, =ax1.plot(time, obliquity, label=f'Obliqu init: {round(obliquity[0],3)} | final: {round(obliquity[-1],3)}')
+            # ax1.plot(time, orbital_inclination, ls=':', color=ls.get_color(),label=f'Inclin init: {round(orbital_inclination[0],3)} | final: {round(orbital_inclination[-1],3)}')
+        ax1.set_ylabel(field, fontsize=16)
         plt.yticks(fontsize=16)
         plt.xticks(fontsize=16)
+        ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':8}) #
+
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'Precession angle'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            time = planet_data['current_time']
+            precession_angle = planet_computed_data['planet_precession_angle']
+            ax1.plot(time, precession_angle)
+        ax1.set_ylabel(field, fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        # ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':8})
+
+        i=i+1
+        ax = fig.add_subplot(ligne,colonne,i,)
+        field = 'longitude_of_ascending_node'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            long_asc_node =  planet_data['longitude_of_ascending_node'] # [i*180./np.pi for i in planet_data[field]]
+            ax.plot(planet_data['current_time'], long_asc_node, label="Planet "+key)
+        ax.set_ylabel(field, fontsize=10)
+        ax.set_xscale('log')
+        # ax.set_yscale('log')
+        plt.yticks(fontsize=14)
+        plt.xticks(fontsize=14)
         ax.legend(loc=0, prop={'size':12})
+
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'Precession periods'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            time = planet_data['current_time']
+            spin_precession_period = planet_computed_data['spin_precession_period']
+            numerical_node_precession_period = planet_computed_data['node_precession_period']
+            ls,=ax1.plot(time, spin_precession_period, label='spin precession period 2  pi / a cos e '+key)
+            # ax1.plot(time[:-1], numerical_node_precession_period,":", label='numerical node precession period 2 pi / g '+key, color=ls.get_color(), )
+        ax1.plot(time, node_precession_period,color='black', label=' node precession period 2 pi / g')
+        ax1.set_ylabel(field, fontsize=16)
+        # ax1.set_ylim(top=1000, bottom=0)
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':8})
+
 
         #-----------------------------------------------------------------------------------
         ax.legend(loc=0, prop={'size':8})
         plt.tight_layout()
 
         output_figure_dirname = os.path.dirname(filename)
-        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_orbit_data_p" +".png")
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_precession_data" +".png")
         # plt.show()
         plt.savefig(output_figure_filename)
         plt.close()
@@ -1061,8 +1236,8 @@ if __name__ == "__main__":
         output_figure_dirname = os.path.dirname(filename)
         output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_table_data" +".png")
         plt.savefig(output_figure_filename, dpi=200)
-        plt.close()
         # plt.show()
+        plt.close()
         print("> Output figure file written to: {}".format(output_figure_filename))
 
     if plot_3e:# plot ecc data
@@ -1175,9 +1350,9 @@ if __name__ == "__main__":
         lab[5]='T1-f'
         lab[6]='T1-g'
         lab[7]='T1-h'
-        fig = plt.figure(figsize=(20, 10))
-        ligne = 3
-        colonne = 3
+        fig = plt.figure(figsize=(15, 14))
+        ligne = 4
+        colonne = 2
         i = 0
         #-----------------------------------------------------------------------------------
 
@@ -1189,7 +1364,6 @@ if __name__ == "__main__":
             planet_data = planets_data[key]
             planet_computed_data = planets_computed_data[key]
             time = planet_data['current_time']
-            period = planet_computed_data['planet_rotation_period']
             omega = planet_computed_data['omega']
             mean_motion = planet_computed_data['mean_motion'] # rad/day
             ax1.plot(time, omega/mean_motion,  label='planet '+key, alpha=aa )
@@ -1199,7 +1373,7 @@ if __name__ == "__main__":
         plt.xticks(fontsize=16)
         ax1.set_xscale('log')
         ax1.set_xlabel('years')
-        ax1.legend(loc=0, prop={'size':12})
+        ax1.legend(loc=0, prop={'size':8})
         
         i=i+1
         ax1 = fig.add_subplot(ligne,colonne,i,)
@@ -1207,7 +1381,6 @@ if __name__ == "__main__":
         aa=1.0
         for key in planets_keys:
             planet_data = planets_data[key]
-            #tmp = 9.0
             time = planet_data['current_time']
             sx = planet_data['spin_x']
             ax1.plot(time, sx, alpha=aa)
@@ -1217,7 +1390,7 @@ if __name__ == "__main__":
         plt.xticks(fontsize=16)
         ax1.set_xscale('log')
         ax1.set_xlabel('years')
-        ax1.legend(loc=0, prop={'size':12})
+        ax1.legend(loc=0, prop={'size':8})
 
         i=i+1
         ax1 = fig.add_subplot(ligne,colonne,i,)
@@ -1225,7 +1398,6 @@ if __name__ == "__main__":
         aa=1.0
         for key in planets_keys:
             planet_data = planets_data[key]
-            #tmp = 9.0
             time = planet_data['current_time']
             sx = planet_data['spin_x']
             ax1.plot(time, sx, alpha=aa)
@@ -1235,7 +1407,7 @@ if __name__ == "__main__":
         plt.xticks(fontsize=16)
         ax1.set_xscale('log')
         ax1.set_xlabel('years')
-        ax1.legend(loc=0, prop={'size':12})
+        ax1.legend(loc=0, prop={'size':8})
 
         i=i+1
         ax1 = fig.add_subplot(ligne,colonne,i,)
@@ -1243,7 +1415,6 @@ if __name__ == "__main__":
         aa=1.0
         for key in planets_keys:
             planet_data = planets_data[key]
-            #tmp = 9.0
             time = planet_data['current_time']
             sx = planet_data['spin_x']
             ax1.plot(time, sx, alpha=aa)
@@ -1253,8 +1424,75 @@ if __name__ == "__main__":
         plt.xticks(fontsize=16)
         ax1.set_xscale('log')
         ax1.set_xlabel('years')
-        ax1.legend(loc=0, prop={'size':12})
+        ax1.legend(loc=0, prop={'size':8})
 
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'Obliquity'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            time = planet_data['current_time']
+            orbital_inclination = [p*180./np.pi for p in planet_data['inclination']]
+            obliquity =  planet_computed_data['planet_obliquity']
+            ls, =ax1.plot(time, obliquity, alpha=aa, label=f'Obliqu init: {round(obliquity[0],3)} | final: {round(obliquity[-1],3)}')
+            # ax1.plot(time, orbital_inclination, ls=':', alpha=aa, color=ls.get_color(),label=f'Inclin init: {round(orbital_inclination[0],3)} | final: {round(orbital_inclination[-1],3)}')
+        ax1.set_ylabel(field, fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':8}) #
+
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'Orbital inclination'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            time = planet_data['current_time']
+            orbital_inclination = [p*180./np.pi for p in planet_data['inclination']]
+            obliquity =  planet_computed_data['planet_obliquity']
+            # ls, =ax1.plot(time, obliquity, alpha=aa, label=f'Obliqu init: {round(obliquity[0],3)} | final: {round(obliquity[-1],3)}')
+            ax1.plot(time, orbital_inclination, ls=':', alpha=aa,label=f'Inclin init: {round(orbital_inclination[0],3)} | final: {round(orbital_inclination[-1],3)}')
+        ax1.set_ylabel(field, fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':8}) #
+
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'Precession angle'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            time = planet_data['current_time']
+            precession_angle = planet_computed_data['planet_precession_angle']
+            ax1.plot(time, precession_angle,)
+        ax1.set_ylabel(field, fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        # ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':8})
+
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = 'Longitude ascending node'
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            time = planet_data['current_time']
+            long_asc_node = planet_data['longitude_of_ascending_node']
+            ax1.plot(time, long_asc_node,)
+        ax1.set_ylabel(field, fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        # ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':8})
 
         #-----------------------------------------------------------------------------------
         plt.tight_layout()
@@ -1274,7 +1512,7 @@ if __name__ == "__main__":
         lab[5]='T1-f'
         lab[6]='T1-g'
         lab[7]='T1-h'
-        fig = plt.figure(figsize=(15, 11))
+        fig = plt.figure(figsize=(10, 8))
         ligne = 1
         colonne = 1
         i = 0
@@ -1286,7 +1524,7 @@ if __name__ == "__main__":
         tmp = planets_computed_data['1']['planet_rotation_period']
         aa = 1.0
         for key in planets_keys:
-            # if key == '2':
+            # if key == '4':
             planet_data = planets_data[key]
             time = planet_data['current_time']
             period = planets_computed_data[key]['planet_rotation_period']
@@ -1299,6 +1537,7 @@ if __name__ == "__main__":
             ax1.plot(time, omega/mean_motion, label=to_label , alpha=aa )
             aa-=0.10
             tmp = period
+        ax1.axhline(y=1., ls=':', color='black')
         ax1.set_ylabel(field)
         # ax1.set_yscale('log')
         ax1.set_xlabel('years')
@@ -1308,6 +1547,56 @@ if __name__ == "__main__":
         plt.tight_layout()
         output_figure_dirname = os.path.dirname(filename)
         output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_spin_meanmotion_data" +".png")
+        plt.savefig(output_figure_filename, dpi=200)
+        plt.close()
+        # plt.show()
+        print("> Output figure file written to: {}".format(output_figure_filename))
+
+    if plot_30:# plot spin/mean_motion
+        lab={}
+        lab[1]='T1-b'
+        lab[2]='T1-c'
+        lab[3]='T1-d'
+        lab[4]='T1-e'
+        lab[5]='T1-f'
+        lab[6]='T1-g'
+        lab[7]='T1-h'
+        fig = plt.figure(figsize=(10, 8*len(planets_keys)))
+        ligne = 7
+        colonne = 1
+        i = 0
+        #-----------------------------------------------------------------------------------
+        for key in planets_keys:
+            # if key == '4':
+            planet_data = planets_data[key]
+            i=i+1
+            ax1 = fig.add_subplot(ligne,colonne,i,)
+            field = 'Rotation state $\Omega$/n'
+            tmp = planets_computed_data['1']['planet_rotation_period']
+            aa = 1.0
+            
+            time = planet_data['current_time']
+            period = planets_computed_data[key]['planet_rotation_period']
+            omega = 2.0*np.pi / period
+            mean_motion = planets_computed_data[key]['mean_motion'] # rad/day
+            rr0 = period[0] / tmp[0]
+            rr1 = period[len(period)-1] / tmp[len(tmp)-1]
+            to_label = lab[int(key)]
+            # to_label='P: %5.5f'%(period[0])+'d , ratio > '+'%5.5f'%((rr0))+ ' || %5.5f'%((rr1))
+            ax1.plot(time, omega/mean_motion, label=to_label , alpha=aa )
+            aa-=0.10
+            tmp = period
+            ax1.axhline(y=1., ls=':', color='black')
+            ax1.set_ylabel(field)
+            # ax1.set_yscale('log')
+            ax1.set_xlabel('years')
+            ax1.legend(loc=0, prop={'size':8})
+            ax1.set_ylim(top=1.0+2e-7, bottom=1.0-2e-7)
+
+        #-----------------------------------------------------------------------------------
+        plt.tight_layout()
+        output_figure_dirname = os.path.dirname(filename)
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_spin_meanmotion_eachplanet_data" +".png")
         plt.savefig(output_figure_filename, dpi=200)
         plt.close()
         # plt.show()
@@ -1354,7 +1643,7 @@ if __name__ == "__main__":
             y_fit = poly_function(x)
             
             # in_label =lab[int(key)] +f" P_synodic : {round(median(planet_computed_data['synodic_period']), 3)} | end val : {round(sub_stellar[-1], 3)}"  {round(median(planet_computed_data['synodic_period']), 3)} | {round(median(planet_computed_data['synodic_period_mean']), 3)}
-            in_label =lab[int(key)] + f' | y = {round(coefficients[0],3)} x + {round(coefficients[1],3)} | time-scale {round(360./coefficients[0],3)} | P_syn {P_syn}, {P_syn_mean}  '
+            in_label =lab[int(key)] + f' | y = {round(coefficients[0],3)} x + {round(coefficients[1],3)} | time-scale {round(360./coefficients[0],3)} | End value {round(sub_stellar[-1],3)}  '
             ls, = ax[0].plot(time, sub_stellar,label=in_label)
             ax[0].plot(x, y_fit, '-.', color=ls.get_color(), linewidth=2)
             for t,s in zip(time, sub_stellar):
@@ -1362,7 +1651,7 @@ if __name__ == "__main__":
                     print("Planet: ", key, t, tmp[int(key)-1], np.abs(s) )
                     ax[0].axhline(y=s, ls=':', color='black')
                     ax[0].axvline(x=t, ls=':', color=ls.get_color())
-                    tmp[int(key)-1]+=90.
+                    tmp[int(key)-1]+=180.
                     table_times['planet'].append(key)
                     table_times['time'].append(t)
                     table_times['sub'].append(s)
@@ -1630,7 +1919,7 @@ if __name__ == "__main__":
                     table_times['time'].append(t)
                     table_times['sub'].append(s)
 
-            sub_stellar_integrated = [ p *180./np.pi for p in planets_computed_data[key]['theta_true_ano_long_peri'] ] 
+            sub_stellar_integrated = [ p for p in planets_computed_data[key]['theta_true_ano_long_peri'] ] # [ p *180./np.pi for p in planets_computed_data[key]['theta_true_ano_long_peri'] ] 
             ls2, = ax[2].plot(time, sub_stellar_integrated, label=key) 
             for t,s in zip(time, sub_stellar_integrated):
                 if np.abs(s) > tmp_integ[int(key)-1]:
@@ -1673,7 +1962,6 @@ if __name__ == "__main__":
         plt.close()
         # plt.show()
         print("> Output figure file written to: {}".format(output_figure_filename))
-
 
     if plot_33: # Check orbital angles 
 
@@ -1850,6 +2138,70 @@ if __name__ == "__main__":
 
         output_figure_dirname = os.path.dirname(filename)
         output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_true_anomaly_angles"+".png")
+        plt.savefig(output_figure_filename)
+        # plt.show()
+        plt.close()
+        print("> Output figure file written to: {}".format(output_figure_filename))
+
+    if plot_33_meanano :  # Check mean anomaly
+
+        lab={}
+        lab[1]='T1-b'
+        lab[2]='T1-c'
+        lab[3]='T1-d'
+        lab[4]='T1-e'
+        lab[5]='T1-f'
+        lab[6]='T1-g'
+        lab[7]='T1-h'
+
+        fig = plt.figure(figsize=(30, 6*len(planets_keys)))
+        ligne = len(planets_keys)
+        colonne = 2
+        i = 0
+
+        for key in planets_keys:
+
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            time = [t*365.25 for t in planet_data['current_time']]
+            # true_ano = planet_data['true_anomaly']
+            mean_ano = planet_data['mean_anomaly']
+            long_peri =  planet_data['longitude_of_perihelion']
+
+            # mean_motion = planet_computed_data['mean_motion']
+            # mean_longitude = planet_computed_data['mean_longitude']
+            # true_ano_cumul = planet_computed_data['true_anomaly_cumul']
+            # cartesian_angle_cumul = [p*np.pi/180. for p in planet_computed_data['cartesian_position_angle']]
+            # theta = planet_computed_data['theta']
+            # theta_true_ano = planet_computed_data['theta_true_ano'] 
+            # theta_mean_ano = planet_computed_data['theta_mean_ano'] 
+            check_mean_ano = planet_computed_data['check_mean_anomaly']
+            check_long_peri = planet_computed_data['check_longitude_of_perihelion']
+            print(f' |\t {check_mean_ano[0]}')
+
+            i+=1 # --- 1
+            ax1 = fig.add_subplot(ligne,colonne,i,)
+            field = '  '+lab[int(key)]
+            ax1.plot(time,mean_ano,label=f'mean anomaly')
+            ax1.plot(time,check_mean_ano,label=f'check mean anomaly')
+            ax1.axhline(y=0., ls=':', color='black')
+            ax1.set_ylabel(field+'  ')
+            ax1.set_xlabel('days')
+            ax1.legend(loc=0, prop={'size':8})
+
+            i+=1 # --- 1
+            ax1 = fig.add_subplot(ligne,colonne,i,)
+            field = '  '+lab[int(key)]
+            ax1.plot(time,long_peri,label=f'Long peri')
+            ax1.plot(time,check_long_peri,label=f'check long_peri')
+            ax1.axhline(y=0., ls=':', color='black')
+            ax1.set_ylabel(field+'  ')
+            ax1.set_xlabel('days')
+            ax1.legend(loc=0, prop={'size':8})
+        
+        plt.tight_layout()
+        output_figure_dirname = os.path.dirname(filename)
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_mean_anomaly_angles"+".png")
         plt.savefig(output_figure_filename)
         # plt.show()
         plt.close()
@@ -2275,6 +2627,65 @@ if __name__ == "__main__":
         # plt.show()
         print("> Output figure file written to: {}".format(output_figure_filename))
 
+    if plot_7:
+
+        fig = plt.figure(figsize=(6, 6))
+        ligne = 1
+        colonne = 1
+        i = 0
+        #-----------------------------------------------------------------------------------
+
+        # for key in planets_keys:
+        p1 = planets_computed_data['1']['planet_rotation_period']
+        p2 = planets_computed_data['2']['planet_rotation_period']
+        p3 = planets_computed_data['3']['planet_rotation_period']
+        p4 = planets_computed_data['4']['planet_rotation_period']
+        p5 = planets_computed_data['5']['planet_rotation_period']
+        p6 = planets_computed_data['6']['planet_rotation_period']
+        p7 = planets_computed_data['7']['planet_rotation_period']
+
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = ' compare_period_ratio_and_theory '
+
+        planet_data = planets_data[key]
+        t1 = planets_data['1']['current_time']
+        t2 = planets_data['2']['current_time']
+        t3 = planets_data['3']['current_time']
+        t4 = planets_data['4']['current_time']
+        t5 = planets_data['5']['current_time']
+        t6 = planets_data['6']['current_time']
+        t7 = planets_data['7']['current_time']
+ 
+        ls, =ax1.plot(t1, p2/p1, label='p2/p1')
+        ax1.axhline(y=8./5., ls=":", color=ls.get_color(), label='oberved')
+        ls, =ax1.plot(t2, p3/p2, label='p3/p2')
+        ax1.axhline(y=5./3., ls=":", color=ls.get_color() )
+        ls, =ax1.plot(t3, p4/p3, label='p4/p5')
+        ax1.axhline(y=3./2., ls=":", color=ls.get_color() )
+        ls, =ax1.plot(t4, p5/p4, label='p5/p4')
+        ax1.axhline(y=3./2., ls=":", color=ls.get_color() )
+        ls, =ax1.plot(t5, p6/p5, label='p6/p5')
+        ax1.axhline(y=4./3., ls=":",color=ls.get_color() )
+        ls, =ax1.plot(t6, p7/p6, label='p7/p6')
+        ax1.axhline(y=3./2., ls=":",color=ls.get_color() )
+
+        ax1.set_ylabel(field+'  ')
+        # ax1.set_yscale('log')
+        # ax1.set_xscale('log')
+        ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':10})
+
+        #-----------------------------------------------------------------------------------
+        plt.tight_layout()
+
+        output_figure_dirname = os.path.dirname(filename)
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_compare_period_ratio_and_theory" +".png")
+        plt.savefig(output_figure_filename)
+        plt.close()
+        # plt.show()
+        print("> Output figure file written to: {}".format(output_figure_filename))
+
     if plot_70:
 
         fig = plt.figure(figsize=(6, 6))
@@ -2373,6 +2784,109 @@ if __name__ == "__main__":
 
         output_figure_dirname = os.path.dirname(filename)
         output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_compare_period_ratio_offsets" +".png")
+        plt.savefig(output_figure_filename)
+        plt.close()
+        # plt.show()
+        print("> Output figure file written to: {}".format(output_figure_filename))
+
+    if plot_70:
+
+        fig = plt.figure(figsize=(6, 6))
+        ligne = 1
+        colonne = 1
+        i = 0
+        #-----------------------------------------------------------------------------------
+
+        # for key in planets_keys:
+        p1 = planets_computed_data['1']['planet_rotation_period'][-1:]
+        p2 = planets_computed_data['2']['planet_rotation_period'][-1:]
+        p3 = planets_computed_data['3']['planet_rotation_period'][-1:]
+        p4 = planets_computed_data['4']['planet_rotation_period'][-1:]
+        p5 = planets_computed_data['5']['planet_rotation_period'][-1:]
+        p6 = planets_computed_data['6']['planet_rotation_period'][-1:]
+        p7 = planets_computed_data['7']['planet_rotation_period'][-1:]
+
+        mean_p1 = np.mean(planets_computed_data['1']['planet_rotation_period'])
+        mean_p2 = np.mean(planets_computed_data['2']['planet_rotation_period'])
+        mean_p3 = np.mean(planets_computed_data['3']['planet_rotation_period'])
+        mean_p4 = np.mean(planets_computed_data['4']['planet_rotation_period'])
+        mean_p5 = np.mean(planets_computed_data['5']['planet_rotation_period'])
+        mean_p6 = np.mean(planets_computed_data['6']['planet_rotation_period'])
+        mean_p7 = np.mean(planets_computed_data['7']['planet_rotation_period'])
+
+        # mean_p1 = planets_computed_data['1']['planet_rotation_period'][0]
+        # mean_p2 = planets_computed_data['2']['planet_rotation_period'][0]
+        # mean_p3 = planets_computed_data['3']['planet_rotation_period'][0]
+        # mean_p4 = planets_computed_data['4']['planet_rotation_period'][0]
+        # mean_p5 = planets_computed_data['5']['planet_rotation_period'][0]
+        # mean_p6 = planets_computed_data['6']['planet_rotation_period'][0]
+        # mean_p7 = planets_computed_data['7']['planet_rotation_period'][0]
+        # print('TEST":::"', p1)
+
+        i=i+1
+        ax1 = fig.add_subplot(ligne,colonne,i,)
+        field = ' compare period ratio  '
+
+        planet_data = planets_data[key]
+        t1 = planets_data['1']['current_time'][-1:]
+        t2 = planets_data['2']['current_time'][-1:]
+        t3 = planets_data['3']['current_time'][-1:]
+        t4 = planets_data['4']['current_time'][-1:]
+        t5 = planets_data['5']['current_time'][-1:]
+        t6 = planets_data['6']['current_time'][-1:]
+        t7 = planets_data['7']['current_time'][-1:]
+
+        # off = p2/p1 - (3./2.)
+        # mean_off = mean_p2/mean_p1 - (3./2.)
+        # ls, =ax1.plot(1, off,  'x',markersize=20, label='Last value')
+        # ax1.plot(1, mean_off, '+',markersize=20,label='First value', color = ls.get_color())
+        # ax1.plot(1, 1.603055 - (3./2.),  '.',markersize=20,label='Observed',  color = ls.get_color())
+
+        # off = p3/p2 - (5./3.)
+        mean_off = mean_p3/mean_p2 
+        # ls, =ax1.plot(2, off,  'x',markersize=20,label='Last value')
+        ls, = ax1.plot(2, mean_off, '+',markersize=20, label='Mean value')
+        ax1.plot(2,  (5./3.),  '.',markersize=20, color = ls.get_color(), label='Obs value')
+
+        # off = p4/p3 - (3./2.)
+        mean_off = mean_p4/mean_p3
+        # ls, =ax1.plot(3, off, 'x',markersize=20,)
+        ls, = ax1.plot(3, mean_off, '+',markersize=20, )
+        ax1.plot(3, (3./2.), '.',markersize=20, color = ls.get_color())
+
+        # off = p5/p4 - (3./2.)
+        mean_off = mean_p5/mean_p4
+        # ls, =ax1.plot(4, off, 'x',markersize=20,)
+        ls, = ax1.plot(4, mean_off, '+',markersize=20, )
+        ax1.plot(4, (3./2.), '.',markersize=20, color = ls.get_color())
+
+        # off = p6/p5 - (4./3.)
+        mean_off = mean_p6/mean_p5 
+        # ls, =ax1.plot(5, off, 'x',markersize=20,)
+        ls, = ax1.plot(5, mean_off, '+',markersize=20,)
+        ax1.plot(5, (4./3.), '.',markersize=20, color = ls.get_color())
+
+        # off = p7/p6 - (3./2.)
+        mean_off = mean_p7/mean_p6
+        # ls, =ax1.plot(6, off, 'x',markersize=20,)
+        ls , = ax1.plot(6, mean_off, '+',markersize=20, )
+        ax1.plot(6, (3./2.) , '.',markersize=20, color = ls.get_color())
+
+        # plt.xticks([1,2,3,4,5,6],label=['p2/p1','p3/p2', 'p4/p3', 'p5/p4', 'p6/p5', 'p7/p6'],fontsize=16, rotation=90,)
+        plt.xticks([1,2,3,4,5,6],label=['p2/p1','p3/p2', 'p4/p3', 'p5/p4', 'p6/p5', 'p7/p6'],fontsize=10, rotation=0,)
+
+        plt.grid()
+        ax1.set_ylabel(field+'  ')
+        # ax1.set_yscale('log')
+        # ax1.set_xscale('log')
+        # ax1.set_xlabel('years')
+        ax1.legend(loc=0, prop={'size':10})
+
+        #-----------------------------------------------------------------------------------
+        plt.tight_layout()
+
+        output_figure_dirname = os.path.dirname(filename)
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_compare_period_ratio" +".png")
         plt.savefig(output_figure_filename)
         plt.close()
         # plt.show()
@@ -2677,8 +3191,75 @@ if __name__ == "__main__":
         colonne = 1
         i = 0
         #-----------------------------------------------------------------------------------
+        if False:
+            for key in planets_keys:
+                print(f"|\t Recompute for {key}")
+                planet_data = planets_data[key]
+                planet_computed_data = planets_computed_data[key]
+                x = planet_data['position_x']
+                y = planet_data['position_y']
+                z = planet_data['position_z']
+                r = np.sqrt( np.power(x,2) +np.power(y,2) +np.power(z,2) )
+                vx = planet_data['velocity_x']
+                vy = planet_data['velocity_y']
+                vz = planet_data['velocity_z']
+                semi_major_axis = planet_data['semi-major_axis']
+                eccentricity = planet_data['eccentricity']
+                # (new_x, new_y, new_z) = (x, y, z)
 
-        planet_data = planets_data[key]
+                long_asc_node = planet_data['longitude_of_ascending_node']
+                long_peri = planet_data['longitude_of_perihelion']
+                arg_peri = long_peri - long_asc_node
+                incl = planet_data['inclination']
+
+                gm = posidonius.constants.G_SI *(star_mass + planet_data['mass'][0])
+                # ( ex , ey, ez ) = calculate_eccentricity_vector(gm, x, y, z, vx, vy, vz)
+                # (new_x, new_y, new_z) = ( ex , ey, ez )
+
+                # non_zero_long_asc_node = long_asc_node >=1e-8
+                # if np.any(non_zero_long_asc_node):
+                x_rot = x*np.cos(long_asc_node) +y*np.sin(long_asc_node)
+                y_rot = -x*np.sin(long_asc_node) +y*np.cos(long_asc_node)
+                z_rot = z
+                x_rot_2 = x_rot
+                y_rot_2 = y_rot*np.cos(incl) + z_rot*np.sin(incl)
+                z_rot_2 = -y_rot*np.sin(incl) + z_rot*np.cos(incl)
+
+                
+                new_x = x_rot_2
+                new_y = y_rot_2
+                new_z = z_rot_2
+
+                planet_computed_data['semi-minor_axis'] = np.sqrt( np.power(planet_data['semi-major_axis'],2) *(1.0 -np.power(planet_data['eccentricity'],2) ) )
+
+                # nom = new_y * planet_data['semi-major_axis']
+                # denom = new_x * planet_computed_data['semi-minor_axis']
+                # planet_computed_data['eccentric_anomaly'] = np.arctan2(nom,denom)
+
+                v2 = np.sqrt(np.power(vx,2) +np.power(vy,2) +np.power(vz,2))
+                nom = r*v2 - gm
+                denom = eccentricity*gm
+                planet_computed_data['eccentric_anomaly'] = np.arccos(nom/denom)
+                planet_computed_data['check_mean_anomaly'] = (planet_computed_data['eccentric_anomaly'] - planet_data['eccentricity']*np.sin(planet_computed_data['eccentric_anomaly']) )
+                
+                # sin_bige = new_y / planet_computed_data['semi-minor_axis']
+
+                # planet_computed_data['check_mean_anomaly'] = (planet_computed_data['eccentric_anomaly'] - planet_data['eccentricity']*sin_bige )
+
+                planet_computed_data['mean_longitude'] = planet_computed_data['check_mean_anomaly'] + planet_data['longitude_of_perihelion']
+                l = planet_computed_data['mean_longitude']
+                negative_l = l < 0.
+                if np.any(negative_l):
+                    l[negative_l] += 2.0*np.pi
+                bigger_than_two_pi = l > (2.0*np.pi)
+                if np.any(bigger_than_two_pi):
+                    l[bigger_than_two_pi] = l[bigger_than_two_pi]%(2.0*np.pi)
+                planet_computed_data['mean_longitude'] = l
+
+                planets_computed_data[key] = planet_computed_data
+
+            
+        
         # t1 = planets_data['1']['current_time']
         # t2 = planets_data['2']['current_time']
         # t3 = planets_data['3']['current_time']
@@ -2773,10 +3354,10 @@ if __name__ == "__main__":
         plt.tight_layout()
 
         output_figure_dirname = os.path.dirname(filename)
-        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_reso_angles_3body" +".png")
+        output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_reso_angles_3body_check" +".png")
         plt.savefig(output_figure_filename)
-        plt.close()
         # plt.show()
+        plt.close()
         print("> Output figure file written to: {}".format(output_figure_filename))
 
     if plot_10: # Resonance 2 bodies
@@ -3003,15 +3584,15 @@ if __name__ == "__main__":
         output_figure_dirname = os.path.dirname(filename)
         output_figure_filename = os.path.join(output_figure_dirname, os.path.splitext(os.path.basename(filename))[0] + "_reso_angles_2body" +".png")
         plt.savefig(output_figure_filename)
-        plt.close()
         # plt.show()
+        plt.close()
         print("> Output figure file written to: {}".format(output_figure_filename))
 
     if plot_101: # Resonance 2 bodies 2 planets
 
-        fig = plt.figure(figsize=(5, 5))
-        ligne = 1
-        colonne = 1
+        fig = plt.figure(figsize=(13, 8))
+        ligne = 3
+        colonne = 2
         plot = 0
         #-----------------------------------------------------------------------------------
         p1 = planets_computed_data['1']['planet_rotation_period']
@@ -3023,8 +3604,12 @@ if __name__ == "__main__":
         l_1 = planets_computed_data['1']['mean_longitude']
         l_2 = planets_computed_data['2']['mean_longitude']
 
-        omega_1 =  planets_computed_data['1']['check_longitude_of_perihelion']
-        omega_2 =  planets_computed_data['2']['check_longitude_of_perihelion']
+        omega_1 =  planets_data['1']['longitude_of_perihelion']
+        omega_2 =  planets_data['2']['longitude_of_perihelion']
+
+        # 2:1 | 1 angles 
+        theta1_21_p1p2 = 2.0*l_2 -l_1 -omega_1
+        theta1_21_p1p2 = theta1_21_p1p2%(2.0*np.pi)
 
         # 3:2 | 2 angles 
         theta1_32_p1p2 = 3.0*l_2 -2.0*l_1 -omega_1
@@ -3032,12 +3617,74 @@ if __name__ == "__main__":
         theta1_32_p1p2 = theta1_32_p1p2%(2.0*np.pi)
         theta2_32_p1p2 = theta2_32_p1p2%(2.0*np.pi)
 
-        # --- plot
+        # 4:3 | 2 angles
+        theta1_43_p1p2 = 4.0*l_2 -3.0*l_1 -omega_1
+        theta2_43_p1p2 = 4.0*l_2 -3.0*l_1 -omega_2
+        theta1_43_p1p2 = theta1_43_p1p2%(2.0*np.pi)
+        theta2_43_p1p2 = theta2_43_p1p2%(2.0*np.pi)
+
+        # 8:5 | 4 angles b c
+        theta1_85_p1p2 = 8.0*l_2 -5.0*l_1 -3.0*omega_1
+        theta2_85_p1p2 = 8.0*l_2 -5.0*l_1 -3.0*omega_2
+        theta3_85_p1p2 = 8.0*l_2 -5.0*l_1 -2.0*omega_1 -omega_2
+        theta4_85_p1p2 = 8.0*l_2 -5.0*l_1 -omega_1 -2.0*omega_2
+        theta1_85_p1p2 = theta1_85_p1p2%(2.0*np.pi)
+        theta2_85_p1p2 = theta2_85_p1p2%(2.0*np.pi)
+        theta3_85_p1p2 = theta3_85_p1p2%(2.0*np.pi)
+        theta4_85_p1p2 = theta4_85_p1p2%(2.0*np.pi)
+
+        # 5:3 | 3 angles c d 
+        theta1_53_p1p2 = 5.0*l_2 -3.0*l_1 -2.0*omega_1
+        theta2_53_p1p2 = 5.0*l_2 -3.0*l_1 -2.0*omega_2
+        theta3_53_p1p2 = 5.0*l_2 -3.0*l_1 -omega_1 -omega_2
+        theta1_53_p1p2 = theta1_53_p1p2%(2.0*np.pi)
+        theta2_53_p1p2 = theta2_53_p1p2%(2.0*np.pi)
+        theta3_53_p1p2 = theta3_53_p1p2%(2.0*np.pi)
+
+
+        # --- plot 2:1
+        plot+=1
+        ax1 = fig.add_subplot(ligne,colonne,plot,)
+        field = 'Res Angle 2:1 | planet 1-2 '
+        ax1.plot(t1, theta1_21_p1p2, 'x', label='angle 1')
+        ax1.set_ylabel(field+'  ')
+        ax1.set_xlabel('years')
+
+        # --- plot 3:2
         plot+=1
         ax1 = fig.add_subplot(ligne,colonne,plot,)
         field = 'Res Angle 3:2 | planet 1-2 '
         ax1.plot(t1, theta1_32_p1p2, 'x', label='angle 1')
         ax1.plot(t1, theta2_32_p1p2, '+', label='angle 2', alpha=.7)
+        ax1.set_ylabel(field+'  ')
+        ax1.set_xlabel('years')
+
+        # --- plot 4:3
+        plot+=1
+        ax1 = fig.add_subplot(ligne,colonne,plot,)
+        field = 'Res Angle 4:3 | planet 1-2 '
+        ax1.plot(t1, theta1_43_p1p2, 'x', label='angle 1')
+        ax1.plot(t1, theta2_43_p1p2, '+', label='angle 2', alpha=.7)
+        ax1.set_ylabel(field+'  ')
+        ax1.set_xlabel('years')
+
+        # --- plot 8:5
+        plot+=1
+        ax1 = fig.add_subplot(ligne,colonne,plot,)
+        field = 'Res Angle 8:5 | planet 1-2 '
+        ax1.plot(t1, theta1_85_p1p2, 'x', label='angle 1')
+        ax1.plot(t1, theta2_85_p1p2, '+', label='angle 2', alpha=.7)
+        ax1.plot(t1, theta3_85_p1p2, 'x', label='angle 2', alpha=.3)
+        ax1.set_ylabel(field+'  ')
+        ax1.set_xlabel('years')
+
+        # --- plot 5:3
+        plot+=1
+        ax1 = fig.add_subplot(ligne,colonne,plot,)
+        field = 'Res Angle 5:3 | planet 1-2 '
+        ax1.plot(t1, theta1_53_p1p2, 'x', label='angle 1')
+        ax1.plot(t1, theta2_53_p1p2, '+', label='angle 2', alpha=.7)
+        ax1.plot(t1, theta3_53_p1p2, 'x', label='angle 2', alpha=.3)
         ax1.set_ylabel(field+'  ')
         ax1.set_xlabel('years')
 
@@ -3197,49 +3844,64 @@ if __name__ == "__main__":
             # df = pd.DataFrame(results, columns=header)
             # df.to_csv(file_name, sep="\t" )
 
+    if history_output :
+        print(">> Preparing text output...")
+        all_data = None
+        for key in planets_keys:
+            planet_data = planets_data[key]
+            planet_computed_data = planets_computed_data[key]
+            data = pd.DataFrame(planet_data['current_time'], columns=['current_time'])
+            data['planet'] = key
+            data['semi-major_axis_AU'] = planet_data['semi-major_axis']
+            # data['Omega_n'] = planets_computed_data[key]['orbital_period'] / planets_computed_data[key]['planet_rotation_period']
+            # data['corotation_radius_AU'] = planets_computed_data[key]['corotation_radius']
+            # data['planet_obliquity_deg'] = planets_computed_data[key]['planet_obliquity']
+            data['eccentricity'] = planet_data['eccentricity']
+            # data['inclination_deg'] = planet_data['inclination'] * (180 / np.pi)
+            # data['energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['inst_tidal_flux']
+            # data['mean_energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['mean_tidal_flux']
+            # data['planet_rotation_period_hours'] = planets_computed_data[key]['planet_rotation_period']*24
+            # data['planet_pseudo_synchronization_period'] = planets_computed_data[key]['pseudo_synchronization_period']
+            # data['energy_lost_due_to_tides_W'] = planets_computed_data[key]['denergy_dt']
+            # data['mean_energy_lost_due_to_tides_W'] = planets_computed_data[key]['gravitational_energy_lost']
+            # data['star_obliquity_deg'] = planets_computed_data[key]['star_obliquity']
+            # data['planet_precession_angle_deg'] = planets_computed_data[key]['planet_precession_angle']
+            # data['conservation_of_angular_momentum'] = conservation_of_angular_momentum
+            # data['star_rotation_period_days'] = star_rotation_period
+            # data['conservation_of_energy'] = 0.
+            # omega = (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))
+            # data['planet_rotation_rate'] = omega
+            # n = ( 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY))
+            data['planet_mean_motion'] = planet_computed_data['mean_motion']
+            data['position_x'] = planet_data['position_x']
+            data['position_y'] = planet_data['position_y']
+            data['position_z'] = planet_data['position_z']
+            data['spin'] = planet_computed_data['omega']
+            data['substellar_point'] = planet_computed_data['substellar_point']
+            data['true_ano'] = planet_data['true_anomaly']
+            data['mean_ano'] = planet_data['mean_anomaly']
+            data['long_per'] = planet_data['longitude_of_perihelion']
+            data['mean_longitude'] = planet_computed_data['mean_longitude']
+            data['true_ano_cumul'] = planet_computed_data['true_anomaly_cumul']
+            data['cartesian_angle_cumul'] = planet_computed_data['cartesian_position_angle']
+            data['theta'] = planet_computed_data['theta']
+            data['mean_ano_cumul'] = planet_computed_data['mean_ano_cumul']
+            data['theta_true_ano'] = planet_computed_data['theta_true_ano'] 
+            data['long_peri_rescaled'] = planet_computed_data['longitude_of_perihelion_rescaled'] 
+            data['theta_true_ano_long_peri'] = planet_computed_data['theta_true_ano_long_peri']
+            data['true_ano_longperi_corrected'] = planet_computed_data['true_ano_longperi_corrected']
+            data['theta_mean_ano'] = planet_computed_data['theta_mean_ano'] 
+            data['theta_cartesian_position_angle'] = planet_computed_data['theta_cartesian_position_angle']
+            data['planet_rotation_period'] = planet_computed_data['planet_rotation_period']
+            if all_data is None:
+                all_data = data
+            else:
+                all_data = pd.concat((all_data, data))
 
-    # print(">> Preparing text output...")
-    # all_data = None
-    # for key in planets_keys:
-    #     planet_data = planets_data[key]
-    #     data = pd.DataFrame(planet_data['current_time'], columns=['current_time'])
-    #     data['planet'] = key
-    #     data['semi-major_axis_AU'] = planet_data['semi-major_axis']
-    #     data['Omega/n'] = planets_computed_data[key]['orbital_period'] / planets_computed_data[key]['planet_rotation_period']
-    #     data['corotation_radius_AU'] = planets_computed_data[key]['corotation_radius']
-    #     data['planet_obliquity_deg'] = planets_computed_data[key]['planet_obliquity']
-    #     data['eccentricity'] = planet_data['eccentricity']
-    #     data['inclination_deg'] = planet_data['inclination'] * (180 / np.pi)
-    #     data['energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['inst_tidal_flux']
-    #     data['mean_energy_lost_due_to_tides_W_per_m2'] = planets_computed_data[key]['mean_tidal_flux']
-    #     data['planet_rotation_period_hours'] = planets_computed_data[key]['planet_rotation_period']*24
-    #     data['planet_pseudo_synchronization_period'] = planets_computed_data[key]['pseudo_synchronization_period']
-    #     data['energy_lost_due_to_tides_W'] = planets_computed_data[key]['denergy_dt']
-    #     data['mean_energy_lost_due_to_tides_W'] = planets_computed_data[key]['gravitational_energy_lost']
-    #     data['star_obliquity_deg'] = planets_computed_data[key]['star_obliquity']
-    #     data['planet_precession_angle_deg'] = planets_computed_data[key]['planet_precession_angle']
-    #     data['conservation_of_angular_momentum'] = conservation_of_angular_momentum
-    #     data['star_rotation_period_days'] = star_rotation_period
-    #     data['conservation_of_energy'] = 0.
-    #     omega = (2.*np.pi/ (planets_computed_data[key]['planet_rotation_period']*posidonius.constants.DAY))
-    #     data['planet_rotation_rate'] = omega
-    #     n = ( 2.*np.pi/ (planets_computed_data[key]['orbital_period']*posidonius.constants.DAY))
-    #     data['planet_mean_motion'] = n
-    #     # data['position_x'] = planet_data['position_x']
-    #     # data['position_y'] = planet_data['position_y']
-    #     # data['position_z'] = planet_data['position_z']
-    #     # data['spin_z'] = planet_data['spin_z']
-    #     data['substellar_point'] = planets_computed_data[key]['substellar_point']
-    #     if all_data is None:
-    #         all_data = data
-    #     else:
-    #         all_data = pd.concat((all_data, data))
+        output_text_dirname = os.path.dirname(filename)
+        output_text_filename = os.path.join(output_text_dirname, os.path.splitext(os.path.basename(filename))[0] + "_save.txt")
+        all_data.to_csv(output_text_filename, sep="\t", index=False)
 
-    # output_text_dirname = os.path.dirname(filename)
-    # output_text_filename = os.path.join(output_text_dirname, os.path.splitext(os.path.basename(filename))[0] + "_continue.txt")
-    # all_data.to_csv(output_text_filename, sep="\t", index=False)
-
-    # print("> Output data written to plain text file: {}\n".format(output_text_filename))
-
+        print("> Output data written to plain text file: {}\n".format(output_text_filename))
 
 

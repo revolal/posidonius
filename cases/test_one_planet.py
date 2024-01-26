@@ -13,13 +13,10 @@ if __name__ == "__main__":
 
     #initial_time = 4.5e6*365.25 # time [days] where simulation starts
     initial_time = 1.0*365.25 # time [days] where simulation starts
-    time_step = 0.001 # days
-    #time_step = 0.07 # days
-    #time_limit   = 4*time_step # days
-    #time_limit   = 365.25 * 1.0e8 # days
-    time_limit   = 18.772866 *100.# 2.*365.25 #* 1.0e2 # days
-    historic_snapshot_period = 0.1 #0.01*365.25 # days
-    recovery_snapshot_period = historic_snapshot_period # days
+    time_step = 0.05 # days
+    time_limit   = 100. *365.25 # 18.772866 *100.# 2.*365.25 #* 1.0e2 # days
+    historic_snapshot_period = 10. #0.01*365.25 # days
+    recovery_snapshot_period = 10.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
         "rotational_flattening": False,
@@ -30,7 +27,7 @@ if __name__ == "__main__":
     })
     universe = posidonius.Universe(initial_time, time_limit, time_step, recovery_snapshot_period, historic_snapshot_period, consider_effects)
 
-    star_mass = 0.089 # Solar masses
+    star_mass = 0.0898 # Solar masses
     star_radius_factor = 0.117
     star_radius = star_radius_factor * posidonius.constants.R_SUN
     star_radius_of_gyration = 4.47e-01 # Brown dwarf
@@ -144,7 +141,7 @@ if __name__ == "__main__":
 
     ############################################################################
 
-     # --- Planets periods in  days
+    # --- Planets periods in  days
     planet_period =(1.5112868036098193, 2.4227038555269917, 4.0504368087076257, 6.1029264019452052, 9.2103976604134150, 12.3562321332659266, 18.7787920964476669) # in days From AS Libert
     # --- Planets masses
     planet_masses = (4.1297145833e-06, 3.9564821698e-06, 1.1720208671e-06, 2.1148831802e-06, 3.1362928581e-06, 3.9669131016e-06, 9.8160839680e-07) # in Msun From AS Libert
@@ -153,18 +150,18 @@ if __name__ == "__main__":
     # --- Semi-major axis in AU
     planet_a = ( 0.0115418669425055, 0.0158094975622961, 0.0222700389997286, 0.0292694953252985, 0.0385106150958128, 0.0468445028220842, 0.0619224236258543 ) # in AU From AS Libert
     # --- Inclination in degrees
-    planet_i = (0., 0., 0., 0., 0., 0., 0.)
+    planet_i = (0., 0., 0., 0., 0., 0., 60.)
     # --- Eccentricity
     planet_e = ( 0.0066945347902135, 0.0019585600861175, 0.0072217598426537, 0.0052151102407526, 0.0095027023237257, 0.0032634092345139, 0.0044037179966920) # From AS Libert 
     # --- Mean longitude 
     planet_lamdba = ( 6.2807871243880449, 3.2752103444471459, 0.2445003452092198, 1.4578342582705632, 1.0048074576831532, 1.4551190036825181, 5.0763862710529217)  # in rad From AS Libert 
     # --- Argument of pericentre
-    # planet_p = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    planet_p = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     # --- longitude of ascending node
-    planet_n = (0., 0., 0., 0., 0., 0., 0.)
+    planet_n = (0., 0., 0., 0., 0., 0., 185.)
     # --- longitude of pericentre = argument of pericenter + longitude ascending node
-    planet_p = ( 3.9138033639162217, 3.9568810173922708, 3.6462719004641233, 0.9017217708596807, 3.1105825606949371, 5.8092293524825127, 3.2359374491128419) # in rad From AS Libert 
-    # planet_p = (0., 0., 0., 0., 0., 0., 0.)
+    # planet_p = ( 3.9138033639162217, 3.9568810173922708, 3.6462719004641233, 0.9017217708596807, 3.1105825606949371, 5.8092293524825127, 3.2359374491128419) # in rad From AS Libert 
+    planet_p = (0., 0., 0., 0., 0., 0., 0.)
     # --- Mean anomaly in degrees
     planet_mean_ano =  [ mean_lon - long_peri for (mean_lon, long_peri) in zip( planet_lamdba, planet_p) ] # compute from Mean longitude and longitude of pericentre
     print(f' -- Recomputed Mean anomaly {planet_mean_ano}')
@@ -179,7 +176,7 @@ if __name__ == "__main__":
     planet_radius = r / posidonius.constants.AU # planet_radius_factor * posidonius.constants.R_EARTH
     planet_radius_of_gyration = np.sqrt(gyration_radius_2) #5.75e-01
 
-    e = 0.2
+    e = 0.0
 
     # --- Specify initial position and velocity for a stable orbit
     # -- Keplerian orbital elements, in the `asteroidal' format of Mercury code
@@ -192,10 +189,10 @@ if __name__ == "__main__":
     planet_position, planet_velocity = posidonius.calculate_cartesian_coordinates(planet_mass, q, e, i, p, n, l, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
 
     # --- Initialization of planetary spin
-    planet_obliquity = 0.0 # 1.0e-4 # rad
+    planet_obliquity = 1. * posidonius.constants.DEG2RAD; # 1.0e-4 # rad
     # --- Initialize spin
     orbital_period = 2.*np.pi*(np.sqrt( (a*posidonius.constants.AU)**3. / ( posidonius.constants.G_SI*( star_mass*posidonius.constants.M_SUN + planet_mass*posidonius.constants.M_SUN ) ) ) )/86400.
-    planet_rotation_period = orbital_period/(1.0 +2e-5) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
+    planet_rotation_period = orbital_period/(2.0001) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
     planet_angular_frequency = posidonius.constants.TWO_PI/(planet_rotation_period) # days^-1
     # --- Pseudo-synchronization period
     # planet_pseudo_synchronization_period = posidonius.calculate_pseudo_synchronization_period(a, e, star_mass, planet_mass) # days
@@ -204,7 +201,8 @@ if __name__ == "__main__":
     # planet_keplerian_orbital_elements = posidonius.tools.calculate_keplerian_orbital_elements_bis(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
     planet_keplerian_orbital_elements = posidonius.calculate_keplerian_orbital_elements(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
     planet_inclination = planet_keplerian_orbital_elements[3]
-    planet_spin = posidonius.calculate_spin(planet_angular_frequency, planet_inclination, planet_obliquity)
+    planet_long_asc_node = planet_keplerian_orbital_elements[5]
+    planet_spin = posidonius.calculate_spin(planet_angular_frequency, planet_inclination, planet_obliquity, planet_long_asc_node)
 
     print("\n|--- Check "+planet+' : ')
     print("| \t Mass {} Radius {} Rg^2 {} ".format(m,r,gyration_radius_2))

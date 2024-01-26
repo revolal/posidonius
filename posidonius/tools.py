@@ -3,7 +3,7 @@ import numpy as np
 from posidonius.constants import *
 from posidonius.particles.axes import Axes
 
-def calculate_eccentricity_vector(gm, position, velocity):
+def calculate_eccentricity_vector(gm, position, velocity, big_eccentricity, len):
 
         # // --- Input --- //
         x = position.x()
@@ -12,6 +12,7 @@ def calculate_eccentricity_vector(gm, position, velocity):
         u = velocity.x()
         v = velocity.y()
         w = velocity.z()
+        (ex, ey, ez) = (np.zeros(len), np.zeros(len), np.zeros(len))
         
         # // --- Output --- //
         # eccentricity_vector
@@ -28,10 +29,18 @@ def calculate_eccentricity_vector(gm, position, velocity):
         # // distance
         r = np.sqrt(np.power(x,2) + np.power(y,2) + np.power(z,2) )
         # // eccentricity componant
+        if np.any(big_eccentricity):
+           ex[big_eccentricity] = (v_vect_h_x / gm) - (x / r)
+           ey[big_eccentricity] = (v_vect_h_y / gm) - (y / r)
+           ez[big_eccentricity] = (v_vect_h_z / gm) - (z / r)
         eccentricity_vector = []
-        eccentricity_vector.append( (v_vect_h_x / gm) - (x / r))
-        eccentricity_vector.append( (v_vect_h_y / gm) - (y / r))
-        eccentricity_vector.append( (v_vect_h_z / gm) - (z / r))
+        eccentricity_vector.append(ex)
+        eccentricity_vector.append(ey)
+        eccentricity_vector.append(ez)
+        # eccentricity_vector = []
+        # eccentricity_vector.append( (v_vect_h_x / gm) - (x / r))
+        # eccentricity_vector.append( (v_vect_h_y / gm) - (y / r))
+        # eccentricity_vector.append( (v_vect_h_z / gm) - (z / r))
 
         return eccentricity_vector
 
@@ -249,7 +258,7 @@ def _calculate_keplerian_orbital_elements(gm, position, velocity):
     r = np.sqrt(x*x + y*y + z*z)
     h = np.sqrt(h2)
     s = h2 / gm
-    (ex, ey, ez) = calculate_eccentricity_vector(gm, position, velocity)
+    # (ex, ey, ez) = calculate_eccentricity_vector(gm, position, velocity)
 
     ###-------------------------------------------------------------------------
     ### a: Semi-major axis
@@ -313,6 +322,8 @@ def _calculate_keplerian_orbital_elements(gm, position, velocity):
 
     small_eccentricity = eccentricity < 3.0e-8
     big_eccentricity = np.logical_not(small_eccentricity)
+
+    (ex, ey, ez) = calculate_eccentricity_vector(gm, position, velocity, big_eccentricity, len(ci))
 
     ###-------------------------------------------------------------------------
     ### True longitude
@@ -459,9 +470,10 @@ def _calculate_keplerian_orbital_elements(gm, position, velocity):
     non_zero_long_asc_node = n >=1e-8
     arg_peri = np.zeros(len(eccentricity))
     long_asc_node = np.zeros(len(eccentricity))
+    incl = np.zeros(len(eccentricity))
     if np.any(non_zero_long_asc_node):
-        long_asc_node = n[non_zero_long_asc_node]
-        incl = i[non_zero_long_asc_node]
+        long_asc_node[non_zero_long_asc_node] = n[non_zero_long_asc_node]
+        incl[non_zero_long_asc_node] = i[non_zero_long_asc_node]
         ex_rot = ex*np.cos(long_asc_node) +ey*np.sin(long_asc_node)
         ey_rot = -ex*np.sin(long_asc_node) +ey*np.cos(long_asc_node)
         ez_rot = ez
@@ -470,7 +482,7 @@ def _calculate_keplerian_orbital_elements(gm, position, velocity):
         _ez_rot_2 = -ey_rot*np.sin(incl) + ez_rot*np.cos(incl)
 
         arg_peri = np.arctan2(ey_rot_2,ex_rot_2)
-        p[non_zero_long_asc_node] = long_asc_node + arg_peri
+        p[non_zero_long_asc_node] = long_asc_node[non_zero_long_asc_node] + arg_peri[non_zero_long_asc_node]
         p = modulus((p + TWO_PI + TWO_PI), TWO_PI)
 
     ###-------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 import posidonius
+import posidonius.tools
 import numpy as np
 import argparse
 import os
@@ -13,15 +14,15 @@ if __name__ == "__main__":
 
     #initial_time = 4.5e6*365.25 # time [days] where simulation starts
     initial_time = 1.0*365.25 # time [days] where simulation starts
-    time_step = 0.001 # days
+    time_step = 0.05 # days
     #time_step = 0.07 # days
     #time_limit   = 4*time_step # days
     #time_limit   = 365.25 * 1.0e8 # days
-    time_limit   = 18.772866 *1.# 2.*365.25 #* 1.0e2 # days
+    time_limit   = 1.*365.25 #* 1.0e2 # days
     historic_snapshot_period = 0.1 #0.01*365.25 # days
-    recovery_snapshot_period = historic_snapshot_period # days
+    recovery_snapshot_period = 10.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
-        "tides": False,
+        "tides": True,
         "rotational_flattening": False,
         "general_relativity": False,
         "disk": False,
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     })
     universe = posidonius.Universe(initial_time, time_limit, time_step, recovery_snapshot_period, historic_snapshot_period, consider_effects)
 
-    star_mass = 0.089 # Solar masses
+    star_mass = 0.0898 # Solar masses
     star_radius_factor = 0.117
     star_radius = star_radius_factor * posidonius.constants.R_SUN
     star_radius_of_gyration = 4.47e-01 # Brown dwarf
@@ -54,9 +55,9 @@ if __name__ == "__main__":
         "love_number": 0.0,
     }
     star_tides_model = posidonius.effects.tides.ConstantTimeLag(star_tides_parameters)
-    # star_tides = posidonius.effects.tides.CentralBody(star_tides_model)
+    star_tides = posidonius.effects.tides.CentralBody(star_tides_model)
     #star_tides = posidonius.effects.tides.OrbitingBody(star_tides_model)
-    star_tides = posidonius.effects.tides.Disabled()
+    # star_tides = posidonius.effects.tides.Disabled()
     #
     # star_rotational_flattening_parameters = {"love_number": star_tides_parameters["love_number"] }
     #star_rotational_flattening_model = posidonius.effects.rotational_flattening.OblateSpheroid(star_rotational_flattening_parameters)
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     #star_rotational_flattening = posidonius.effects.rotational_flattening.OrbitingBody(star_rotational_flattening_model)
     star_rotational_flattening = posidonius.effects.rotational_flattening.Disabled()
     #
-    #star_general_relativity = posidonius.effects.general_relativity.CentralBody("Kidder1995")
+    # star_general_relativity = posidonius.effects.general_relativity.CentralBody("Kidder1995")
     #star_general_relativity = posidonius.effects.general_relativity.CentralBody("Anderson1975")
     #star_general_relativity = posidonius.effects.general_relativity.CentralBody("Newhall1983")
     #star_general_relativity = posidonius.effects.general_relativity.OrbitingBody()
@@ -163,26 +164,33 @@ if __name__ == "__main__":
     # --- longitude of ascending node
     planet_n = (0., 0., 0., 0., 0., 0., 0.)
     # --- longitude of pericentre = argument of pericenter + longitude ascending node
-    planet_p = ( 3.9138033639162217, 3.9568810173922708, 3.6462719004641233, 0.9017217708596807, 3.1105825606949371, 5.8092293524825127, 3.2359374491128419) # in rad From AS Libert 
+    planet_long_peri = ( 3.9138033639162217, 3.9568810173922708, 3.6462719004641233, 0.9017217708596807, 3.1105825606949371, 5.8092293524825127, 3.2359374491128419) # in rad From AS Libert 
     # planet_p = (0., 0., 0., 0., 0., 0., 0.)
     # --- Mean anomaly in degrees
-    planet_mean_ano =  [ mean_lon - long_peri for (mean_lon, long_peri) in zip( planet_lamdba, planet_p) ] # compute from Mean longitude and longitude of pericentre
+    planet_mean_ano =  [ mean_lon - long_peri for (mean_lon, long_peri) in zip( planet_lamdba, planet_long_peri) ] # compute from Mean longitude and longitude of pericentre
     print(f' -- Recomputed Mean anomaly {planet_mean_ano}')
 
     planets = ['T1-b','T1-c', 'T1-d', 'T1-e', 'T1-f', 'T1-g', 'T1-h']
-    for planet, r, m, a, t, i, l, e, p, n, w_lmpq, ImK2, ReK2, size, gyration_radius_2 in zip(
-        planets, planet_radiuses, planet_masses, planet_a, planet_period, planet_i, planet_mean_ano, planet_e, planet_p, planet_n, planet_w_lm, planet_Imk2, planet_Rek2, planet_nm_data, planet_gyration_radius_squared):
+    for planet, r, m, a, t, i, mean_ano, e, long_peri, n, w_lmpq, ImK2, ReK2, size, gyration_radius_2 in zip(
+        planets, planet_radiuses, planet_masses, planet_a, planet_period, planet_i, planet_mean_ano, planet_e, planet_long_peri, planet_n, planet_w_lm, planet_Imk2, planet_Rek2, planet_nm_data, planet_gyration_radius_squared):
         planet_mass = m # / posidonius.constants.M_SUN # Solar masses (3.0e-6 solar masses = 1 earth mass)
         # planet_radius_factor = r # R Earth
         planet_radius = r / posidonius.constants.AU # planet_radius_factor * posidonius.constants.R_EARTH
         planet_radius_of_gyration = np.sqrt(gyration_radius_2) #5.75e-01
 
+        mu = posidonius.constants.G_SI*( star_mass*posidonius.constants.M_SUN + planet_mass*posidonius.constants.M_SUN )
+        tmp = np.power(t*86400. /(2.0*np.pi),2)*mu
+        sma = np.power(tmp, 1./3.)
+        sma = sma /posidonius.constants.AU
+        a = sma # sma 
+
         # --- Specify initial position and velocity for a stable orbit
         # -- Keplerian orbital elements, in the `asteroidal' format of Mercury code
         i = i * posidonius.constants.DEG2RAD;   # inclination (degrees)
         # p = p * posidonius.constants.DEG2RAD;   # argument of pericentre (degrees)
+        p = long_peri
         n = n * posidonius.constants.DEG2RAD;  # longitude of the ascending node (degrees)
-        l = l * posidonius.constants.DEG2RAD;   # mean anomaly (degrees)
+        l = mean_ano #* posidonius.constants.DEG2RAD;   # mean anomaly (degrees)
         # p = (p + n);# Convert to longitude of perihelion !!
         q = a * (1.0 - e);# perihelion distance
         planet_position, planet_velocity = posidonius.calculate_cartesian_coordinates(planet_mass, q, e, i, p, n, l, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
@@ -197,9 +205,10 @@ if __name__ == "__main__":
         # planet_pseudo_synchronization_period = posidonius.calculate_pseudo_synchronization_period(a, e, star_mass, planet_mass) # days
         # planet_angular_frequency = posidonius.constants.TWO_PI/(planet_pseudo_synchronization_period) # days^-1
         # ---
-        planet_keplerian_orbital_elements = posidonius.calculate_keplerian_orbital_elements(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
+        planet_keplerian_orbital_elements = posidonius.tools.calculate_keplerian_orbital_elements(planet_mass, planet_position, planet_velocity, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
         planet_inclination = planet_keplerian_orbital_elements[3]
-        planet_spin = posidonius.calculate_spin(planet_angular_frequency, planet_inclination, planet_obliquity)
+        (planet_sma, planet_peri_distance, planet_ecc, planet_inclination, planet_long_peri, planet_long_asc_node, planet_mean_anomaly, planet_true_ano) = planet_keplerian_orbital_elements
+        planet_spin = posidonius.calculate_spin(planet_angular_frequency, planet_inclination, planet_obliquity, planet_long_asc_node)
 
         print("\n|--- Check "+planet+' : ')
         print("| \t Mass {} Radius {} Rg^2 {} ".format(m,r,gyration_radius_2))
@@ -258,8 +267,8 @@ if __name__ == "__main__":
 
         # --- Choose the type of particle (central body or orbiting body) :
         #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_model)
-        # planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
-        planet_tides = posidonius.effects.tides.Disabled()
+        planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
+        # planet_tides = posidonius.effects.tides.Disabled()
         # ---
         #planet_rotational_flattening_parameters = {"love_number": 0.9532}
         #planet_rotational_flattening_model = posidonius.effects.rotational_flattening.OblateSpheroid(planet_rotational_flattening_parameters)
@@ -270,7 +279,7 @@ if __name__ == "__main__":
         #planet_general_relativity = posidonius.effects.general_relativity.CentralBody("Kidder1995")
         #planet_general_relativity = posidonius.effects.general_relativity.CentralBody("Anderson1975")
         #planet_general_relativity = posidonius.effects.general_relativity.CentralBody("Newhall1983")
-        #planet_general_relativity = posidonius.effects.general_relativity.OrbitingBody()
+        # planet_general_relativity = posidonius.effects.general_relativity.OrbitingBody()
         planet_general_relativity = posidonius.effects.general_relativity.Disabled()
         #
         #planet_wind = posidonius.effects.wind.Interaction({

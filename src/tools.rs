@@ -834,7 +834,7 @@ fn mco_sine(x0: f64) -> (f64, f64, f64) {
     return (x, sx, cx);
 }
 
-fn modulus(a: f64, b: f64) -> f64 {
+pub fn modulus(a: f64, b: f64) -> f64 {
     //println!("Modulus: {}", -21.0f64 % 4.0f64);         // -1 because -21 divided by 4 gives -5 with a remainder of -1.
     //println!("Modulus: {}", 21.0f64 % 4.0f64);          //  1
     //println!("Modulus: {}", modulus(-21.0f64, 4.0f64)); //  3 because -21 + 4 x 6 is 3.
