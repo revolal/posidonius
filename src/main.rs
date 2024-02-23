@@ -84,6 +84,8 @@ fn main() {
     let new_time_limit;
     let execution_time_limit;
 
+    // let old_historic_snapshot_period:f64;
+
     match matches.subcommand() {
         ("start", Some(start_matches)) =>{
             first_universe_integrator_snapshot_filename = start_matches.value_of("start_case_filename").unwrap();
@@ -127,6 +129,19 @@ fn main() {
         },
     };
 
+    // old_historic_snapshot_period = boxed_universe_integrator.set_old_snapshot_periods();
+    // let n2 = old_historic_snapshot_period * boxed_universe_integrator.get_n_historic_snapshots() as f64 / new_historic_snapshot_period;
+    // println!("|\t old snapshot {:?} n1: {:?} new snapshot {:?} Give n2 {:?} \n",old_historic_snapshot_period, boxed_universe_integrator.get_n_historic_snapshots() as u64, new_historic_snapshot_period, n2 as usize);
+    // println!("|\t restored from {:?} or+1  {:?} ", new_historic_snapshot_period * ((n2 as usize) as f64) ,  new_historic_snapshot_period * ((n2 as usize+1) as f64) );
+    // if (n2*new_historic_snapshot_period) <= (old_historic_snapshot_period* boxed_universe_integrator.get_n_historic_snapshots() as f64){
+    //     println!("|\t n2: {:?} usize: {:?}  n2+1: {:?}",n2, n2 as usize, n2 as usize +1);
+    // }
+    let new_n_historic_snapshots = match(){
+        _ if resume => boxed_universe_integrator.get_new_n_historic_snapshots(new_historic_snapshot_period),
+        _ => 0,
+    };
+    // println!("\n|\t n2: {:?}", new_n_historic_snapshots);
+
     boxed_universe_integrator.set_snapshot_periods(new_historic_snapshot_period, new_recovery_snapshot_period);
     boxed_universe_integrator.set_time_limit(new_time_limit);
 
@@ -144,6 +159,12 @@ fn main() {
 
     let mut universe_history_writer = posidonius::output::get_universe_history_writer(universe_history_path, expected_n_bytes);
 
+    let mut just_resumed:bool = match(){
+        _ if resume => true,
+        _ => false,
+    };
+    // println!("| Is-resumed?: {:?} ", just_resumed);
+
     // Simulate
     let instant = Instant::now();
     let enabled_execution_time_limit = match execution_time_limit.as_secs() {
@@ -151,8 +172,10 @@ fn main() {
         _ => true,
     };
     loop {
-        match boxed_universe_integrator.iterate(&mut universe_history_writer, silent_mode) {
+        // println!("|- LOOP resumed? {:?}", just_resumed);
+        match boxed_universe_integrator.iterate(&mut universe_history_writer, silent_mode, just_resumed, new_n_historic_snapshots) {
             Ok(recovery_snapshot_time_trigger) => {
+                // println!("|\t -- Triggerded Recovery");
                 if enabled_execution_time_limit {
                     let elapsed = instant.elapsed();
                     if elapsed >= execution_time_limit {
@@ -168,6 +191,13 @@ fn main() {
             },
             Err(e) => { println!("[INFO {} UTC] {} '{}'.", time::now_utc().strftime("%Y.%m.%d %H:%M:%S").unwrap(), e, first_universe_integrator_snapshot_filename); break; }
         };
+        if just_resumed{
+            // println!("| \t Just resumed ! {:?} ",just_resumed );
+            // self.n_historic_snapshots = new_n_historic_snapshots;
+            just_resumed = false;
+            // println!("| \t Just resumed {:?} ", just_resumed );
+        }
+        // println!("|- END LOOP {:?}", just_resumesd);
     }
 
     let t2 = time::precise_time_s();

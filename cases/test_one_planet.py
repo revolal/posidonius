@@ -13,10 +13,10 @@ if __name__ == "__main__":
 
     #initial_time = 4.5e6*365.25 # time [days] where simulation starts
     initial_time = 1.0*365.25 # time [days] where simulation starts
-    time_step = 0.05 # days
-    time_limit   = 100. *365.25 # 18.772866 *100.# 2.*365.25 #* 1.0e2 # days
-    historic_snapshot_period = 10. #0.01*365.25 # days
-    recovery_snapshot_period = 10.*historic_snapshot_period # days
+    time_step = 0.01 # days
+    time_limit = 100.*365.25 # 18.772866 *100.# 2.*365.25 #* 1.0e2 # days
+    historic_snapshot_period = 100.*time_step # 1.*365.25 # days
+    recovery_snapshot_period = 2.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
         "tides": True,
         "rotational_flattening": False,
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     # --- Semi-major axis in AU
     planet_a = ( 0.0115418669425055, 0.0158094975622961, 0.0222700389997286, 0.0292694953252985, 0.0385106150958128, 0.0468445028220842, 0.0619224236258543 ) # in AU From AS Libert
     # --- Inclination in degrees
-    planet_i = (0., 0., 0., 0., 0., 0., 60.)
+    planet_i = (0., 0., 0., 0., 0., 0., 0.)
     # --- Eccentricity
     planet_e = ( 0.0066945347902135, 0.0019585600861175, 0.0072217598426537, 0.0052151102407526, 0.0095027023237257, 0.0032634092345139, 0.0044037179966920) # From AS Libert 
     # --- Mean longitude 
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     planet_radius = r / posidonius.constants.AU # planet_radius_factor * posidonius.constants.R_EARTH
     planet_radius_of_gyration = np.sqrt(gyration_radius_2) #5.75e-01
 
-    e = 0.0
+    e = 0.1
 
     # --- Specify initial position and velocity for a stable orbit
     # -- Keplerian orbital elements, in the `asteroidal' format of Mercury code
@@ -189,10 +189,10 @@ if __name__ == "__main__":
     planet_position, planet_velocity = posidonius.calculate_cartesian_coordinates(planet_mass, q, e, i, p, n, l, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
 
     # --- Initialization of planetary spin
-    planet_obliquity = 1. * posidonius.constants.DEG2RAD; # 1.0e-4 # rad
+    planet_obliquity = 00. * posidonius.constants.DEG2RAD; # 1.0e-4 # rad
     # --- Initialize spin
     orbital_period = 2.*np.pi*(np.sqrt( (a*posidonius.constants.AU)**3. / ( posidonius.constants.G_SI*( star_mass*posidonius.constants.M_SUN + planet_mass*posidonius.constants.M_SUN ) ) ) )/86400.
-    planet_rotation_period = orbital_period/(2.0001) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
+    planet_rotation_period = orbital_period/(1.0001) #24. # hours orbital_period/(1.0 + 1e-5) #24. # hours
     planet_angular_frequency = posidonius.constants.TWO_PI/(planet_rotation_period) # days^-1
     # --- Pseudo-synchronization period
     # planet_pseudo_synchronization_period = posidonius.calculate_pseudo_synchronization_period(a, e, star_mass, planet_mass) # days
@@ -320,8 +320,8 @@ if __name__ == "__main__":
     whfast_alternative_coordinates="DemocraticHeliocentric"
     #whfast_alternative_coordinates="WHDS"
     #whfast_alternative_coordinates="Jacobi"
-    universe.write(filename, integrator="WHFast", whfast_alternative_coordinates=whfast_alternative_coordinates)
-    # universe.write(filename, integrator="IAS15")
+    # universe.write(filename, integrator="WHFast", whfast_alternative_coordinates=whfast_alternative_coordinates)
+    universe.write(filename, integrator="IAS15")
     # universe.write(filename, integrator="LeapFrog")
 
 

@@ -82,39 +82,39 @@ pub fn calculate_tidal_force(tidal_host_particle: &Particle, particle: &mut Part
     //                             *sin_theta ;
 
     // --- The tidal force --- // secular
-    // let tidal_force_x = radial_component_of_the_tidal_force_secular
-    //                             *sin_theta *cos_phi 
-    //                         + normal_component_of_the_tidal_force_secular
-    //                             *cos_theta *cos_phi 
-    //                         - orthogonal_component_of_the_tidal_force_secular 
-    //                             *sin_phi ;
-    // let tidal_force_y = radial_component_of_the_tidal_force_secular
-    //                             *sin_theta *sin_phi
-    //                         + normal_component_of_the_tidal_force_secular
-    //                             *cos_theta *sin_phi
-    //                         + orthogonal_component_of_the_tidal_force_secular
-    //                             *cos_phi ;
-    // let tidal_force_z = radial_component_of_the_tidal_force_secular
-    //                             *cos_theta
-    //                         - normal_component_of_the_tidal_force_secular
-    //                             *sin_theta ;
-    // --- The tidal torque --- // return the secular part of the tidal torque (simplified from the rapid varying phases)
-    particle.tides.parameters.internal.kaula_tidal_force.x = radial_component_of_the_tidal_force_secular
+    let tidal_force_x = radial_component_of_the_tidal_force_secular
                                 *sin_theta *cos_phi 
                             + normal_component_of_the_tidal_force_secular
                                 *cos_theta *cos_phi 
-                            - orthogonal_component_of_the_tidal_force_secular
+                            - orthogonal_component_of_the_tidal_force_secular 
                                 *sin_phi ;
-    particle.tides.parameters.internal.kaula_tidal_force.y = radial_component_of_the_tidal_force_secular
+    let tidal_force_y = radial_component_of_the_tidal_force_secular
                                 *sin_theta *sin_phi
                             + normal_component_of_the_tidal_force_secular
                                 *cos_theta *sin_phi
-                            + orthogonal_component_of_the_tidal_force_secular 
+                            + orthogonal_component_of_the_tidal_force_secular
                                 *cos_phi ;
-    particle.tides.parameters.internal.kaula_tidal_force.z = radial_component_of_the_tidal_force_secular
+    let tidal_force_z = radial_component_of_the_tidal_force_secular
                                 *cos_theta
                             - normal_component_of_the_tidal_force_secular
                                 *sin_theta ;
+    // --- The tidal torque --- // return the secular part of the tidal torque (simplified from the rapid varying phases)
+    // particle.tides.parameters.internal.kaula_tidal_force.x = radial_component_of_the_tidal_force_secular
+    //                             *sin_theta *cos_phi 
+    //                         + normal_component_of_the_tidal_force_secular
+    //                             *cos_theta *cos_phi 
+    //                         - orthogonal_component_of_the_tidal_force_secular
+    //                             *sin_phi ;
+    // particle.tides.parameters.internal.kaula_tidal_force.y = radial_component_of_the_tidal_force_secular
+    //                             *sin_theta *sin_phi
+    //                         + normal_component_of_the_tidal_force_secular
+    //                             *cos_theta *sin_phi
+    //                         + orthogonal_component_of_the_tidal_force_secular 
+    //                             *cos_phi ;
+    // particle.tides.parameters.internal.kaula_tidal_force.z = radial_component_of_the_tidal_force_secular
+    //                             *cos_theta
+    //                         - normal_component_of_the_tidal_force_secular
+    //                             *sin_theta ;
 
 
     return Axes{x: tidal_force_x, y: tidal_force_y, z: tidal_force_z}

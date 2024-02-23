@@ -89,6 +89,22 @@ impl Integrator for LeapFrog {
     fn get_n_historic_snapshots(&self) -> usize {
         self.n_historic_snapshots
     }
+
+    fn get_new_n_historic_snapshots(&self, new_historic_snapshot_period:f64) -> usize {
+        let old_historic_snapshot_period = self.historic_snapshot_period;
+        // let self.historic_snapshot_period 
+        let n1 = self.n_historic_snapshots as f64;
+        let quoiencoreputain = old_historic_snapshot_period *n1;
+        let n2 = (quoiencoreputain / new_historic_snapshot_period) as usize;
+        if (n2 as f64 * new_historic_snapshot_period) < quoiencoreputain {
+            return n2 as usize  +1 ;
+        } else {
+            return n2 as usize ;
+        }
+    }
+    // fn set_n_historic_snapshots(&self,new_n_historic_snapshots:usize ) {
+    //     self.n_historic_snapshots = new_n_historic_snapshots
+    // }
     
     fn get_n_particles(&self) -> usize {
         self.universe.n_particles
@@ -146,7 +162,7 @@ impl Integrator for LeapFrog {
         self.universe.calculate_roche_radiuses(); // Needed for collision detection
     }
 
-    fn iterate(&mut self, universe_history_writer: &mut BufWriter<File>, silent_mode: bool) -> Result<bool, String> {
+    fn iterate(&mut self, universe_history_writer: &mut BufWriter<File>, silent_mode: bool, mut just_resumed: bool, new_n_historic_snapshots:usize) -> Result<bool, String> {
         // Output
         let first_snapshot_trigger = self.last_historic_snapshot_time < 0.;
         let historic_snapshot_time_trigger = self.last_historic_snapshot_time + self.historic_snapshot_period <= self.current_time;

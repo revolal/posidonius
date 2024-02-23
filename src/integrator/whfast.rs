@@ -170,6 +170,22 @@ impl Integrator for WHFast {
         self.n_historic_snapshots
     }
 
+    fn get_new_n_historic_snapshots(&self, new_historic_snapshot_period:f64) -> usize {
+        let old_historic_snapshot_period = self.historic_snapshot_period;
+        // let self.historic_snapshot_period 
+        let n1 = self.n_historic_snapshots as f64;
+        let quoiencoreputain = old_historic_snapshot_period *n1;
+        let n2 = (quoiencoreputain / new_historic_snapshot_period) as usize;
+        if (n2 as f64 * new_historic_snapshot_period) < quoiencoreputain {
+            return n2 as usize  +1 ;
+        } else {
+            return n2 as usize ;
+        }
+    }
+    // fn set_n_historic_snapshots(&self,new_n_historic_snapshots:usize ) {
+    //     self.n_historic_snapshots = new_n_historic_snapshots
+    // }
+
     fn get_n_particles(&self) -> usize {
         self.universe.n_particles
     }
@@ -226,11 +242,19 @@ impl Integrator for WHFast {
         self.universe.calculate_roche_radiuses(); // Needed for collision detection
     }
 
-    fn iterate(&mut self, universe_history_writer: &mut BufWriter<File>, silent_mode: bool) -> Result<bool, String> {
+    fn iterate(&mut self, universe_history_writer: &mut BufWriter<File>, silent_mode: bool, mut just_resumed:bool, new_n_historic_snapshots:usize) -> Result<bool, String> {
         // Output
         let first_snapshot_trigger = self.last_historic_snapshot_time < 0.;
         let historic_snapshot_time_trigger = self.last_historic_snapshot_time + self.historic_snapshot_period <= self.current_time;
         let recovery_snapshot_time_trigger = self.last_recovery_snapshot_time + self.recovery_snapshot_period <= self.current_time;
+
+        // println!("\n| Last snaphot {:?} N_snapshot: {:?} | is just resumed: {:?} ", self.last_historic_snapshot_time , self.n_historic_snapshots, just_resumed );
+        if just_resumed{
+            self.n_historic_snapshots = new_n_historic_snapshots;
+            just_resumed = false;
+            // println!("| \t Just resumed {:?}: N_snapshot {:?} ",just_resumed ,self.n_historic_snapshots );
+        }
+        
         if first_snapshot_trigger || historic_snapshot_time_trigger {
             self.universe.inertial_to_heliocentric();
             let evolution = true;
@@ -240,10 +264,14 @@ impl Integrator for WHFast {
             }
             write_historic_snapshot(universe_history_writer, &self.universe, self.current_time, self.time_step);
             self.last_historic_snapshot_time = self.n_historic_snapshots as f64*self.historic_snapshot_period; // Instead of self.current_time to avoid small deviations
+
+            // println!("\n|\t Next snapshot is {:?} = N_snapshot {:?} X snapshot_period {:?} ", self.last_historic_snapshot_time ,  self.n_historic_snapshots , self.historic_snapshot_period );
+
             self.n_historic_snapshots += 1;
             let current_time_years = self.current_time/365.25;
             if ! silent_mode {
                 print!("Year: {:0.0} ({:0.1e}) | Time step: {:0.3} days                    \r", current_time_years, current_time_years, self.time_step);
+                // print!("\n| Year: {:0.0} ({:0.1e}) | Time step: {:0.3} days                    ", current_time_years, current_time_years, self.time_step);
                 let _ = std::io::stdout().flush();
             }
         }

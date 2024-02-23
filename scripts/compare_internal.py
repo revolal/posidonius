@@ -24,8 +24,6 @@ def k2_data(file_name):
     return w_lmpq, ImK2, ReK2
 
 
-
-
 def calculate_kaula_numbers(wk2, nm_data, real_part_love_number, imaginary_part_love_number, love_number_excitation_frequency):
     nm_data = int(nm_data)
     line_up, column_up, line_down, column_down = 0, 0, 0, 0
@@ -107,11 +105,6 @@ def calculate_kaula_numbers(wk2, nm_data, real_part_love_number, imaginary_part_
                                 im_k2 = imaginary_part_love_number[frequency1][frequency2]
                                 re_k2 = real_part_love_number[frequency1][frequency2]
                                 column_up, line_up,
-
-
-
-
-
 
 
 # Plot Sub-stellar comparison
@@ -259,9 +252,10 @@ line[14] = "x"
 line[15] = "+"
 
 
-plot_control = False
+plot_control_spin_meanmotion = False
 plot_control_k2 = False
-plot_substellar = True
+plot_substellar = False
+plot_ecc_data = True
 
 if plot_control_k2:
     pwd = '/Users/revolal/Desktop/posidonius/input/love_numbers/trappist1/20230309_Data_Posidonius/'
@@ -400,12 +394,8 @@ if plot_control_k2:
             plt.close()
             print("| Output figure file written to: {}".format(save_file_name))
 
-            
 
-
-            
-
-if plot_control:
+if plot_control_spin_meanmotion:
     fig = plt.figure(figsize=(10,6))#*len(planets_keys)))
     ligne = 1#len(planets_keys) 
     colonne = 1
@@ -578,30 +568,36 @@ if plot_control:
     plt.close()
     print("| Output figure file written to: {}".format(output_figure_filename_each_case))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if plot_ecc_data:
+    fig = plt.figure(figsize=(10*len(planets_keys),6*len(cases_planets_data)))
+    ligne = len(cases_planets_data)
+    colonne = len(planets_keys) 
+    plot = 0
+    for case, data_cases in zip(cases,cases_planets_data):
+        print(f'|\t Plot {case}')
+        planets_data = data_cases
+        
+        for key in planets_keys:
+            plot+=1
+            ax1 = fig.add_subplot(ligne,colonne,plot)
+            planet_data = planets_data[key]
+            # time = [t*365.25 for t in planet_data['current_time']]
+            time = planet_data['current_time']
+            # substellar_point = planet_data['substellar_point']
+            ecc = planet_data['eccentricity']
+            long_peri = planet_data['long_per']
+            field = f' {case} | {lab[int(key)]} '
+            ax1.plot(time, long_peri)
+            ax1.axhline(y=0., ls=':', color='black')
+            ax1.set_ylabel(field, fontsize=16)
+            ax1.set_xlabel('years', fontsize=16)
+            plt.yticks(fontsize=16)
+            plt.xticks(fontsize=16)
+            ax1.legend(loc=0, prop={'size':8})
+    plt.tight_layout()
+    plt.savefig(output_figure_filename_all)
+    plt.close()
+    print("| Output figure file written to: {}".format(output_figure_filename_all))
 
 
 # fig = plt.figure(figsize=(10*len(planets_keys),6*len(cases_planets_data)))
