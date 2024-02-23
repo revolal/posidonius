@@ -22,7 +22,7 @@ if __name__ == "__main__":
     historic_snapshot_period = 0.1 #0.01*365.25 # days
     recovery_snapshot_period = 10.*historic_snapshot_period # days
     consider_effects = posidonius.ConsiderEffects({
-        "tides": True,
+        "tides": False,
         "rotational_flattening": False,
         "general_relativity": False,
         "disk": False,
@@ -55,9 +55,9 @@ if __name__ == "__main__":
         "love_number": 0.0,
     }
     star_tides_model = posidonius.effects.tides.ConstantTimeLag(star_tides_parameters)
-    star_tides = posidonius.effects.tides.CentralBody(star_tides_model)
+    # star_tides = posidonius.effects.tides.CentralBody(star_tides_model)
     #star_tides = posidonius.effects.tides.OrbitingBody(star_tides_model)
-    # star_tides = posidonius.effects.tides.Disabled()
+    star_tides = posidonius.effects.tides.Disabled()
     #
     # star_rotational_flattening_parameters = {"love_number": star_tides_parameters["love_number"] }
     #star_rotational_flattening_model = posidonius.effects.rotational_flattening.OblateSpheroid(star_rotational_flattening_parameters)
@@ -267,8 +267,8 @@ if __name__ == "__main__":
 
         # --- Choose the type of particle (central body or orbiting body) :
         #planet_tides = posidonius.effects.tides.CentralBody(planet_tides_model)
-        planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
-        # planet_tides = posidonius.effects.tides.Disabled()
+        # planet_tides = posidonius.effects.tides.OrbitingBody(planet_tides_model)
+        planet_tides = posidonius.effects.tides.Disabled()
         # ---
         #planet_rotational_flattening_parameters = {"love_number": 0.9532}
         #planet_rotational_flattening_model = posidonius.effects.rotational_flattening.OblateSpheroid(planet_rotational_flattening_parameters)

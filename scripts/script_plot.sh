@@ -18,18 +18,18 @@ pwd=/Volumes/Expansion/baobab/posidonius
 
 # Plot Sub-stellar comparison
 json_dir=${pwd}/json_files/json_substellar
-# data_dir=${pwd}/substellar/andrade
-# cases=(
-# "t1_earth_andrade_0001_h01" 
-# "t1_earth_andrade_0001"
-# "t1_earth_andrade_001"
-# "t1_earth_andrade_01")
-data_dir=${pwd}/substellar/sunbergcooper
-cases=( 
-"t1_earth_sunbergcooper_0001_h01"
-"t1_earth_sunbergcooper_0001"
-"t1_earth_sunbergcooper_001"
-"t1_earth_sunbergcooper_01")
+data_dir=${pwd}/substellar/andrade
+cases=(
+"t1_earth_andrade_0001_h01" 
+"t1_earth_andrade_0001"
+"t1_earth_andrade_001"
+"t1_earth_andrade_01")
+# data_dir=${pwd}/substellar/sunbergcooper
+# cases=( 
+# "t1_earth_sunbergcooper_0001_h01"
+# "t1_earth_sunbergcooper_0001"
+# "t1_earth_sunbergcooper_001"
+# "t1_earth_sunbergcooper_01")
 
 # # Plot Sub-stellar comparison
 # json_dir=${pwd}/json_files/json_mmr_test

@@ -309,17 +309,22 @@ if __name__ == "__main__":
         conservation_of_angular_momentum[0] = conservation_of_angular_momentum[1]
 
     PI = np.pi
-    G = 1.
+    # G = 1.
     G_SI = 6.67428e-11  #.   m^3.kg^-1.s^-2 (S.I. units)
+
     AU = 1.49597870700e11 #.   m
 
     DAY = 24.*3600 #.   s
+
+    
 
     M_SUN =  1.9818e30 #.   Kg
     M_EARTH = 5.972e24 #.   Kg
     M_JUP = 1.898e27
 
     R_SUN = 696340000 # meter
+
+    G = G_SI/(AU*AU*AU) * M_SUN * (DAY*DAY)
 
 
     # filename = "./data/r_21_a02_samem_1J1J_history.txt"
@@ -338,15 +343,14 @@ if __name__ == "__main__":
     # raw_delta_L = np.array(raw_data['conservation_of_angular_momentum'][np.where(number==1)])
     # raw_M = np.array(raw_data['mean_anomaly'])
 
-    M = star_mass
-    m1 = planets_data['6']['mass'][0]
-    m2 = planets_data['7']['mass'][0]
-
+    M = star_mass # in Msun
+    m1 = planets_data['6']['mass'][0] # in Msun
+    m2 = planets_data['7']['mass'][0] # in Msun
     # Omega_SI = raw_Omega/86400.
     # corot_r = pow((G_SI*(M*M_SUN)/(Omega_SI*Omega_SI)), 1./3.)/AU
 
 
-    a_1 = planets_data['6']['semi-major_axis']
+    a_1 = planets_data['6']['semi-major_axis'] # in AU
     e_1 = planets_data['6']['eccentricity']
     l_1 = planets_computed_data['6']['mean_longitude'] # in rad 
     w_1 = planets_data['6']['longitude_of_perihelion'] # in rad
@@ -358,6 +362,11 @@ if __name__ == "__main__":
     w_2 = planets_data['7']['longitude_of_perihelion'] # in rad
     # r_Omega_n_2 = raw_Omega/raw_n[np.where(number==2)]
 
+    print(f'| check a1 {a_1[0]} a2 {a_2[0]}')
+    print(f'| check e1 {e_1[0]} e2 {e_2[0]}')
+    print(f'| check l1 {l_1[0]} {l_1[0]%(2.0*np.pi)} l2 {l_2[0]} {l_2[0]%(2.0*np.pi)}')
+    print(f'| check w1 {w_1[0]} {w_1[0]%(2.0*np.pi)} w2 {w_2[0]} {w_2[0]%(2.0*np.pi)}')
+
     raw_t = planets_data['6']['current_time'] # in years
 
     length = len(raw_t)
@@ -366,10 +375,10 @@ if __name__ == "__main__":
 
 
 
-    def MMR_1st_order(M, m1, m2, a1, a2, e1, e2, l1, l2, w1, w2, m=0):
+    def MMR_1st_order(i,M, m1, m2, a1, a2, e1, e2, l1, l2, w1, w2, m=0):
 
-        period_1 = 2*PI*np.sqrt(a1**3/(G*M))
-        period_2 = 2*PI*np.sqrt(a2**3/(G*M))
+        period_1 = planets_computed_data['6']['orbital_period'][i] # 2*PI*np.sqrt(a1**3/(G*M))
+        period_2 = planets_computed_data['7']['orbital_period'][i] # 2*PI*np.sqrt(a2**3/(G*M))
 
         # A switch for which kind of first order resonance
         # simply set m = 0 and let the program decide itself    
@@ -379,6 +388,8 @@ if __name__ == "__main__":
                 return 1
         else:
             m = round(period_1/(period_2-period_1))
+            print(f'| \t resonance order m={m} for period ratio {period_2/period_1} i.e. {(m+1)/m}')
+
             
         if m == 0:
             return (np.nan,) * 3
@@ -396,44 +407,46 @@ if __name__ == "__main__":
         Lambda1 = m1 * np.sqrt(G*M*a1)
         Lambda2 = m2 * np.sqrt(G*M*a2)
         
-        P1 = m1 *np.sqrt(G*M*a1)*(1-np.sqrt(1-e1**2))
-        P2 = m2 *np.sqrt(G*M*a2)*(1-np.sqrt(1-e2**2))
+        P1 = m1 *np.sqrt(G*M*a1)*(1.-np.sqrt(1.-e1**2.))
+        P2 = m2 *np.sqrt(G*M*a2)*(1.-np.sqrt(1.-e2**2.))
 
         # Eq.9
-        theta = (m+1)*l2 - m*l1
+        theta = (m+1.)*l2 - m*l1
         theta1 = l1 
         # Eq.12
-        Theta = Lambda2/(m+1)
-        Theta1 = m/(m+1)*Lambda2 + Lambda1
+        Theta = Lambda2/(m+1.)
+        Theta1 = m/(m+1.)*Lambda2 + Lambda1
         # Eq.13
-        x1 = np.sqrt(2*P1)*np.cos(p1)
-        x2 = np.sqrt(2*P2)*np.cos(p2)
-        y1 = np.sqrt(2*P1)*np.sin(p1)
-        y2 = np.sqrt(2*P2)*np.sin(p2)
-        
+        x1 = np.sqrt(2.*P1)*np.cos(p1)
+        x2 = np.sqrt(2.*P2)*np.cos(p2)
+        y1 = np.sqrt(2.*P1)*np.sin(p1)
+        y2 = np.sqrt(2.*P2)*np.sin(p2)
+        # Change all action in units of \Theta_1
         x1_cap = x1/np.sqrt(Theta1)
         x2_cap = x2/np.sqrt(Theta1)
         y1_cap = y1/np.sqrt(Theta1)
         y2_cap = y2/np.sqrt(Theta1)
 
+        # Nominal resonance location
+        alpha_res = (m/(m+1.))**(2./3.)
 
-        alpha_res = (m/(m+1))**(2/3)
         xi = m1/m2
-        
+        # Change all action in units of \Theta_1
         Theta_cap = Theta/Theta1
         Theta_bar = alpha_res /(m*(alpha_res + xi))
 
         s = np.sqrt(alpha/alpha_res)
-        delta_Theta = xi/m *(1 - s) * 1/(alpha_res + xi + s*xi*(1+xi/alpha_res))
+        # Eq.21
+        delta_Theta = xi/m *(1. - s) * 1./(alpha_res + xi + s*xi*(1.+xi/alpha_res))
 
         fm1_27 = [-1.19049, -2.02522, -2.84043 ,-3.64962 ,4.45614, -5.26125 ,-6.06552, -6.86925, -7.67261 , -8.47571 , -9.27861 , -10.0814, -10.884]
         fm1_31 = [0.42839, 2.48401, 3.28326, 4.08371, 4.88471, 5.68601, 6.48749, 7.28909, 8.09077, 8.89251, 9.69429, 10.4961, 11.2979]
 
-        delta1 = 1/((m+1) * Theta_cap)**2 * fm1_27[m-1]/(np.sqrt(1 - m*Theta_cap))
-        delta2 = 1/((m+1) * Theta_cap)**2 * fm1_31[m-1]/(np.sqrt((m+1) * Theta_cap))
+        delta1 = 1./((m+1.) * Theta_cap)**2. * fm1_27[m-1]/(np.sqrt(1. - m*Theta_cap))
+        delta2 = 1./((m+1.) * Theta_cap)**2. * fm1_31[m-1]/(np.sqrt((m+1.) * Theta_cap))
 
-        delta1_bar = 1/((m+1) * Theta_bar)**2 * fm1_27[m-1]/(np.sqrt(1 - m*Theta_bar))
-        delta2_bar = 1/((m+1) * Theta_bar)**2 * fm1_31[m-1]/(np.sqrt((1 + m)*Theta_bar))
+        delta1_bar = 1./((m+1.) * Theta_bar)**2. * fm1_27[m-1]/(np.sqrt(1. - m*Theta_bar))
+        delta2_bar = 1./((m+1.) * Theta_bar)**2. * fm1_31[m-1]/(np.sqrt((1. + m)*Theta_bar))
         delta_bar = np.sqrt(delta1_bar**2 + delta2_bar**2)
 
         r1 = (delta1_bar*x1_cap + delta2_bar*x2_cap)/delta_bar
@@ -442,8 +455,9 @@ if __name__ == "__main__":
         s2 = (delta2_bar*y1_cap - delta1_bar*y2_cap)/delta_bar
 
         # Psi2 is not needed, noted that r2 and s2 are conserved
-        Psi = 1/2 * (r1**2 + s1**2)
-        Psi2 = 1/2 * (r2**2 + s2**2)
+        # Eq.24
+        Psi = 1./2. * (r1**2. + s1**2.)
+        Psi2 = 1./2. * (r2**2. + s2**2.)
         psi = np.arctan2(s1, r1)
         
         phi = theta + psi
@@ -451,12 +465,15 @@ if __name__ == "__main__":
 
         Phi = Psi
         Gamma = Psi - delta_Theta
+        print(f'|\t Gamma {Gamma} = Psi {Psi} - dTehta {delta_Theta}')
 
         R = abs(fm1_27[m-1]/fm1_31[m-1])
-        Q = epsp**(2./3.) * xi * (fm1_31[m-1]**2. / (9.*(m+1.)*(1.+xi)**2.))**(1./3.) * (alpha_res**(5./6.) / m) * ((R**2 + xi*np.sqrt(alpha_res))/(alpha_res+xi)**5)**(1/3)
+        # Eq.31
+        Q = epsp**(2./3.) * xi * (fm1_31[m-1]**2. / (9.*(m+1.)*(1.+xi)**2.))**(1./3.) * (alpha_res**(5./6.) / m) * ((R**2. + xi*np.sqrt(alpha_res))/(alpha_res+xi)**5.)**(1./3.)
 
         # "rescale the variables", that's what she said
         Phi_p = Phi/Q 
+        # Eq.36
         Gamma_p = Gamma/Q
         X = np.sqrt(2*Phi_p) * np.cos(phi)
         Y = np.sqrt(2*Phi_p) * np.sin(phi)
@@ -515,7 +532,8 @@ if __name__ == "__main__":
     # We manually input M=1 for stellar mass
     separatrix = False
     for i in range(length):
-        X[i], Y[i], Gamma_p[i] = MMR_1st_order(M, m1, m2, a_1[i], a_2[i], e_1[i], e_2[i], l_1[i], l_2[i], w_1[i], w_2[i])
+        X[i], Y[i], Gamma_p[i] = MMR_1st_order(i,M, m1, m2, a_1[i], a_2[i], e_1[i], e_2[i], l_1[i], l_2[i], w_1[i], w_2[i])
+        print(f'| \t Gamma : {Gamma_p[i]}')
         
         if np.isnan(Gamma_p[i]):
             # Resonance = False
@@ -531,6 +549,7 @@ if __name__ == "__main__":
     X3 = X_fix[:,2]
     X_cross_1 = -X3 + 2./np.sqrt(X3)
     X_cross_2 = -X3 - 2./np.sqrt(X3)
+    exit()
 
 
 def resonance_series(frame_index):
