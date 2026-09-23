@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     initial_time = 1.0*365.25 # time [days] where simulation starts
     time_step = 0.0001 # days
-    time_limit = 100.*365.25 # days
+    time_limit = 1.*365.25 # days
     historic_snapshot_period = 0.01 # [Set a short historic period to compute the substellar point evolution accurately ] # days
     recovery_snapshot_period = 50.0 # days
     consider_effects = posidonius.ConsiderEffects({
@@ -112,7 +112,7 @@ if __name__ == "__main__":
             if path.endswith('.txt'):
                 file_dir_path.append(path)
     file_dir_path.sort()
-    #print(file_dir_path)
+    print(file_dir_path)
 
     planet_param = []
     planet_masses = []
@@ -168,10 +168,19 @@ if __name__ == "__main__":
     # --- longitude of pericentre = argument of pericenter + longitude ascending node
     planet_p = ( 3.9138033639162217, 3.9568810173922708, 3.6462719004641233, 0.9017217708596807, 3.1105825606949371, 5.8092293524825127, 3.2359374491128419) # in rad From Teyssandier+22
     # planet_p = (0., 0., 0., 0., 0., 0., 0.)
-
-    # --- Mean anomaly in degrees
+    print("Arg peri (rad): ", planet_p)
+    # (3.9138033639162217, 3.956881017392271, 3.6462719004641233, 0.9017217708596807, 3.110582560694937, 5.809229352482513, 3.235937449112842)
+    planet_p_deg = [p *180/np.pi for p in planet_p]
+    print("Arg peri (deg): ", planet_p_deg)
+    # [224.24441459650376, 226.7125823320084, 208.91599085374006, 51.66485176532241, 178.22325255481613, 332.8443241207641, 185.40555860249543]
+    
+    # --- Mean anomaly in rad
     planet_l =  [ (mean_long - long_peri)%(2.*np.pi) for (mean_long, long_peri) in zip( planet_mean_long, planet_p) ] # Computed from the Mean longitude and longitude of pericentre
-
+    print("Mean ano (rad) :", planet_l)
+    # [2.366983760471823, 5.601514634234461, 2.8814137519246827, 0.5561124874108825, 4.177410204167803, 1.9290749583795916, 1.8404488219400799]
+    planet_l_deg = [l*180./np.pi for l in planet_l]
+    print("Mean ano (deg) :", planet_l_deg)
+    # [135.61817965104004, 320.9431474224017, 165.09284701623992, 31.862898463165692, 239.34797399369864, 110.52785347952555, 105.44994990699092]
 
     planets = ['b', 'c', 'd', 'e', 'f', 'g', 'h']
     for planet, r, m, t, i, l, e, p, n, w_lmpq, ImK2, ReK2, size, gyration_radius_2 in zip(
@@ -188,10 +197,10 @@ if __name__ == "__main__":
 
         # --- Specify initial position and velocity for a stable orbit
         # -- Keplerian orbital elements, in the `asteroidal' format of Mercury code
-        i = i * posidonius.constants.DEG2RAD;  # inclination (degrees)
-        # p = p already in rad * posidonius.constants.DEG2RAD;   # argument of pericentre (degrees)
+        i = i * posidonius.constants.DEG2RAD;  # inclination (degrees to rad)
+        # p = p already in rad * posidonius.constants.DEG2RAD;   # argument of pericentre (degrees to rad)
         # n = n * posidonius.constants.DEG2RAD;  # longitude of the ascending node (degrees)
-        # l = l * posidonius.constants.DEG2RAD;   # mean anomaly (degrees)
+        # l = l * posidonius.constants.DEG2RAD;   # mean anomaly (degrees to rad)
         p = (p + n) # Convert to longitude of perihelion !!
         q = sma * (1.0 - e); # perihelion distance
         planet_position, planet_velocity = posidonius.calculate_cartesian_coordinates(planet_mass, q, e, i, p, n, l, masses=[star_mass], positions=[star_position], velocities=[star_velocity])
@@ -200,7 +209,7 @@ if __name__ == "__main__":
         planet_obliquity = 0.0 #  rad
         # --- Initialize spin
         orbital_period = t
-        planet_rotation_period = orbital_period/(1.0) # in Days
+        planet_rotation_period = orbital_period/(1.01) # in Days
         planet_angular_frequency = posidonius.constants.TWO_PI/(planet_rotation_period) # days^-1
 
         # ---
@@ -222,11 +231,18 @@ if __name__ == "__main__":
             raise Exception("This should not happen")
 
         # --- Kaula parameters
+        # planet_kaula_tidal_parameters_love_numbers = {
+        #     "love_number_excitation_frequency": w_lmpq.tolist() + [0] * (expected_size - len(w_lmpq)),
+        #     "imaginary_part_love_number": ImK2.tolist() + [0] * (expected_size - len(ImK2)),
+        #     "real_part_love_number": ReK2.tolist() + [0] * (expected_size - len(ReK2)),
+        #     "num_datapoints": float(expected_size),
+        # }
         planet_kaula_tidal_parameters_love_numbers = {
-            "love_number_excitation_frequency": w_lmpq.tolist() + [0] * (expected_size - len(w_lmpq)),
-            "imaginary_part_love_number": ImK2.tolist() + [0] * (expected_size - len(ImK2)),
-            "real_part_love_number": ReK2.tolist() + [0] * (expected_size - len(ReK2)),
-            "num_datapoints": float(expected_size),
+            "love_numbers": {
+                "spectrum_excitation_frequency": w_lmpq.tolist() + [0] * (expected_size - len(w_lmpq)),
+                "spectrum_real_part": ReK2.tolist() + [0] * (expected_size - len(ReK2)),
+                "spectrum_imaginary_part": ImK2.tolist() + [0] * (expected_size - len(ImK2)),
+            },
         }
 
         # --- Choose the tidal model to use :

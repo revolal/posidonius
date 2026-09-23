@@ -181,6 +181,18 @@ class Universe(object):
             particle['inertial_velocity']['x'] = particle['heliocentric_velocity']['x'] - center_of_mass_velocity.x()
             particle['inertial_velocity']['y'] = particle['heliocentric_velocity']['y'] - center_of_mass_velocity.y()
             particle['inertial_velocity']['z'] = particle['heliocentric_velocity']['z'] - center_of_mass_velocity.z()
+        print("inertial-xyz")
+        for particle in self._data['particles']: print(particle['inertial_position']['x'], particle['inertial_position']['y'] , particle['inertial_position']['z'])  
+        print("inertial-vxvyvz")
+        for particle in self._data['particles']: print(particle['inertial_velocity']['x'], particle['inertial_veloci0.0 0.0 0.0ty']['y'] , particle['inertial_velocity']['z'] ) 
+        print("helio-xyz")
+        for particle in self._data['particles']: print(particle['heliocentric_position']['x'], particle['heliocentric_position']['y'] , particle['heliocentric_position']['z'])  
+        print("helio-vxvyvz")
+        for particle in self._data['particles']: print(particle['heliocentric_velocity']['x'], particle['heliocentric_velocity']['y'] , particle['heliocentric_velocity']['z'] ) 
+        print("center of mass-position")
+        print(center_of_mass_position.x(), center_of_mass_position.y(), center_of_mass_position.z())
+        print("center of mass-velocity")
+        print(center_of_mass_velocity.x(), center_of_mass_velocity.y(), center_of_mass_velocity.z())
 
 
 

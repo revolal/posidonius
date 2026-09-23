@@ -37,9 +37,13 @@ pub fn calculate_2d_tidal_force_components(
     ) = if keplerian_elements.eccentricity == 0.0 {
         // if the inclination between the equatorial plane and the orbital plane is negligible
         zero_eccentricity_components(kaula)
+        // calculate_2d_components(kaula, keplerian_elements)
     } else {
         calculate_2d_components(kaula, keplerian_elements)
     };
+
+    // println!("tidal component N {:?} {:?} {:?}", orthogonal_component, orthogonal_constant, orthogonal_component * orthogonal_constant, );
+    // println!("tidal component S {:?} {:?} {:?} ", orthogonal_component_secular, orthogonal_constant, orthogonal_component_secular * orthogonal_constant,);
 
     (
         (
@@ -58,11 +62,14 @@ pub fn calculate_2d_tidal_force_components(
 // TODO document this function
 fn zero_eccentricity_components(kaula: &KaulaParameters) -> ((f64, f64), (f64, f64)) {
     // If circular coplanar orbit
-    let rek2_2010 = kaula.love_numbers.real(0, 1, 0);
-    let imk2_2200 = kaula.love_numbers.imaginary(2, 0, 0);
+    let rek2_2010 = kaula.love_numbers.real(0, 1, 7);
+    let rek2_2200 = kaula.love_numbers.real(2, 0, 7);
+    let imk2_2200 = kaula.love_numbers.imaginary(2, 0, 7); // Frequence mal calculée
 
     let orthogonal_force = (3. / 2.) * imk2_2200;
-    let radial_force = (3. / 4.) * rek2_2010 + (9. / 4.) * imk2_2200;
+    let radial_force = (3. / 4.) * rek2_2010 + (9. / 4.) * rek2_2200;
+    // radial_force = cste *( (3_f64/4_f64) *rek2_2010 +(9_f64/4_f64) *imk2_2200 ) ;
+    // orthogonal_force = cste *(3_f64/2_f64) *imk2_2200;
 
     // forces and secular forces are the same
     (
@@ -139,7 +146,7 @@ fn calculate_2d_components(
     let mut radial_sum_over_q = 0.;
     let mut radial_sum_over_q_secular = 0.;
     let (q_min, q_max) = select_eccentricty_order_q(eccentricity);
-
+    // println!("  ");
     // For q in the range defined by the eccentricity
     for (q, (g_20q, g_21q)) in izip!(
         kaula.polynomials.eccentricity_function_g_2pq[0],
@@ -150,6 +157,7 @@ fn calculate_2d_components(
     .enumerate()
     {
         let tmp_q = q_min + q;
+        // println!("> Q:{} = qmin {} + q {}",tmp_q, q_min,q );
         let rek2_201q = kaula.love_numbers.real(0, 1, tmp_q);
         let imk2_201q = kaula.love_numbers.imaginary(0, 1, tmp_q);
         let rek2_220q = kaula.love_numbers.real(2, 0, tmp_q);
@@ -196,6 +204,7 @@ fn calculate_2d_components(
         radial_sum_over_q += (3. / 4.) * g_21q * sum_over_j_1 + (9. / 4.) * g_20q * sum_over_j_3;
         radial_sum_over_q_secular +=
             (3. / 4.) * g_21q * sum_over_j_1_secular + (9. / 4.) * g_20q * sum_over_j_3_secular;
+        // println!("Forces : {} {}", g_20q * (3. / 2.) * sum_over_j_2_secular, (3. / 4.) * g_21q * sum_over_j_1_secular + (9. / 4.) * g_20q * sum_over_j_3_secular);
     }
 
     (

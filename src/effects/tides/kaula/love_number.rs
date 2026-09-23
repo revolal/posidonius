@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_big_array::BigArray;
-
+const EPSILON: f64 = 1e-300; // Very small but non-zero threshold
 use super::select_eccentricty_order_q;
 
 // Tidal frequency, real and imaginary love numbers calculated each timestep.
@@ -205,6 +205,7 @@ impl LoveNumber {
         spin: f64,
         orbital_frequency: f64,
     ) -> f64 {
+        // println!("Tidal frequ m={:?} p={:?} q={:?} :: {:?}",m,p,q as i32 - 7, orbital_frequency);
         let (m, p, q) = (m as i32, p as i32, q as i32 - 7);
         f64!(2 - 2 * p + q) * orbital_frequency - f64!(m) * spin
     }
@@ -247,45 +248,189 @@ impl LoveNumber {
     fn interpolate_love_numbers(&self, wk2: f64) -> (f64, f64) {
         let im_k2;
         let re_k2;
+        let last_idx = last_meaningful_index(&self.spectrum_excitation_frequency);
+
         // Find the index of the closest match to use for the interpolation
-        if wk2 <= self.spectrum_excitation_frequency[0] {
+        if wk2 == 0.0 {
+            im_k2 = 0.0;
+            re_k2 = self.spectrum_real_part[0];
+        } else if wk2 <= self.spectrum_excitation_frequency[0] {
+            let fr_bot = self.spectrum_excitation_frequency[0];
+            let fr_top = self.spectrum_excitation_frequency[1];
+            let im_bot = self.spectrum_imaginary_part[0];
+            let im_top = self.spectrum_imaginary_part[1];
+
+            // Extrapolation log-log
+            // compute slope : α = d(log Im(k₂)) / d(log ω)
+            let log_fr_top = fr_top.ln();
+            let log_fr_bot = fr_bot.ln();
+            let log_im_top = im_top.ln();
+            let log_im_bot = im_bot.ln();
+            let slope_log = (log_im_top - log_im_bot) / (log_fr_top - log_fr_bot);
+
+            // Extrapolation with  : log(Im(k₂)) = log(im_top) + α * (log(σ) - log(fr_top))
+            let log_im_k2 = log_im_top + slope_log * (wk2.ln() - log_fr_top);
+            let im_k2_abs = log_im_k2.exp();
+
+            if im_k2_abs <0. {
+                im_k2 = self.spectrum_imaginary_part[0];
+                println!("Warning : Love number Log scale interpolation failed");
+            } else {
+                im_k2 = im_k2_abs;
+            }
             // If wk2 is less than or equal to the first element, take the first value
-            im_k2 = self.spectrum_imaginary_part[0];
+            // im_k2 = self.spectrum_imaginary_part[0];
             re_k2 = self.spectrum_real_part[0];
         } else if wk2
-            >= self.spectrum_excitation_frequency[self.spectrum_excitation_frequency.len() - 1]
+            // >= self.spectrum_excitation_frequency[self.spectrum_excitation_frequency.len() - 1]
+            >= self.spectrum_excitation_frequency[last_idx]
         {
             // If wk2 is greater than or equal to the last element, take the last value
-            im_k2 = self.spectrum_imaginary_part[self.spectrum_excitation_frequency.len() - 1];
-            re_k2 = self.spectrum_real_part[self.spectrum_excitation_frequency.len() - 1];
-        } else {
-            // Find the index of the closest match to use for the interpolation
-            match self
-                .spectrum_excitation_frequency
-                .binary_search_by(|val| val.total_cmp(&wk2))
-            {
-                Ok(i) => {
-                    // Exact match found: love_number[i] == wk2
-                    assert!(i < self.spectrum_real_part.len());
-                    re_k2 = self.spectrum_real_part[i];
-                    assert!(i < self.spectrum_imaginary_part.len());
-                    im_k2 = self.spectrum_imaginary_part[i];
-                }
-                Err(i) => {
-                    // wk2 is between love_number[i - 1] and love_number[i]
-                    assert!(i < self.spectrum_real_part.len());
-                    assert!(i < self.spectrum_imaginary_part.len());
-                    let prev_freq = self.spectrum_excitation_frequency[i - 1];
-                    let next_freq = self.spectrum_excitation_frequency[i];
-                    let delta = (wk2 - prev_freq) / (next_freq - prev_freq);
-                    im_k2 = (1.0 - delta) * self.spectrum_imaginary_part[i - 1]
-                        + delta * self.spectrum_imaginary_part[i];
-                    re_k2 = (1.0 - delta) * self.spectrum_real_part[i - 1]
-                        + delta * self.spectrum_real_part[i];
-                }
-            }
-        }
+            // im_k2 = self.spectrum_imaginary_part[self.spectrum_excitation_frequency.len() - 1];
+            // re_k2 = self.spectrum_real_part[self.spectrum_excitation_frequency.len() - 1];
 
+            let fr_bot = self.spectrum_excitation_frequency[last_idx - 2];
+            let fr_top = self.spectrum_excitation_frequency[last_idx - 1];
+            let im_bot = self.spectrum_imaginary_part[last_idx - 2];
+            let im_top = self.spectrum_imaginary_part[last_idx - 1];
+
+            // Extrapolation log-log
+            // compute slope : α = d(log Im(k₂)) / d(log ω)
+            let log_fr_top = fr_top.ln();
+            let log_fr_bot = fr_bot.ln();
+            let log_im_top = im_top.ln();
+            let log_im_bot = im_bot.ln();
+            let slope_log = (log_im_top - log_im_bot) / (log_fr_top - log_fr_bot);
+
+            // Extrapolation with  : log(Im(k₂)) = log(im_top) + α * (log(σ) - log(fr_top))
+            let log_im_k2 = log_im_top + slope_log * (wk2.ln() - log_fr_top);
+            if log_im_k2.exp() < 0. {
+                im_k2 = self.spectrum_imaginary_part[last_idx - 1];
+                re_k2 = self.spectrum_real_part[last_idx - 1];
+                println!("Warning : Love number Log scale interpolation failed");
+            } else {
+                im_k2 = log_im_k2.exp();
+                re_k2 = self.spectrum_real_part[last_idx - 1];
+            }
+
+        } else {
+            // // Find the index of the closest match to use for the interpolation
+            // match self
+            //     .spectrum_excitation_frequency
+            //     .binary_search_by(|val| val.total_cmp(&wk2))
+            // {
+            //     Ok(i) => {
+            //         // Exact match found: love_number[i] == wk2
+            //         assert!(i < self.spectrum_real_part.len());
+            //         re_k2 = self.spectrum_real_part[i];
+            //         assert!(i < self.spectrum_imaginary_part.len());
+            //         im_k2 = self.spectrum_imaginary_part[i];
+            //     }
+            //     Err(i) => {
+            //         // wk2 is between love_number[i - 1] and love_number[i]
+            //         assert!(i < self.spectrum_real_part.len());
+            //         assert!(i < self.spectrum_imaginary_part.len());
+            //         let prev_freq = self.spectrum_excitation_frequency[i - 1];
+            //         let next_freq = self.spectrum_excitation_frequency[i];
+            //         let delta = (wk2 - prev_freq) / (next_freq - prev_freq);
+            //         im_k2 = (1.0 - delta) * self.spectrum_imaginary_part[i - 1]
+            //             + delta * self.spectrum_imaginary_part[i];
+            //         re_k2 = (1.0 - delta) * self.spectrum_real_part[i - 1]
+            //             + delta * self.spectrum_real_part[i];
+            //     }
+            // }
+            // let idx = self.spectrum_excitation_frequency.partition_point(|&f| f < wk2) - 1;
+            // Only search in the VALID part of the array (0..=last_idx)
+            // This slice is guaranteed to be sorted (no zeros interfering)
+            let valid_frequencies = &self.spectrum_excitation_frequency[..=last_idx];
+
+            // Find the largest index where frequency < wk2
+            let idx = valid_frequencies.partition_point(|&f| f < wk2) - 1;
+
+            // Safety: idx must be in [1, last_idx-1] due to earlier checks
+            debug_assert!(
+                idx >= 0 && idx < last_idx,
+                "Interpolation index out of bounds: {} (last_idx={}) | fequ={:?}",
+                idx, last_idx, wk2
+            );
+            // println!("\n ");
+            // println!("\n idx: {:?}", idx);
+            // println!("Frequ : {:?} bound: {:?} < {:?} < {:?} | len: {:?}", wk2, self.spectrum_excitation_frequency[idx-1], self.spectrum_excitation_frequency[idx], self.spectrum_excitation_frequency[idx+1], self.spectrum_excitation_frequency[last_idx] );
+            let fr_bot = self.spectrum_excitation_frequency[idx];
+            let fr_top = self.spectrum_excitation_frequency[idx +1];
+            // let im_bot = self.spectrum_imaginary_part[idx];
+            // let im_top = self.spectrum_imaginary_part[idx +1];
+            // let re_bot = self.spectrum_real_part[idx];
+            // let re_top = self.spectrum_real_part[idx +1];
+            // im_k2 = im_bot + (im_top - im_bot) * (wk2 - fr_bot) / (fr_top - fr_bot);
+            // re_k2 = re_bot + (re_top - re_bot) * (wk2 - fr_bot) / (fr_top - fr_bot);
+
+            let delta = (wk2 - fr_bot) / (fr_top - fr_bot);
+            im_k2 = (1.0 - delta) * self.spectrum_imaginary_part[idx]
+                + delta * self.spectrum_imaginary_part[idx+1];
+            re_k2 = (1.0 - delta) * self.spectrum_real_part[idx]
+                + delta * self.spectrum_real_part[idx+1];
+
+        }
+        if im_k2 < 0.0 {
+            panic!("Found negative Love number. This should no append");
+        }
         (re_k2, im_k2)
     }
+
+    // // Find the real part and the imaginary part of the Love number associated with
+    // // the excitation frequenccy wk2
+    // fn interpolate_love_numbers(&self, wk2: f64) -> (f64, f64) {
+    //     let im_k2;
+    //     let re_k2;
+    //     // Find the index of the closest match to use for the interpolation
+    //     if wk2 <= self.spectrum_excitation_frequency[0] {
+    //         // If wk2 is less than or equal to the first element, take the first value
+    //         im_k2 = self.spectrum_imaginary_part[0];
+    //         re_k2 = self.spectrum_real_part[0];
+    //     } else if wk2
+    //         >= self.spectrum_excitation_frequency[self.spectrum_excitation_frequency.len() - 1]
+    //     {
+    //         // If wk2 is greater than or equal to the last element, take the last value
+    //         im_k2 = self.spectrum_imaginary_part[self.spectrum_excitation_frequency.len() - 1];
+    //         re_k2 = self.spectrum_real_part[self.spectrum_excitation_frequency.len() - 1];
+    //     } else {
+    //         // Find the index of the closest match to use for the interpolation
+    //         match self
+    //             .spectrum_excitation_frequency
+    //             .binary_search_by(|val| val.total_cmp(&wk2))
+    //         {
+    //             Ok(i) => {
+    //                 // Exact match found: love_number[i] == wk2
+    //                 assert!(i < self.spectrum_real_part.len());
+    //                 re_k2 = self.spectrum_real_part[i];
+    //                 assert!(i < self.spectrum_imaginary_part.len());
+    //                 im_k2 = self.spectrum_imaginary_part[i];
+    //             }
+    //             Err(i) => {
+    //                 // wk2 is between love_number[i - 1] and love_number[i]
+    //                 assert!(i < self.spectrum_real_part.len());
+    //                 assert!(i < self.spectrum_imaginary_part.len());
+    //                 let prev_freq = self.spectrum_excitation_frequency[i - 1];
+    //                 let next_freq = self.spectrum_excitation_frequency[i];
+    //                 let delta = (wk2 - prev_freq) / (next_freq - prev_freq);
+    //                 im_k2 = (1.0 - delta) * self.spectrum_imaginary_part[i - 1]
+    //                     + delta * self.spectrum_imaginary_part[i];
+    //                 re_k2 = (1.0 - delta) * self.spectrum_real_part[i - 1]
+    //                     + delta * self.spectrum_real_part[i];
+    //             }
+    //         }
+    //     }
+
+    //     (re_k2, im_k2)
+    // }
+}
+
+
+
+/// Returns the index of the last meaningful value, or the last index if all are zero
+fn last_meaningful_index(arr: &[f64]) -> usize {
+    arr.iter()
+        .rposition(|&x| x.abs() > EPSILON)
+        .unwrap_or(arr.len() - 1) // Returns last index if all values are zero
 }
