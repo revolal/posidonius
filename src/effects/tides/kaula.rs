@@ -1,13 +1,8 @@
 // Implemented by Alexandre Revol alexandre.revol@unige.ch
-use super::TidesEffect;
-use crate::constants::{DAY, G, TWO_PI};
-use crate::tools;
-use crate::tools::KeplerianElements;
+use super::{TidalModel, TidesEffect};
+use crate::constants::{G, MAX_PARTICLES};
 use crate::{Axes, Particle};
 use serde::{Deserialize, Serialize};
-
-mod polynomials;
-pub use polynomials::Polynomials;
 
 mod love_number;
 pub use love_number::LoveNumber;
@@ -15,332 +10,327 @@ pub use love_number::LoveNumber;
 // Planetary and stellar tides (docs/tides/kaula_tides.pdf, Chapters 8 to 10)
 pub mod kaula_tide;
 
-mod components_2d;
-use components_2d::calculate_2d_tidal_force_components;
-
-mod components_3d;
-use components_3d::calculate_3d_tidal_force_components;
-
 // Structure declare the intput parameters needed for the Kaula model calculation.
-#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct KaulaParameters {
     // Externally provided spectrum for excitation frequency, real and imaginary part.
     #[serde(default)]
     pub love_numbers: LoveNumber,
+    // Secular force of the former Kaula code: no longer used (always zero), kept so that the .json files
+    // written by earlier versions remain readable. Still written: the .bin snapshots (bincode) need the
+    // same fields when written and read.
     #[serde(default)]
     pub tidal_force: Axes,
 
-    // Internally calculated kaula polynomials for mpq.
-    #[serde(skip)]
-    pub polynomials: Polynomials,
+    // Tide of this body (kaula_tide, Section 10.4): prepared spectrum, mean-rate history updated at the
+    // accepted steps, and last force/torque with the state that produced them. The aliases read the
+    // .json files written by development versions of this model.
+    #[serde(default, alias = "planet_spectrum")]
+    pub spectrum: kaula_tide::TideSpectrum,
+    #[serde(default)]
+    pub rate_history: kaula_tide::RateHistory,
+    #[serde(default, alias = "planet_tide")]
+    pub tide_state: TideState,
 }
 
-pub fn calculate_tidal_force(
-    tidal_host_particle: &mut Particle,
-    particle: &mut Particle,
-    central_body: bool,
-) -> Axes {
-    //// TODO: Reconsider how to compute the stellar tide here instead of in tides.rs while allowing a mixture of tidal models
-    let gm = G * (tidal_host_particle.mass + particle.mass);
+// Last planetary tide computed, keyed by the exact state (r, v, s) that produced it: the torque is
+// reused only for the same state, otherwise recomputed (LeapFrog asks for the torque without the force).
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[serde(default)]
+pub struct TideState {
+    pub valid: bool,
+    pub position: Axes,
+    pub velocity: Axes,
+    pub spin: Axes,
+    pub tide: kaula_tide::Tide,
+}
 
-    let (obliquity, keplerian_elements) = if central_body {
-        (
-            tools::calculate_inclination_orbital_equatorial_plane(
-                tidal_host_particle.heliocentric_position,
-                tidal_host_particle.heliocentric_velocity,
-                particle.spin,
-            ),
-            tools::calculate_keplerian_orbital_elements(
-                gm,
-                tidal_host_particle.heliocentric_position,
-                tidal_host_particle.heliocentric_velocity,
-            ),
-        )
-    } else {
-        (
-            tools::calculate_inclination_orbital_equatorial_plane(
-                particle.heliocentric_position,
-                particle.heliocentric_velocity,
-                particle.spin,
-            ),
-            tools::calculate_keplerian_orbital_elements(
-                gm,
-                particle.heliocentric_position,
-                particle.heliocentric_velocity,
-            ),
-        )
-    };
-
-    let (tidal_force, tidal_force_secular) = calculate_2d_or_3d_tidal_force_components(
-        tidal_host_particle,
-        particle,
-        central_body,
-        obliquity,
-        &keplerian_elements,
+// Planetary tide of the particle from its tidal coordinates (relative to the tidal host), its spin and
+// its mean-rate history: eqs. (8.17), (8.18) and (8.21).
+fn calculate_planetary_tide(
+    tidal_host_particle: &Particle,
+    particle: &Particle,
+    spectrum: &kaula_tide::TideSpectrum,
+) -> kaula_tide::Tide {
+    let kaula = particle.tides.get_kaula();
+    let position = particle.tides.coordinates.position;
+    let geometry = kaula_tide::nodal_geometry(
+        position,
+        particle.tides.coordinates.velocity,
+        particle.spin,
+        G * (tidal_host_particle.mass + particle.mass),
     );
-
-    calculate_tidal_force_component(
-        tidal_host_particle,
-        particle,
-        central_body,
-        tidal_force,
-        tidal_force_secular,
+    let rates = kaula_tide::mean_rates(&kaula.rate_history, geometry.n_osc);
+    kaula_tide::tide_tabulated(
+        position,
+        &geometry,
+        &rates,
+        &kaula.love_numbers,
+        spectrum,
+        G,
+        tidal_host_particle.mass,
+        particle.radius,
+        kaula_tide::q_max(geometry.e),
     )
 }
 
-fn calculate_tidal_force_component(
-    tidal_host_particle: &mut Particle,
-    particle: &mut Particle,
-    central_body: bool,
-    tidal_force: (f64, f64, f64),
-    tidal_force_secular: (f64, f64, f64),
-) -> Axes {
-    // Spherical component of the tidal force
-    // The radial component is the force applicated through the radial axis
-    // The normal component act on the co longitude axis
-    // The orthogonal component act on the co latitude axis
-    // Required for denergy_dt calculation
-
-    let (normal_component, orthogonal_component, radial_component) = tidal_force;
-
-    let (normal_component_secular, orthogonal_component_secular, radial_component_secular) =
-        tidal_force_secular;
-
-    if central_body {
-        tidal_host_particle
-            .tides
-            .parameters
-            .internal
-            .orthogonal_component_of_the_tidal_force_due_to_stellar_tide = orthogonal_component;
-    } else {
-        particle
-            .tides
-            .parameters
-            .internal
-            .orthogonal_component_of_the_tidal_force_due_to_planetary_tide = orthogonal_component;
-    }
-
-    // Cartesian tidal force computed by projection of the spherical coordinates
-    let components = cartesian_projection_of_spherical_coordinates(
-        tidal_host_particle,
-        particle,
-        central_body,
-        normal_component,
-        orthogonal_component,
-        radial_component,
-    );
-
-    // Secular part of the tidal torque (simplified from the rapid varying phases)
-    let secular_projection = cartesian_projection_of_spherical_coordinates(
-        tidal_host_particle,
-        particle,
-        central_body,
-        normal_component_secular,
-        orthogonal_component_secular,
-        radial_component_secular,
-    );
-
-    particle.tides.get_kaula_mut().tidal_force = secular_projection;
-
-    components
+fn tide_state_matches(particle: &Particle) -> bool {
+    let state = &particle.tides.get_kaula().tide_state;
+    state.valid
+        && state.position == particle.tides.coordinates.position
+        && state.velocity == particle.tides.coordinates.velocity
+        && state.spin == particle.spin
 }
 
-fn calculate_2d_or_3d_tidal_force_components(
+// Stellar tide of the pair (tidal host, orbiting body), stored in the orbiting body (one per body,
+// Section 10.4): mean-rate history of the orbit seen in the equator of the host, and
+// last force/torque with the state that produced them (body tidal coordinates, host spin).
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[serde(default)]
+pub struct HostTide {
+    pub rate_history: kaula_tide::RateHistory,
+    pub tide_state: TideState,
+}
+
+// r = r_D - r_P and v for the stellar tide (D = host, P = orbiting body): opposite of the tidal
+// coordinates of the body
+fn stellar_tide_coordinates(particle: &Particle) -> (Axes, Axes) {
+    let mut position = particle.tides.coordinates.position;
+    position.negate();
+    let mut velocity = particle.tides.coordinates.velocity;
+    velocity.negate();
+    (position, velocity)
+}
+
+// Tide raised in the tidal host by the orbiting body: the equations of the planetary tide with D = host
+// and P = body (Section 9.1), signed spectrum of the host,
+// mean rates of the pair.
+fn calculate_stellar_tide(
     tidal_host_particle: &Particle,
+    particle: &Particle,
+    spectrum: &kaula_tide::TideSpectrum,
+) -> kaula_tide::Tide {
+    let kaula = tidal_host_particle.tides.get_kaula();
+    let (position, velocity) = stellar_tide_coordinates(particle);
+    let geometry = kaula_tide::nodal_geometry(
+        position,
+        velocity,
+        tidal_host_particle.spin,
+        G * (tidal_host_particle.mass + particle.mass),
+    );
+    let rates = kaula_tide::mean_rates(&particle.tides.host_kaula_tide.rate_history, geometry.n_osc);
+    kaula_tide::tide_tabulated(
+        position,
+        &geometry,
+        &rates,
+        &kaula.love_numbers,
+        spectrum,
+        G,
+        particle.mass,
+        tidal_host_particle.radius,
+        kaula_tide::q_max(geometry.e),
+    )
+}
+
+fn host_tide_state_matches(tidal_host_particle: &Particle, particle: &Particle) -> bool {
+    let state = &particle.tides.host_kaula_tide.tide_state;
+    state.valid
+        && state.position == particle.tides.coordinates.position
+        && state.velocity == particle.tides.coordinates.velocity
+        && state.spin == tidal_host_particle.spin
+}
+
+fn host_spectrum(tidal_host_particle: &Particle) -> kaula_tide::TideSpectrum {
+    let kaula = tidal_host_particle.tides.get_kaula();
+    if kaula.spectrum.prepared {
+        kaula.spectrum
+    } else {
+        kaula_tide::prepare_signed_spectrum(&kaula.love_numbers)
+    }
+}
+
+/// Force of the orbiting body on the tidal host due to the tide raised in the host (stellar tide,
+/// eq. (8.17) with D = host, P = body); the body receives the opposite force.
+pub fn calculate_stellar_tidal_force(
+    tidal_host_particle: &mut Particle,
     particle: &mut Particle,
-    central_body: bool,
-    obliquity: f64,
-    keplerian_elements: &KeplerianElements,
-) -> ((f64, f64, f64), (f64, f64, f64)) {
-    // !central_body ==> planetary tide ==> particle is the planet
-    // central_body ==> stellar tide ==> tidal_host_particle is the planet
-    // Keplerian elements
-    let eccentricity = keplerian_elements.eccentricity;
-    let orbital_period = keplerian_elements.orbital_period;
+) -> Axes {
+    let spectrum = host_spectrum(tidal_host_particle);
+    tidal_host_particle.tides.get_kaula_mut().spectrum = spectrum;
+    let tide = calculate_stellar_tide(tidal_host_particle, particle, &spectrum);
+    particle.tides.host_kaula_tide.tide_state = TideState {
+        valid: true,
+        position: particle.tides.coordinates.position,
+        velocity: particle.tides.coordinates.velocity,
+        spin: tidal_host_particle.spin,
+        tide,
+    };
+    tide.force
+}
 
-    // Planetary spin in [rad.s^-1]
-    let spin = sqrt!(particle.norm_spin_vector_2) / DAY;
-    // Orbital mean motion in [rad.s^-1]
-    let orbital_frequency = TWO_PI / (orbital_period * DAY);
+/// Dissipated power of the stellar tide of one orbiting body, eq. (8.21) with D = host:
+/// P = -(F_Im . (v_host - v_body) + Gamma_Im . s_host), at the state of the last force evaluation.
+pub fn stellar_tide_power(particle: &Particle) -> f64 {
+    let state = particle.tides.host_kaula_tide.tide_state;
+    if !state.valid {
+        return 0.;
+    }
+    // state.velocity = v_body - v_host
+    state.tide.dissipative_force.dot(&state.velocity)
+        - state.tide.dissipative_torque.dot(&state.spin)
+}
 
-    let kaula = particle.tides.get_kaula_mut();
-    // Update the kaula eccentricity, used by both 2D and 3D
-    kaula.polynomials.update_eccentricity_2d(eccentricity);
-
-    // Update the love number values and compute the tidal force components.
-    // Decide if this is a 2d or 3d case
-    if obliquity <= 1.0e-8 {
-        // 2D case
-        // refresh only love numbers used by 2D calculations
-        kaula.love_numbers.refresh_cache_partial(
-            central_body,
-            spin,
-            orbital_frequency,
-            eccentricity,
+/// Update the mean-rate histories once per accepted step (Sections 8.4.1 and 10.4): of every planet
+/// with a Kaula tide (orbit seen in its equator) and, if the tidal host has a Kaula tide, of every pair
+/// (host, orbiting body) (orbit seen in the equator of the host). The averaging window (8.12) uses the
+/// osculating mean motions of all the bodies orbiting the tidal host, with or without tides, computed
+/// from the inertial coordinates relative to the host (tides.coordinates is set only for the bodies
+/// with tides). The spins are L / I of the accepted step.
+pub fn update_rate_histories(
+    tidal_host_index: usize,
+    particles: &mut [Particle],
+    current_time: f64,
+) {
+    let host = particles[tidal_host_index];
+    let relative = |particle: &Particle| {
+        let mut r = particle.inertial_position;
+        r.sub(&host.inertial_position);
+        let mut v = particle.inertial_velocity;
+        v.sub(&host.inertial_velocity);
+        (r, v)
+    };
+    let mut mean_motions = [0.; MAX_PARTICLES];
+    for (j, particle) in particles.iter().enumerate() {
+        if j != tidal_host_index {
+            let (r, v) = relative(particle);
+            mean_motions[j] = kaula_tide::mean_motion_about_host(
+                r,
+                v,
+                G * (host.mass + particle.mass),
+            );
+        }
+    }
+    let n_particles = particles.len();
+    let host_kaula = matches!(
+        host.tides.effect,
+        TidesEffect::CentralBody(TidalModel::Kaula(_))
+    );
+    let mut host_spin = host.angular_momentum;
+    host_spin.div(host.moment_of_inertia);
+    for (i, particle) in particles.iter_mut().enumerate() {
+        if i == tidal_host_index {
+            continue;
+        }
+        let planet_kaula = matches!(
+            particle.tides.effect,
+            TidesEffect::OrbitingBody(TidalModel::Kaula(_))
         );
-
-        calculate_2d_tidal_force_components(
-            tidal_host_particle,
-            particle,
-            central_body,
-            keplerian_elements,
-        )
-    } else {
-        // 3D case
-        kaula
-            .love_numbers
-            .refresh_cache_full(central_body, spin, orbital_frequency, eccentricity);
-
-        // Update the kaula inclination and 3D eccentricty, used only by 3D
-        kaula.polynomials.update_inclination(obliquity);
-        kaula.polynomials.update_eccentricity_3d(eccentricity);
-
-        calculate_3d_tidal_force_components(
-            tidal_host_particle,
-            particle,
-            central_body,
-            keplerian_elements,
-        )
+        // Bodies that feel the stellar tide: every OrbitingBody (Section 10.2)
+        let stellar = host_kaula && matches!(particle.tides.effect, TidesEffect::OrbitingBody(_));
+        if !planet_kaula && !stellar {
+            continue;
+        }
+        let (r, v) = relative(particle);
+        let mu = G * (host.mass + particle.mass);
+        let mut others = [0.; MAX_PARTICLES];
+        for j in 0..n_particles {
+            if j != i && j != tidal_host_index {
+                others[j] = mean_motions[j];
+            }
+        }
+        let window = kaula_tide::averaging_window(mean_motions[i], &others[..n_particles]);
+        if planet_kaula {
+            let mut spin = particle.angular_momentum;
+            spin.div(particle.moment_of_inertia);
+            let geometry = kaula_tide::nodal_geometry(r, v, spin, mu);
+            kaula_tide::update_rate_history(
+                &mut particle.tides.get_kaula_mut().rate_history,
+                current_time,
+                &geometry,
+                window,
+            );
+        }
+        if stellar {
+            let (mut r_host, mut v_host) = (r, v);
+            r_host.negate();
+            v_host.negate();
+            let geometry = kaula_tide::nodal_geometry(r_host, v_host, host_spin, mu);
+            kaula_tide::update_rate_history(
+                &mut particle.tides.host_kaula_tide.rate_history,
+                current_time,
+                &geometry,
+                window,
+            );
+        }
     }
 }
 
-// TODO physicist rename
-fn trig_angles(particle: &Particle) -> (f64, f64, f64, f64) {
-    let radial_distance = particle.tides.parameters.internal.distance;
-    let (x, y, z) = particle.tides.coordinates.position.unpack();
-
-    let coplanar_distance = sqrt!(x.powi(2) + y.powi(2));
-    let cos_phi = x / coplanar_distance;
-    let sin_phi = y / coplanar_distance;
-    let cos_theta = z / radial_distance;
-    let sin_theta = coplanar_distance / radial_distance;
-
-    (cos_phi, cos_theta, sin_phi, sin_theta)
-}
-
-fn cartesian_projection_of_spherical_coordinates(
+/// Force of the tidal host on the orbiting body due to the tide raised in the body (planetary tide,
+/// eq. (8.17)); the host receives the opposite force.
+pub fn calculate_planetary_tidal_force(
     tidal_host_particle: &Particle,
     particle: &mut Particle,
-    central_body: bool,
-    normal_component: f64,
-    orthogonal_component: f64,
-    radial_component: f64,
 ) -> Axes {
-    // Spherical coordinate
-    // The following elements correspond to the coordinate in the spherical coordinate
-    // The coplanar distance is the radial distance projected in the x-y plane
-    // The theta angle is the angle between the radial distance vector with respect to the z axis
-    // The phi angle is the angle between the coplanar distance with respect to the x axis
-    let (cos_phi, cos_theta, sin_phi, sin_theta) = if central_body {
-        trig_angles(tidal_host_particle)
-    } else {
-        trig_angles(particle)
+    if !particle.tides.get_kaula().spectrum.prepared {
+        let spectrum = kaula_tide::prepare_spectrum(&particle.tides.get_kaula().love_numbers);
+        particle.tides.get_kaula_mut().spectrum = spectrum;
+    }
+    let spectrum = particle.tides.get_kaula().spectrum;
+    let tide = calculate_planetary_tide(tidal_host_particle, particle, &spectrum);
+    let (position, velocity, spin) = (
+        particle.tides.coordinates.position,
+        particle.tides.coordinates.velocity,
+        particle.spin,
+    );
+    particle.tides.get_kaula_mut().tide_state = TideState {
+        valid: true,
+        position,
+        velocity,
+        spin,
+        tide,
     };
-
-    Axes::from(
-        radial_component * sin_theta * cos_phi
-        + normal_component * cos_theta * cos_phi
-        - orthogonal_component * sin_phi,
-
-        radial_component * sin_theta * sin_phi
-        + normal_component * cos_theta * sin_phi
-        + orthogonal_component * cos_phi,
-
-        radial_component * cos_theta
-        - normal_component * sin_theta
-    )
+    // Spherical components are not computed; denergy_dt has its own Kaula branch, eq. (8.21)
+    particle
+        .tides
+        .parameters
+        .internal
+        .orthogonal_component_of_the_tidal_force_due_to_planetary_tide = 0.;
+    tide.force
 }
 
-// Calculate tidal torque due to tidal forces
+/// Torque of the tide, of the same state as the force (Section 10.2): planetary tide (central_body =
+/// false, on the spin of the orbiting body) or stellar tide (central_body = true, on the spin of the
+/// host, due to this body). Returns r x F = -Gamma, which tides.rs negates.
 pub fn calculate_torque_due_to_tides(
     tidal_host_particle: &Particle,
     particle: &Particle,
     central_body: bool,
 ) -> Axes {
-    let mut position = particle.tides.coordinates.position;
-
-    let tidal_force = if central_body {
-        if matches!(
-            &tidal_host_particle.tides.effect,
-            TidesEffect::CentralBody(_)
-        ) {
-            // additive inversion of positions if the host particle is the central body
-            position.negate();
+    let tide = if !central_body {
+        if tide_state_matches(particle) {
+            particle.tides.get_kaula().tide_state.tide
+        } else {
+            let kaula = particle.tides.get_kaula();
+            let spectrum = if kaula.spectrum.prepared {
+                kaula.spectrum
+            } else {
+                kaula_tide::prepare_spectrum(&kaula.love_numbers)
+            };
+            calculate_planetary_tide(tidal_host_particle, particle, &spectrum)
         }
-        // If this is the central body, take the kaula tidal force from the tidal host particle
-        tidal_host_particle.tides.get_kaula().tidal_force
     } else {
-        // If it is not the central body, take the kaula tidal froce from the other particle
-        particle.tides.get_kaula().tidal_force
+        // No stellar tide for the bodies without tidal coordinates (TidesEffect::Disabled)
+        if !matches!(particle.tides.effect, TidesEffect::OrbitingBody(_)) {
+            return Axes::new();
+        }
+        if host_tide_state_matches(tidal_host_particle, particle) {
+            particle.tides.host_kaula_tide.tide_state.tide
+        } else {
+            calculate_stellar_tide(tidal_host_particle, particle, &host_spectrum(tidal_host_particle))
+        }
     };
-    // The negative sign of the position vector for stellar tide: Torque = r cross F
-    // The r here should be the vector point from th primary (perturber) to the secondary (perturbed)
-    // Thus we added a minus sign here as particle.tides.coordinates.position Axes are always heliocentric.
-
-    // Let the torque be the cross product of the radial distance vector and the tidal force vector
-    let torque_due_to_tides_x = position.y * tidal_force.z - position.z * tidal_force.y;
-    let torque_due_to_tides_y = position.z * tidal_force.x - position.x * tidal_force.z;
-    let torque_due_to_tides_z = position.x * tidal_force.y - position.y * tidal_force.x;
-
-    Axes::from(
-        torque_due_to_tides_x,
-        torque_due_to_tides_y,
-        torque_due_to_tides_z,
-    )
-}
-
-pub fn select_eccentricty_order_q(eccentricity: f64) -> (usize, usize) {
-    match () {
-        // Select the order of the summation q over the eccentricity function G_lpq
-        () if (eccentricity > 0.30) => (0, 15), // q: -7 <= q <= 7
-        () if (eccentricity > 0.25) => (1, 14), // q: -6 <= q <= 6
-        () if (eccentricity > 0.20) => (2, 13), // q: -5 <= q <= 5
-        () if (eccentricity > 0.15) => (3, 12), // q: -4 <= q <= 4
-        () if (eccentricity > 0.10) => (4, 11), // q: -3 <= q <= 3
-        () if (eccentricity <= 0.1) => (5, 10), // q: -2 <= q <= 2
-        () => unreachable!(),
-    }
-}
-
-// Calculate the phases of the 2-Kaula transformed tidal forces
-fn alpha_pqkj(
-    p: usize,
-    q: usize,
-    k: usize,
-    j: usize,
-    mean_anomaly: f64,
-    argument_perihelion: f64,
-) -> f64 {
-    let (p, q, k, j) = (p as i32, q as i32, k as i32, j as i32);
-    f64!(2 * p - 2 * k + j - q) * mean_anomaly + f64!(2 * (p - k)) * argument_perihelion
-}
-
-fn calculate_base_constant(
-    particle: &Particle,
-    other_particle: &Particle,
-    heliocentric_radius: f64,
-    semi_major_axis: f64,
-) -> f64 {
-    (G * other_particle.mass.powi(2) * particle.radius.powi(5))
-        / (semi_major_axis.powi(6) * heliocentric_radius)
-}
-
-fn calculate_2d_constant(
-    particle: &Particle,
-    other_particle: &Particle,
-    heliocentric_radius: f64,
-    semi_major_axis: f64,
-) -> f64 {
-    let distance = particle.tides.coordinates.position.norm();
-    let (x, y, _z) = particle.tides.coordinates.position.unpack();
-    let coplanar_distance = sqrt!(x.powi(2) + y.powi(2));
-    let sin_theta = coplanar_distance / distance;
-
-    -(calculate_base_constant(
-        particle,
-        other_particle,
-        heliocentric_radius,
-        semi_major_axis,
-    ) / sin_theta)
+    let mut torque = tide.torque;
+    torque.negate();
+    torque
 }

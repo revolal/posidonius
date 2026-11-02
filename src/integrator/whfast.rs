@@ -374,6 +374,9 @@ impl Integrator for WHFast {
             }
         }
 
+        // Mean rates of the Kaula tides: history updated at the accepted step (docs/tides/kaula_tides.pdf)
+        self.universe.update_kaula_rate_histories(self.current_time);
+
         let ignored_gravity_terms = match self.alternative_coordinates_type {
             CoordinatesType::Jacobi => IgnoreGravityTerms::WHFastOne,
             CoordinatesType::WHDS | CoordinatesType::DemocraticHeliocentric => {

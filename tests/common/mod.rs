@@ -115,7 +115,7 @@ pub fn load_kaula_parameters(
             imaginary_part_love_number,
             stellar_spectrum_spin_rate,
         ),
-        polynomials: posidonius::Polynomials::new(),
         tidal_force: posidonius::Axes::new(),
+        ..Default::default()
     })
 }

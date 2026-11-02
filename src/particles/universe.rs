@@ -900,11 +900,22 @@ impl Universe {
         }
     }
 
+    // Mean-rate histories of the Kaula tides, once per accepted step (docs/tides/kaula_tides.pdf,
+    // Section 10.4): called at the beginning of `iterate` of each integrator, before the force
+    // evaluations of the step, which only read it.
+    pub fn update_kaula_rate_histories(&mut self, current_time: f64) {
+        if !self.consider_effects.tides {
+            return;
+        }
+        let (particles, _) = self.particles.split_at_mut(self.n_particles);
+        tides::kaula::update_rate_histories(self.hosts.index.tides, particles, current_time);
+    }
+
     pub fn calculate_denergy_dt(&mut self) {
         let (particles_left, particles_right) =
             self.particles[..self.n_particles].split_at_mut(self.hosts.index.tides);
-        if let Some((_, particles_right)) = particles_right.split_first_mut() {
-            tides::calculate_denergy_dt(particles_left, particles_right);
+        if let Some((tidal_host_particle, particles_right)) = particles_right.split_first_mut() {
+            tides::calculate_denergy_dt(tidal_host_particle, particles_left, particles_right);
         }
     }
 

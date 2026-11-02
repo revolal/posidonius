@@ -12,7 +12,7 @@ pub use effects::tides::kaula::kaula_tide;
 pub use effects::{
     ConstantTimeLagParameters, CreepCoplanarParameters, Disk, DiskEffect, DiskProperties,
     EvolutionType, Evolver, GeneralRelativity, GeneralRelativityEffect,
-    GeneralRelativityImplementation, KaulaParameters, OblateSpheroidParameters, Polynomials,
+    GeneralRelativityImplementation, KaulaParameters, OblateSpheroidParameters,
     RotationalFlattening, RotationalFlatteningEffect, RotationalFlatteningModel, TidalModel, Tides,
     TidesEffect, Wind, WindEffect,
 };

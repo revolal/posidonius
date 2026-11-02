@@ -10,7 +10,6 @@ pub use constant_time_lag::{
 };
 pub use creep_coplanar::{CreepCoplanarParameters, calculate_creep_coplanar_shapes};
 pub use kaula::KaulaParameters;
-pub use kaula::Polynomials;
 use serde::{Deserialize, Serialize};
 
 // For future reference:
@@ -21,21 +20,11 @@ use serde::{Deserialize, Serialize};
 // Future improvement (not in order of priority):
 // 1: Read the data once and for all instead of reading it each time step, especially in RUST it is
 //    expensive to create or read an array because RUST needs to check the existence of the array/element first.
-// 2: This is the starting point of calculation of tidal forces, with you specific choice of
-//    tidal model. The original structure of the old tidal models (constant time lag & creep)
-//    take into account the both stellar tide and planetary tide with the tidal_model.rs. However,
-//    this is not the case for kaula.rs, which is also why we have the bool control parameter called
-//    "central_body". This parameter tells the kaula.rs which kind of tides we are calculating (and
-//    thus different parameters are needed) and store the forces at "tides.parameters.output.acceleration"
-//    under both star (tidal_host_particle) & (particle).
-//    It will be better if we can unify the structure of each tidal model such that we can have a neat
-//    structure in here.
-//    P.S. The idea of having "central_body" comes from the old tidal models, check it for better usage
-// 3: The calculation of stellar tide in Kaula.rs requires the planetary tide (for example CTL) to be
-//    switched on, thus we set those CTL parameters to be zeros (forces = 0).
-//    This is probably due to malfunction of initialization of certain parameters (e.g. coordinates)
-//    , so the model calculates a butch of "NaN" forces (essentially zeros).
-//    If this can be fixed then for sure we can speed up the code, since we are calculating zeros.
+// 2: Kaula model (docs/tides/kaula_tides.pdf): the planetary and the stellar tides use the same
+//    equations (kaula/kaula_tide.rs) with the roles of the deformed body and of the perturber
+//    exchanged; the stellar tide is computed in calculate_tidal_acceleration for every OrbitingBody
+//    (with or without its own tide, DisabledModel included), and its state is stored per body
+//    (Tides::host_kaula_tide).
 // 4: Currently, one can only include 10 objects in a simulation, due to the limitation of the size
 //    of an array in RUST. In RUST, maximum size of array is 32, but we have some arrays that take size
 //    of max_number_of_planets*3, thus 10 objects (1 star and 9 planets). Sergi amazingly fixed this
@@ -131,7 +120,7 @@ impl TidalModel {
                     creep_coplanar::calculate_tidal_force(tidal_host_particle, particle)
                 }
                 TidalModel::Kaula(_) => {
-                    kaula::calculate_tidal_force(tidal_host_particle, particle, central_body)
+                    kaula::calculate_planetary_tidal_force(tidal_host_particle, particle)
                 }
                 TidalModel::DisabledModel => {
                     unreachable!();
@@ -153,6 +142,9 @@ pub struct Tides {
     pub effect: TidesEffect,
     pub parameters: TidesParticleParameters,
     pub coordinates: TidesParticleCoordinates,
+    // Kaula tide raised in the tidal host by this body (stellar tide, one per orbiting body)
+    #[serde(default)]
+    pub host_kaula_tide: kaula::HostTide,
 }
 
 impl Tides {
@@ -191,6 +183,7 @@ impl Tides {
                 position: Axes::new(),
                 velocity: Axes::new(),
             },
+            host_kaula_tide: kaula::HostTide::default(),
         }
     }
 
@@ -371,8 +364,37 @@ pub fn calculate_dangular_momentum_dt_due_to_tides(
         .dangular_momentum_dt = dangular_momentum_dt;
 }
 
-pub fn calculate_denergy_dt(particles: &mut [Particle], more_particles: &mut [Particle]) {
+pub fn calculate_denergy_dt(
+    tidal_host_particle: &mut Particle,
+    particles: &mut [Particle],
+    more_particles: &mut [Particle],
+) {
+    // Stellar Kaula tide: power dissipated in the host, sum over the orbiting bodies of eq. (8.21) with
+    // D = host (docs/tides/kaula_tides.pdf, Section 10.7)
+    if matches!(
+        tidal_host_particle.tides.effect,
+        TidesEffect::CentralBody(TidalModel::Kaula(_))
+    ) {
+        tidal_host_particle.tides.parameters.internal.denergy_dt = particles
+            .iter()
+            .chain(more_particles.iter())
+            .filter(|particle| matches!(particle.tides.effect, TidesEffect::OrbitingBody(_)))
+            .map(kaula::stellar_tide_power)
+            .sum();
+    }
     for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
+        if let TidesEffect::OrbitingBody(TidalModel::Kaula(kaula)) = &particle.tides.effect {
+            // Planetary Kaula tide: P = -(F_Im . v + Gamma_Im . s), docs/tides/kaula_tides.pdf eq. (8.21),
+            // at the state of the last force evaluation
+            let state = kaula.tide_state;
+            particle.tides.parameters.internal.denergy_dt = if state.valid {
+                -(state.tide.dissipative_force.dot(&state.velocity)
+                    + state.tide.dissipative_torque.dot(&state.spin))
+            } else {
+                0.
+            };
+            continue;
+        }
         if let TidesEffect::OrbitingBody(_) = particle.tides.effect {
             // - Equation 32 from Bolmont et al. 2015
             //// Instantaneous energy loss dE/dt due to tides
@@ -415,35 +437,6 @@ pub fn calculate_denergy_dt(particles: &mut [Particle], more_particles: &mut [Pa
                     + particle.tides.parameters.output.dangular_momentum_dt.z * particle.spin.z);
         }
     }
-    // Leon: I am not sure if we can just use the same formula to calculate the tidal heating for
-    // the Kaula model, especially for stellar tide.
-    // Nevertheless, assuming we can, we missed some key components such as
-    // "radial_component_of_the_tidal_force_dissipative_part_when_star_as_point_mass".
-    // For now we ignored it cause tidal heating within a star is nothing, although I am not sure
-    // ignoring the energy part would cause any problem or not. Personally, I would include that for
-    // the completeness of the integration and also the conservation of angular momentum and energy
-    // (since denergy_dt depends on dangular_momentum_dt too).
-    //
-    // let s_tide: bool = false;
-    // if s_tide{
-    //     for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
-    //         if let TidesEffect::OrbitingBody(_) = particle.tides.effect {
-    //             // - Equation 32 from Bolmont et al. 2015
-    //             //// Instantaneous energy loss dE/dt due to tides
-    //             //// in Msun.AU^2.day^(-3)
-    //             //radial_tidal_force_for_energy_loss_calculation = factor1 * term2; // Ftidr_diss
-    //             let factor2 = particle.tides.parameters.internal.orthogonal_component_of_the_tidal_force_due_to_stellar_tide / particle.tides.parameters.internal.distance;
-    //
-    //             tidal_host_particle.tides.parameters.internal.denergy_dt = -((1.0 / particle.tides.parameters.internal.distance * (particle.tides.parameters.internal.radial_component_of_the_tidal_force_dissipative_part_when_star_as_point_mass + factor2 * particle.tides.parameters.internal.radial_velocity))
-    //                 * (particle.tides.coordinates.position.x*particle.tides.coordinates.velocity.x + particle.tides.coordinates.position.y*particle.tides.coordinates.velocity.y + particle.tides.coordinates.position.z*particle.tides.coordinates.velocity.z)
-    //                 + factor2
-    //                 * ((particle.spin.y*particle.tides.coordinates.position.z - particle.spin.z*particle.tides.coordinates.position.y - particle.tides.coordinates.velocity.x) * particle.tides.coordinates.velocity.x
-    //                 + (particle.spin.z*particle.tides.coordinates.position.x - particle.spin.x*particle.tides.coordinates.position.z - particle.tides.coordinates.velocity.y) * particle.tides.coordinates.velocity.y
-    //                 + (particle.spin.x*particle.tides.coordinates.position.y - particle.spin.y*particle.tides.coordinates.position.x - particle.tides.coordinates.velocity.z) * particle.tides.coordinates.velocity.z))
-    //                 - (particle.tides.parameters.output.dangular_momentum_dt.x*particle.spin.x + particle.tides.parameters.output.dangular_momentum_dt.y*particle.spin.y + particle.tides.parameters.output.dangular_momentum_dt.z*particle.spin.z);
-    //         }
-    //     }
-    // }
 }
 
 pub fn calculate_tidal_acceleration(
@@ -453,7 +446,6 @@ pub fn calculate_tidal_acceleration(
 ) {
     let mut sum_tidal_force = Axes::new();
 
-    let central_body = false;
     for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
         if let TidesEffect::OrbitingBody(tidal_model) = &particle.tides.effect {
             if matches!(tidal_model, TidalModel::DisabledModel) {
@@ -468,7 +460,7 @@ pub fn calculate_tidal_acceleration(
                     creep_coplanar::calculate_tidal_force(tidal_host_particle, particle)
                 }
                 TidalModel::Kaula(_) => {
-                    kaula::calculate_tidal_force(tidal_host_particle, particle, central_body)
+                    kaula::calculate_planetary_tidal_force(tidal_host_particle, particle)
                 }
                 TidalModel::DisabledModel => {
                     continue;
@@ -504,10 +496,12 @@ pub fn calculate_tidal_acceleration(
         tidal_host_particle.tides.effect,
         TidesEffect::CentralBody(TidalModel::Kaula(_))
     ) {
-        let central_body = true;
         for particle in particles.iter_mut().chain(more_particles.iter_mut()) {
-            let mut tidal_force =
-                kaula::calculate_tidal_force(particle, tidal_host_particle, central_body);
+            // Bodies with tidal coordinates only (TidesEffect::Disabled bodies have none)
+            if !matches!(particle.tides.effect, TidesEffect::OrbitingBody(_)) {
+                continue;
+            }
+            let mut tidal_force = kaula::calculate_stellar_tidal_force(tidal_host_particle, particle);
 
             let mut tidal_force_host = tidal_force;
             tidal_force_host.mul(1. / tidal_host_particle.mass);

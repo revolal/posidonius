@@ -504,6 +504,9 @@ impl Integrator for Ias15 {
             }
         }
 
+        // Mean rates of the Kaula tides: history updated at the accepted step (docs/tides/kaula_tides.pdf)
+        self.universe.update_kaula_rate_histories(self.current_time);
+
         // Calculate accelerations.
         let ignore_gravity_terms = IgnoreGravityTerms::None;
         let ignored_gravity_terms = ignore_gravity_terms;
