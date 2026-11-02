@@ -1,0 +1,75 @@
+\chapter{The tidal-raising potential in spherical harmonics}\label{ch:potential}
+
+\section{Multipole expansion}
+The gravitational potential created by the star at the field point $\vr$ is
+\begin{equation}
+  U(\vr,\vr^\star)=-\frac{\G M^\star}{\|\vr^\star-\vr\|}. \label{eq:U}
+\end{equation}
+Let $\Theta$ be the angle between $\vr$ and $\vr^\star$. With unit vectors,
+\begin{equation}
+  \cos\Theta=\hat{\vr}\cdot\hat{\vr}^\star=\cos\theta\cos\theta^\star+\sin\theta\sin\theta^\star\cos(\varphi-\varphi^\star). \label{eq:cosTheta}
+\end{equation}
+Put $x=\cos\Theta$ and $t=r/r^\star$. Then
+\[
+  \|\vr^\star-\vr\|^2=r^{\star2}\,(1-2xt+t^2).
+\]
+The generating function of the Legendre polynomials,
+\[
+  (1-2xt+t^2)^{-1/2}=\sum_{l\ge0}t^lP_l(x),
+\]
+converges for $|t|<1$ and $|x|\le1$ \citep[e.g.][\S1.2]{Kaula2000}. Therefore
+\begin{equation}
+  U=-\frac{\G M^\star}{r^\star}\sum_{l=0}^{\infty}\Big(\frac{r}{r^\star}\Big)^lP_l(\cos\Theta),\qquad r<r^\star. \label{eq:U-legendre}
+\end{equation}
+The condition $r<r^\star$ always holds where the series is used: inside the planet and at its surface, $r\le R<r^\star$.
+
+\section{Addition theorem}
+\paragraph{Spherical harmonics.} We use the spherical harmonics of \citet[eq.~5.2(1)]{Varshalovich1988}:
+\begin{equation}
+  Y_l^m(\theta,\varphi)=N_{lm}\,P_l^m(\cos\theta)\,e^{\I m\varphi},\qquad N_{lm}=\sqrt{\frac{2l+1}{4\pi}\frac{(l-m)!}{(l+m)!}}, \label{eq:Ylm-main}
+\end{equation}
+where $P_l^m$ is the associated Legendre function with the Condon--Shortley phase. Both $N_{lm}$ and $P_l^m$ are real. These functions are orthonormal on the unit sphere. Their definitions, conventions and properties are given in Appendix~\ref{app:harmonics}.
+
+\paragraph{Addition theorem.} The addition theorem for spherical harmonics \citep[eq.~5.17(9)]{Varshalovich1988} reads
+\begin{equation}
+  P_l(\cos\Theta)=\frac{4\pi}{2l+1}\sum_{m=-l}^{l}Y_l^{m}(\theta,\varphi)^*\,Y_l^m(\theta^\star,\varphi^\star). \label{eq:addition-full}
+\end{equation}
+
+\paragraph{Folding to $m\ge0$.} For $m>0$, the symmetry $Y_l^{-m}=(-1)^mY_l^{m*}$ \citep[eq.~5.1(11)]{Varshalovich1988} gives
+\[
+  Y_l^{-m}(\theta,\varphi)^*\,Y_l^{-m}(\theta^\star,\varphi^\star)=(-1)^{2m}\,Y_l^m(\theta,\varphi)\,Y_l^{m}(\theta^\star,\varphi^\star)^*=\Big[Y_l^m(\theta,\varphi)^*Y_l^m(\theta^\star,\varphi^\star)\Big]^*.
+\]
+The terms $\pm m$ are complex conjugates, so their sum is twice the real part. The $m=0$ term is real. Hence
+\begin{equation}
+  P_l(\cos\Theta)=\frac{4\pi}{2l+1}\sum_{m=0}^{l}(2-\delta_{0,m})\Re\Big[Y_l^m(\theta,\varphi)^*\,Y_l^m(\theta^\star,\varphi^\star)\Big]. \label{eq:addition-folded}
+\end{equation}
+
+\paragraph{Real form.} Insert \eqref{eq:Ylm-main} in the bracket of \eqref{eq:addition-folded}. Since $N_{lm}$ and $P_l^m$ are real, and since $\Re[e^{-\I m\varphi}e^{\I m\varphi^\star}]$ equals $\cos m(\varphi-\varphi^\star)$,
+\[
+  \Re\big[Y_l^{m*}(\theta,\varphi)Y_l^m(\theta^\star,\varphi^\star)\big]=N_{lm}^2P_l^m(\cos\theta)P_l^m(\cos\theta^\star)\cos m(\varphi-\varphi^\star).
+\]
+Since $\frac{4\pi}{2l+1}N_{lm}^2=\frac{(l-m)!}{(l+m)!}$, this gives
+\begin{equation}
+  P_l(\cos\Theta)=\sum_{m=0}^{l}\frac{(l-m)!}{(l+m)!}(2-\delta_{0,m})P_l^m(\cos\theta)P_l^m(\cos\theta^\star)\cos m(\varphi-\varphi^\star). \label{eq:addition-real}
+\end{equation}
+
+\begin{quote}\small
+\textbf{Remark (phase convention).} Equations \eqref{eq:addition-folded} and \eqref{eq:addition-real} contain only products of two $Y$ or two $P$. A factor $(-1)^m$ attached to each $P_l^m$ therefore cancels: this chapter does not depend on the Condon--Shortley convention. The convention matters only when a \emph{single} harmonic is transformed (Chapter~\ref{ch:kaula}) and in the recursion relations (Chapter~\ref{ch:gradient}).
+\end{quote}
+
+\section{The tidal-raising potential}
+Insert the addition theorem \eqref{eq:addition-folded} in the Legendre series \eqref{eq:U-legendre}. The prefactor of the degree-$l$ term is
+\[
+  \frac{\G M^\star}{r^\star}\Big(\frac{r}{r^\star}\Big)^l=\G M^\star\,r^l\times\frac{1}{(r^\star)^{l+1}}.
+\]
+We split it this way on purpose: $r^l$ depends only on the field point, and $1/(r^\star)^{l+1}$ only on the star. Grouping $1/(r^\star)^{l+1}$ with the harmonic of the star, $Y_l^m(\theta^\star,\varphi^\star)$, gives the combination $Y_l^m(\theta^\star,\varphi^\star)/(r^\star)^{l+1}$. This is a solid harmonic of the star's position, and it is exactly the quantity that Kaula's transformation converts into orbital elements (Chapter~\ref{ch:kaula}, eq.~\eqref{eq:kaula-Ylm}). Hence
+\begin{equation}
+  U=-\G M^\star\sum_{l\ge0}\frac{4\pi}{2l+1}\,r^l\sum_{m=0}^{l}(2-\delta_{0,m})\Re\bigg[Y_l^m(\theta,\varphi)^*\,\frac{Y_l^m(\theta^\star,\varphi^\star)}{(r^\star)^{l+1}}\bigg]. \label{eq:U-harmonics}
+\end{equation}
+
+\paragraph{The terms $l=0$ and $l=1$.}
+\begin{itemize}
+  \item The $l=0$ term, $-\G M^\star/r^\star$, does not depend on $\vr$. It exerts no force on the planet's matter.
+  \item The $l=1$ term, $-\G M^\star(\vr\cdot\hat{\vr}^\star)/r^{\star2}$, gives a uniform acceleration $\G M^\star\hat{\vr}^\star/r^{\star2}$. This equals the orbital acceleration of the planet's centre. In the planet-centred, non-inertial frame it is cancelled by the transport acceleration, so it does not deform the planet.
+\end{itemize}
+The tidal-raising potential is therefore $U^{\rm tid}=\sum_{l\ge2}U_l$. From now on all sums over $l$ start at $l=2$. The degree $l$ is kept general and set to $l=2$ where stated.

@@ -1,0 +1,188 @@
+\chapter{Gradient of the tidal potential and the force}\label{ch:gradient}
+
+\section{Components of a vector}\label{sec:components}
+Several bases are used for the gradient and the force. For any vector $\mathbf V$, we write its components as follows.
+\begin{itemize}
+  \item \textbf{Local polar basis} at the point $(r,\theta,\varphi)$: $\mathbf V=V_r\er+V_\theta\et+V_\varphi\ep$, where $\er$, $\et$, $\ep$ point outward, southward and eastward (Appendix~\ref{app:conventions}).
+  \item \textbf{Body-fixed Cartesian basis}: $\mathbf V=V_x\mathbf e_x+V_y\mathbf e_y+V_z\mathbf e_z$, with $\mathbf e_z$ along the spin axis and $\mathbf e_x$ towards $\varphi=0$. The two horizontal components are combined into one complex number:
+  \begin{equation}
+    V_+\equiv V_x+\I V_y. \label{eq:Vplus}
+  \end{equation}
+\end{itemize}
+With $\er=\sin\theta\cos\varphi\,\mathbf e_x+\sin\theta\sin\varphi\,\mathbf e_y+\cos\theta\,\mathbf e_z$, $\et=\cos\theta\cos\varphi\,\mathbf e_x+\cos\theta\sin\varphi\,\mathbf e_y-\sin\theta\,\mathbf e_z$ and $\ep=-\sin\varphi\,\mathbf e_x+\cos\varphi\,\mathbf e_y$, the two sets of components are related by
+\begin{equation}
+  V_r=\sin\theta\,\Re\big[V_+e^{-\I\varphi}\big]+\cos\theta\,V_z,\qquad
+  V_\theta=\cos\theta\,\Re\big[V_+e^{-\I\varphi}\big]-\sin\theta\,V_z,\qquad
+  V_\varphi=\Im\big[V_+e^{-\I\varphi}\big]. \label{eq:polar-from-cart}
+\end{equation}
+Indeed $V_+e^{-\I\varphi}=(V_x\cos\varphi+V_y\sin\varphi)+\I(V_y\cos\varphi-V_x\sin\varphi)$: the real part is the horizontal component along the meridian plane, the imaginary part the component along $\ep$.
+
+When the gradient of $T$ is written component by component, $(\nabla T)_r$, $(\nabla T)_\theta$, $(\nabla T)_\varphi$, $(\nabla T)_z$ and $(\nabla T)_+$ denote these components of $\mathbf V=\nabla T$.
+
+\section{What has to be differentiated}
+Start from the complex form of the tidal potential, eq.~\eqref{eq:T-complex}. Separate the factor that depends on the field point $\vr$ from the factor that does not. Each term then reads
+\begin{equation}
+  T_{lmpq}(\vr)=\Re\big[W_{lmpq}\,g_{lm}(\vr)\big],\qquad g_{lm}(\vr)\equiv\frac{Y_l^m(\theta,\varphi)^*}{r^{l+1}},\qquad W_{lmpq}\equiv\mathcal A_{lmpq}\,e^{\I(\zeta^\star_{lmpq}-\epsilon_l)}, \label{eq:T-W-g}
+\end{equation}
+with the real coefficient
+\begin{equation}
+  \mathcal A_{lmpq}=-|\kb_l|\G M^\star\frac{R^{2l+1}}{(a^\star)^{l+1}}(-1)^m\sqrt{\frac{4\pi}{2l+1}\frac{(l-m)!}{(l+m)!}}(2-\delta_{0,m})F_{lmp}(i^\star)G_{lpq}(e^\star). \label{eq:Almpq}
+\end{equation}
+Only $g_{lm}$ depends on the field point; $W_{lmpq}$ depends on the star and on the response. Since $\Re$ is linear and $\nabla$ is a real operator,
+\begin{equation}
+  \nabla T_{lmpq}=\Re\big[W_{lmpq}\,\nabla g_{lm}\big]. \label{eq:gradT-g}
+\end{equation}
+The whole problem is therefore to compute $\nabla g_{lm}$. This is done in two ways below: in the local polar basis (Section~\ref{sec:polar}), and in the body-fixed Cartesian basis (Section~\ref{sec:cart}). The function $g_{lm}$ of \eqref{eq:T-W-g} is an exterior solid harmonic: it is harmonic for $r>0$, homogeneous of degree $-(l+1)$ in $\vr$, and proportional to $e^{-\I m\varphi}$.
+
+\paragraph{A compact real form.} It is convenient to introduce a second real coefficient and the phase at the field point:
+\begin{equation}
+  \mathcal K_{lmpq}\equiv\G M^\star\frac{R^{2l+1}}{(a^\star)^{l+1}}\frac{(l-m)!}{(l+m)!}(2-\delta_{0,m})F_{lmp}(i^\star)G_{lpq}(e^\star),\qquad
+  \Lambda_{lmpq}\equiv\zeta^\star_{lmpq}-m\varphi. \label{eq:Klmpq}
+\end{equation}
+They are related to $\mathcal A_{lmpq}$ by $\mathcal A_{lmpq}(-1)^mN_{lm}=-|\kb_l|\mathcal K_{lmpq}$. Since $\cos(x+f_{lm})$ equals $\cos x$ for $l-m$ even and $\sin x$ for $l-m$ odd, the real form \eqref{eq:T-real} becomes, for both parities,
+\begin{equation}
+  T_{lmpq}(\vr)=-|\kb_l|\frac{\mathcal K_{lmpq}}{r^{l+1}}\PK_{lm}(\cos\theta)\cos\big(\Lambda_{lmpq}-\epsilon_l\big). \label{eq:T-compact}
+\end{equation}
+
+\section{Gradient in the local polar basis}\label{sec:polar}
+\paragraph{Real form.} Apply $\nabla=\er\partial_r+\et\,r^{-1}\partial_\theta+\ep\,(r\sin\theta)^{-1}\partial_\varphi$ to \eqref{eq:T-compact}. Three facts are needed:
+\begin{itemize}
+  \item $\partial_r r^{-(l+1)}=-(l+1)r^{-(l+2)}$;
+  \item only $\PK_{lm}(\cos\theta)$ depends on $\theta$;
+  \item only $\Lambda_{lmpq}$ depends on $\varphi$, with $\partial_\varphi\Lambda_{lmpq}=-m$, so $\partial_\varphi\cos(\Lambda-\epsilon)=m\sin(\Lambda-\epsilon)$.
+\end{itemize}
+This gives
+\begin{equation}
+  \boxed{\begin{aligned}
+  (\nabla T_{lmpq})_r&=(l+1)|\kb_l|\frac{\mathcal K_{lmpq}}{r^{l+2}}\PK_{lm}(\cos\theta)\cos(\Lambda_{lmpq}-\epsilon_l),\\
+  (\nabla T_{lmpq})_\theta&=-|\kb_l|\frac{\mathcal K_{lmpq}}{r^{l+2}}\frac{\dd\PK_{lm}}{\dd\theta}\cos(\Lambda_{lmpq}-\epsilon_l),\\
+  (\nabla T_{lmpq})_\varphi&=-|\kb_l|\frac{\mathcal K_{lmpq}}{r^{l+2}}\frac{m\PK_{lm}}{\sin\theta}\sin(\Lambda_{lmpq}-\epsilon_l).
+  \end{aligned}} \label{eq:grad-polar-real}
+\end{equation}
+where:
+\begin{itemize}
+  \item $\vr=(r,\theta,\varphi)$ is the field point, $\varphi$ body-fixed;
+  \item $\mathcal K_{lmpq}$ is the real coefficient~\eqref{eq:Klmpq}, which contains the masses, the radius $R$, $a$, $F_{lmp}(i)$ and $G_{lpq}(e)$;
+  \item $\Lambda_{lmpq}=\zeta_{lmpq}-m\varphi$ is the phase of the term at the field point;
+  \item $|\kb_l|$ and $\epsilon_l$ are the modulus and lag of the Love number at the frequency $\sigma_{lmpq}$ of~\eqref{eq:sigma}.
+\end{itemize}
+The two angular functions are proved in Appendix~\ref{app:harmonics} (eq.~\eqref{eq:dPK}--\eqref{eq:mPK-sin}):
+\begin{align}
+  \frac{\dd\PK_{lm}}{\dd\theta}&=\tfrac12\big[(l+m)(l-m+1)\PK_{l,m-1}-\PK_{l,m+1}\big]\ \ (m\ge1),\qquad \frac{\dd\PK_{l0}}{\dd\theta}=-\PK_{l1}, \label{eq:dPK-main}\\
+  \frac{m\PK_{lm}}{\sin\theta}&=\tfrac12\big[\PK_{l+1,m+1}+(l-m+1)(l-m+2)\PK_{l+1,m-1}\big]\ \ (m\ge1),\qquad 0\ \ (m=0). \label{eq:mPK-main}
+\end{align}
+The azimuthal factor $m\PK_{lm}/\sin\theta$ contains no $1/\sin\theta$: it is a combination of degree-$(l+1)$ functions and is regular at the poles.
+
+\paragraph{Spherical-harmonic form.} The same gradient can be written with spherical harmonics. \citet[\S7.3, eq.~25--27 and 51]{Varshalovich1988} give the gradient of $f(r)Y_{LM}$:
+\[
+  \nabla\{f(r)Y_{LM}\}=f'(r)\,\mathbf Y^{(-1)}_{LM}+\sqrt{L(L+1)}\,\frac{f}{r}\,\mathbf Y^{(1)}_{LM},
+\]
+with the polar components $[\mathbf Y^{(-1)}_{LM}]_r=Y_{LM}$, $[\mathbf Y^{(1)}_{LM}]_\theta=\partial_\theta Y_{LM}/\sqrt{L(L+1)}$ and $[\mathbf Y^{(1)}_{LM}]_\varphi=\I M\,Y_{LM}/(\sqrt{L(L+1)}\sin\theta)$. The $\theta$-derivative is \citep[eq.~5.8(5)]{Varshalovich1988}
+\[
+  \partial_\theta Y_{LM}=\tfrac12\sqrt{L(L+1)-M(M+1)}\,Y_{L,M+1}e^{-\I\varphi}-\tfrac12\sqrt{L(L+1)-M(M-1)}\,Y_{L,M-1}e^{\I\varphi}.
+\]
+Apply this to $g_{lm}$ of \eqref{eq:T-W-g}, i.e.\ $f=r^{-(l+1)}$ and the \emph{conjugate} harmonic. Conjugation changes $\partial_\varphi Y_l^m=\I mY_l^m$ into $\partial_\varphi Y_l^{m*}=-\I mY_l^{m*}$, and swaps $e^{\mp\I\varphi}$. Then insert in \eqref{eq:gradT-g}, with $A^\pm_{lm}=\frac12\sqrt{l(l+1)-m(m\pm1)}$ and $\Phi_{lmpq}=\zeta^\star_{lmpq}-\epsilon_l$:
+\begin{equation}
+  \begin{aligned}
+  (\nabla T_{lmpq})_r&=-(l+1)\frac{\mathcal A_{lmpq}}{r^{l+2}}\Re\big[Y_l^{m*}e^{\I\Phi_{lmpq}}\big],\\
+  (\nabla T_{lmpq})_\theta&=\frac{\mathcal A_{lmpq}}{r^{l+2}}\Re\Big[\big(A^+_{lm}Y_l^{m+1\,*}e^{\I\varphi}-A^-_{lm}Y_l^{m-1\,*}e^{-\I\varphi}\big)e^{\I\Phi_{lmpq}}\Big]\quad(m\ge1),\\
+  (\nabla T_{l0pq})_\theta&=\frac{\mathcal A_{l0pq}}{r^{l+2}}\sqrt{l(l+1)}\,\Re\big[Y_l^{1*}e^{\I\varphi}e^{\I\Phi_{l0pq}}\big],\\
+  (\nabla T_{lmpq})_\varphi&=\frac{\mathcal A_{lmpq}}{r^{l+2}}\frac{m}{\sin\theta}\Im\big[Y_l^{m*}e^{\I\Phi_{lmpq}}\big]\\
+  &=-\frac{\mathcal A_{lmpq}}{2r^{l+2}}\Im\Big[\big(c^+_{lm}Y_{l+1}^{m+1\,*}e^{\I\varphi}+c^-_{lm}Y_{l+1}^{m-1\,*}e^{-\I\varphi}\big)e^{\I\Phi_{lmpq}}\Big].
+  \end{aligned} \label{eq:grad-polar-cplx}
+\end{equation}
+\begin{itemize}
+  \item The $m=0$ meridional component uses $\partial_\theta Y_l^{0*}=\sqrt{l(l+1)}Y_l^{1*}e^{\I\varphi}$ \citep[eq.~5.8(5)]{Varshalovich1988}, so no negative order appears.
+  \item The $\varphi$-component: $\Re[-\I m\,z]=m\,\Im z$, hence the $\Im$.
+  \item The last line uses \eqref{eq:Y-over-sin} (Appendix~\ref{app:harmonics}), with the constants $c^\pm_{lm}$ of \eqref{eq:c-constants} below.
+\end{itemize}
+
+\section{Gradient in the body-fixed Cartesian basis}\label{sec:cart}
+\paragraph{Ladder operators.} In the body-fixed Cartesian basis, define $D_\pm\equiv\partial_x\pm\I\partial_y$. Then, by \eqref{eq:Vplus}, $(\nabla T)_+=D_+T$ for any real $T$. The operators $\partial_z$ and $D_\pm$:
+\begin{itemize}
+  \item commute with the Laplacian, so they map harmonic functions to harmonic functions;
+  \item lower the homogeneity degree by one;
+  \item multiply the azimuthal dependence by $1$ and $e^{\pm\I\varphi}$ respectively.
+\end{itemize}
+The function $g_{lm}$ of \eqref{eq:T-W-g} is harmonic, of degree $-(l+1)$ and proportional to $e^{-\I m\varphi}$. Its images are therefore harmonic, of degree $-(l+2)$ and proportional to $e^{-\I m\varphi}$ or $e^{-\I(m\mp1)\varphi}$, i.e.\ each is a single degree-$(l+1)$ solid harmonic $g_{l+1,m'}$:
+\begin{equation}
+  \partial_zg_{lm}=-c^0_{lm}\,g_{l+1,m},\qquad D_-g_{lm}=c^+_{lm}\,g_{l+1,m+1},\qquad D_+g_{lm}=-c^-_{lm}\,g_{l+1,m-1}\quad(m\ge1), \label{eq:ladder}
+\end{equation}
+with the constants
+\begin{equation}
+  c^0_{lm}=\sqrt{\tfrac{2l+1}{2l+3}\big[(l+1)^2-m^2\big]},\qquad c^\pm_{lm}=\sqrt{\tfrac{2l+1}{2l+3}(l\pm m+1)(l\pm m+2)}. \label{eq:c-constants}
+\end{equation}
+For $m=0$, $g_{l0}$ is real, so $D_+g_{l0}=(D_-g_{l0})^*=c^+_{l0}\,Y_{l+1}^1/r^{l+2}$ and no negative order appears.
+
+\paragraph{Origin of the constants.} They follow from \citet[eq.~7.3(51), first line]{Varshalovich1988} with $f=r^{-(l+1)}$. The first term vanishes because $(\dd/\dd r+(l+1)/r)\,r^{-(l+1)}=0$, which leaves
+\[
+  \nabla(r^{-(l+1)}Y_{lm})=\sqrt{(l+1)(2l+1)}\,r^{-(l+2)}\mathbf Y^{l+1}_{lm}.
+\]
+Expanding $\mathbf Y^{l+1}_{lm}$ with Clebsch--Gordan coefficients on the covariant basis $\mathbf e_{\pm1}=\mp(\mathbf e_x\pm\I\mathbf e_y)/\sqrt2$, $\mathbf e_0=\mathbf e_z$ \citep[eq.~1.1(20)]{Varshalovich1988}, and taking the complex conjugate, gives \eqref{eq:ladder}--\eqref{eq:c-constants}.
+
+\paragraph{Real Cartesian components.} Insert \eqref{eq:ladder} in \eqref{eq:gradT-g}, express $g_{l+1,m'}$ with $\PK_{l+1,m'}$, and use $\Re[Wz]$ for $\partial_z$. For $D_+$, use $D_+\Re[Wg]=\tfrac12\big[W\,D_+g+W^*(D_-g)^*\big]$. With $X\equiv\Lambda_{lmpq}-\epsilon_l$:
+\begin{equation}
+  \boxed{\begin{aligned}
+  (\nabla T_{lmpq})_z&=(l-m+1)|\kb_l|\frac{\mathcal K_{lmpq}}{r^{l+2}}\PK_{l+1,m}(\cos\theta)\cos X,\\
+  (\nabla T_{lmpq})_+&=|\kb_l|\frac{\mathcal K_{lmpq}}{2r^{l+2}}e^{\I\varphi}\big[\PK_{l+1,m+1}\,e^{-\I X}-(l-m+1)(l-m+2)\PK_{l+1,m-1}\,e^{\I X}\big]\quad(m\ge1),\\
+  (\nabla T_{l0pq})_+&=|\kb_l|\frac{\mathcal K_{l0pq}}{r^{l+2}}e^{\I\varphi}\PK_{l+1,1}\cos X.
+  \end{aligned}} \label{eq:grad-cart}
+\end{equation}
+where $V_z$ and $V_+=V_x+\I V_y$ are the body-fixed Cartesian components of Section~\ref{sec:components}, $\vr=(r,\theta,\varphi)$ the field point, $\mathcal K_{lmpq}$ the coefficient~\eqref{eq:Klmpq}, $X=\Lambda_{lmpq}-\epsilon_l$, and $\PK_{l+1,m'}=\PK_{l+1,m'}(\cos\theta)$.
+
+All components involve only degree-$(l+1)$ solid harmonics, which is the input of the second Kaula transformation (Chapter~\ref{ch:second}). Projected with \eqref{eq:polar-from-cart}, \eqref{eq:grad-cart} gives back \eqref{eq:grad-polar-real}.
+
+\section{The force}
+By the force convention \eqref{eq:force-convention}, $\Fsp=+M^\star\nabla T$ evaluated at the star, $\vr=\vr^\star=(r^\star,\theta^\star,\varphi^\star)$. Evaluate \eqref{eq:grad-polar-real} there, i.e.\ with $\Lambda^\star_{lmpq}\equiv\zeta^\star_{lmpq}-m\varphi^\star$. Then split $|\kb_l|\cos(\Lambda-\epsilon_l)$ and $|\kb_l|\sin(\Lambda-\epsilon_l)$ with \eqref{eq:love-split}:
+\begin{equation}
+  \begin{aligned}
+  F^{\star\to\mathrm p}_r&=M^\star\sum_{lmpq}(l+1)\frac{\mathcal K_{lmpq}}{(r^\star)^{l+2}}\PK_{lm}(\cos\theta^\star)\big[\Re\kb_l\cos\Lambda^\star_{lmpq}-\Im\kb_l\sin\Lambda^\star_{lmpq}\big],\\
+  F^{\star\to\mathrm p}_\theta&=-M^\star\sum_{lmpq}\frac{\mathcal K_{lmpq}}{(r^\star)^{l+2}}\frac{\dd\PK_{lm}}{\dd\theta}(\cos\theta^\star)\big[\Re\kb_l\cos\Lambda^\star_{lmpq}-\Im\kb_l\sin\Lambda^\star_{lmpq}\big],\\
+  F^{\star\to\mathrm p}_\varphi&=-M^\star\sum_{lmpq}\frac{\mathcal K_{lmpq}}{(r^\star)^{l+2}}\frac{m\PK_{lm}}{\sin\theta}(\cos\theta^\star)\big[\Re\kb_l\sin\Lambda^\star_{lmpq}+\Im\kb_l\cos\Lambda^\star_{lmpq}\big],
+  \end{aligned} \label{eq:force-polar}
+\end{equation}
+where:
+\begin{itemize}
+  \item $(r^\star,\theta^\star,\varphi^\star)$ is the position of the star seen from the planet, $\varphi^\star$ body-fixed;
+  \item $\Lambda^\star_{lmpq}=\zeta^\star_{lmpq}-m\varphi^\star$ is the phase of the term at the star;
+  \item $\kb_l=\kb_l(\sigma^\star_{lmpq})$ is the complex Love number at the frequency of the term, split into its real (elastic) and imaginary (dissipative) parts;
+  \item $\Fps=-\Fsp$ is the force on the star.
+\end{itemize}
+
+\section{Physical check: circular equatorial orbit}\label{sec:physical-check}
+We check the signs of \eqref{eq:force-polar} on the simplest case.
+\paragraph{Setting.} The orbit is circular ($e=0$) and lies in the equator ($i=0$); the tidal lag is a constant time lag $\Delta t>0$; the degree is $l=2$.
+
+\paragraph{Surviving terms.}
+\begin{itemize}
+  \item For $e=0$: $G_{2pq}(0)=1$ for $q=0$ and $0$ otherwise, so only $q=0$ remains.
+  \item For $i=0$: $F_{2mp}(0)\neq0$ only for $(m,p)=(0,1)$, with $F_{201}(0)=-\tfrac12$, and for $(m,p)=(2,0)$, with $F_{220}(0)=3$ (Table~\ref{tab:F2mp}).
+\end{itemize}
+Two terms remain: $(m,p,q)=(0,1,0)$ and $(2,0,0)$.
+
+\paragraph{Their frequencies,} from \eqref{eq:sigma} with $\dot\omega=\dot\Omega=0$ and $\dot\M=n$:
+\[
+  \sigma_{2010}=(2-2)\,n=0,\qquad \sigma_{2200}=2n-2\Op=-2(\Op-n).
+\]
+With a constant time lag, $\epsilon_2(\sigma)=\sigma\Delta t$, so
+\[
+  \kb_2(\sigma)=k_2\,e^{-\I\sigma\Delta t},\qquad \kb_2(\sigma_{2010})=k_2,
+\]
+\[
+  \Im\kb_2(\sigma_{2200})=-k_2\sin(\sigma_{2200}\Delta t)=k_2\sin\big(2(\Op-n)\Delta t\big).
+\]
+
+\paragraph{Geometry.} The star is in the equator, $\theta^\star=\pi/2$. Hence $\dd\PK_{2m}/\dd\theta=0$ for the two surviving terms, and $F_\theta=0$. Moreover $\Lambda^\star_{2200}=\nu_{2200}-2\varphi^\star=0$: for a circular equatorial orbit the star's body-fixed longitude is $\varphi^\star=\omega+\Omega+\M-\thetap$, and $\nu_{2200}=2\omega+2\M+2(\Omega-\thetap)=2\varphi^\star$.
+
+\paragraph{Azimuthal component.} With $\Lambda^\star=0$, the bracket of $F_\varphi$ in \eqref{eq:force-polar} reduces to $\Im\kb_2(\sigma_{2200})$. The other factors of the $(2,0,0)$ term are $\mathcal K_{2200}=\G M^\star\frac{R^5}{a^3}\cdot\tfrac1{12}\cdot3$ and $m\PK_{22}/\sin\theta|_{\pi/2}=2\cdot3$. Hence
+\[
+  F^{\star\to\mathrm p}_\varphi=-\frac{3}{2}\frac{\G M^{\star2}R^5}{a^7}\,k_2\sin\big(2(\Op-n)\Delta t\big),\qquad
+  F^{\mathrm p\to\star}_\varphi=+\frac{3}{2}\frac{\G M^{\star2}R^5}{a^7}\,k_2\sin\big(2(\Op-n)\Delta t\big).
+\]
+\paragraph{Reading.}
+\begin{itemize}
+  \item If the planet spins faster than the orbit, $\Op>n$, the bulge leads the star. Then $F^{\mathrm p\to\star}_\varphi>0$: the bulge pulls the star forward, along its orbital motion ($\ep$ is eastward, the direction of the orbital motion for a prograde orbit).
+  \item If $\Op<n$, the sign reverses.
+  \item The radial component is $F^{\mathrm p\to\star}_r=-3k_2\G M^{\star2}R^5a^{-7}\big[\tfrac14+\tfrac34\cos2(\Op-n)\Delta t\big]<0$: an attraction.
+\end{itemize}
+These are the classical tidal signs \citep{Hut1981}. The same result is derived in general form in Chapter~\ref{ch:coplanar}.

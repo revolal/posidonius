@@ -1,0 +1,64 @@
+\chapter{The tide raised in the star}\label{ch:star}
+
+The previous chapters treat the tide raised by the star in the planet. A planet also raises a tide in its star, which acts back on the orbit and on the spin of the star. This chapter shows that the same equations apply with the roles of the two bodies exchanged, and states what changes: the spectrum of the star depends on the sign of the frequency.
+
+\section{Exchange of the roles}\label{sec:star-roles}
+Nothing in Chapters~\ref{ch:potential}--\ref{ch:nbody} uses the fact that the deformed body is a planet. Call D the deformed body and P the point-mass perturber that raises the tide. The derivation gives the force of P on D, and the torque on the spin of D, from the state of P relative to D, the spin of D, the radius and the Love number of D, and the mass of P. For the tide raised in the star:
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{p{5.6cm}p{4.2cm}p{4.2cm}}\toprule
+Quantity & Tide in the planet (D $=$ planet) & Tide in the star (D $=$ star)\\\midrule
+relative position $\vr=\vr_{\rm D}-\vr_{\rm P}$ & $\vr_{\mathrm p}-\vr_\star$ & $\vr_\star-\vr_{\mathrm p}$\\
+relative velocity $\mathbf v$ & $\mathbf v_{\mathrm p}-\mathbf v_\star$ & $\mathbf v_\star-\mathbf v_{\mathrm p}$\\
+spin $\mathbf s$ & spin of the planet & spin of the star $\boldsymbol\Omega_\star$\\
+radius $R$ & $R_{\mathrm p}$ & $R_\star$\\
+mass of the perturber, $M^\star$ in the formulas & $M_\star$ & $M_{\mathrm p}$\\
+Love number & $\kb_2$ of the planet & $\kb_\star$ of the star (Section~\ref{sec:star-spectrum})\\
+force~\eqref{eq:impl-force} & $\Fsp$, on the planet & $\mathbf F_{{\rm p}\to\star}$, on the star\\
+torque~\eqref{eq:torque} & on the spin of the planet & on the spin of the star\\\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}
+  \item The geometry of Section~\ref{sec:geometry} is computed with these vectors: the inclination $i$ is that of the orbit on the equator of the star, and the elements are those of the planet seen from the star.
+  \item The force~\eqref{eq:impl-force} is then the force of the planet on the star; the planet receives the opposite force. The torque~\eqref{eq:torque}, $\boldsymbol\Gamma_\star=-\vr\times\mathbf F_{{\rm p}\to\star}$, acts on the spin of the star, and $\dot{\mathbf L}_{\rm orb}+\boldsymbol\Gamma_\star=0$ exactly.
+  \item With several planets, each planet raises its own tide in the star. The force and the torque are summed over the planets; the cross terms (the bulge raised by one planet acting on another planet) are neglected.
+  \item The coplanar form (Section~\ref{sec:coplanar-nbody}) applies when the orbit lies in the equator of the star; the dissipated power~\eqref{eq:power} is the power dissipated in the star.
+\end{itemize}
+This exchange was checked against the exact linear response of a rotating deformed body to a point mass, computed without Kaula's expansion: the force agrees to $4.5\times10^{-15}$ and the angular momentum is conserved exactly.
+
+\section{Love number of the star}\label{sec:star-spectrum}
+\paragraph{Why the sign of the frequency matters.} For a planet, the response depends only on $|\sigma|$, and $\kb_2(-\sigma)=\kb_2(\sigma)^*$ (hypothesis H1). The tidal response of a rotating star, with its inertial waves, depends on whether the tidal pattern rotates in the same direction as the star or in the opposite direction. The stellar spectra are therefore tabulated for both signs of the frequency, and they are not symmetric: $\kb_\star(-\sigma)\neq\kb_\star(\sigma)^*$.
+
+\paragraph{Convention.} A term $(m,p,q)$ of the expansion is a pattern $e^{\I(\sigma t-m\varphi)}$ in the frame of the deformed body, with frequency $\bar\sigma_{2mpq}$~\eqref{eq:sigma-regular}. $\bar\sigma>0$ is a pattern prograde with respect to the rotation of the body. The term takes the Love number at its own signed frequency. This was checked against the exact response of a body whose response depends on the order $m$ and on the sign of the frequency: the reading $\kb_\star(\bar\sigma_{2mpq})$ is exact to $1.9\times10^{-15}$, while the reading with the opposite sign is wrong by $7\,\%$.
+
+\paragraph{Reading of the tabulated spectrum.} The stellar spectrum gives, at signed frequencies $x$ (rad/s), the values $\texttt{rek2}(x)$ and $\texttt{imk2}(x)$, with $\texttt{imk2}$ of the sign of $x$ (a lag for both signs). It is read as
+\begin{equation}
+  \boxed{\kb_\star(\bar\sigma)=\texttt{rek2}(x)-\I\,\texttt{imk2}(x)\Big(\frac{\Omega_\star}{\Omega_{\rm ref}}\Big)^2,\qquad
+  x=\frac{\bar\sigma}{\mathrm{DAY}}\,\frac{\Omega_{\rm ref}}{\Omega_\star},} \label{eq:kbar-star}
+\end{equation}
+where:
+\begin{itemize}
+  \item $\bar\sigma$ is the signed frequency of the term, in rad/day, and DAY the number of seconds in a day;
+  \item $\Omega_\star=\|\boldsymbol\Omega_\star\|$ is the spin rate of the star, and $\Omega_{\rm ref}$ the spin rate for which the spectrum was computed. The spectrum is rescaled to the current spin: frequencies in proportion to $\Omega_\star$, $\texttt{imk2}$ as $\Omega_\star^2$. Without $\Omega_{\rm ref}$, there is no rescaling ($\Omega_{\rm ref}/\Omega_\star=1$);
+  \item $\Im\kb_\star<0$ for $\bar\sigma>0$, as for the planet~\eqref{eq:love-impl}. For a spectrum symmetric in $x$, \eqref{eq:kbar-star} reduces to~\eqref{eq:love-impl}.
+\end{itemize}
+The frequency of the files is taken to be the tidal frequency in the frame of the star, with the sign convention above. If the supplier of the spectra used the opposite sign convention, the dissipative part of the tide would change (the elastic part would not, since $\texttt{rek2}$ is nearly constant in these files); this convention should be confirmed with the supplier.
+
+\paragraph{Table.}
+\begin{itemize}
+  \item The table is the strictly increasing prefix $x_1<\dots<x_N$ of the tabulated frequencies, with $x_1<0<x_N$ and $\texttt{imk2}\,x\ge0$ at every row; the code stops on an invalid table.
+  \item Linear interpolation inside $[x_1,x_N]$, also across $x=0$: a non-zero $\texttt{imk2}(0)$ given by the table is kept.
+  \item Outside the table, the extrapolation~\eqref{eq:extrap} is applied in $|x|$ at each end, and the sign of $\texttt{imk2}$ restored. A warning is printed once per run, since the accuracy is then not guaranteed.
+\end{itemize}
+
+\paragraph{Orders $m=0,1,2$.} The same spectrum is used for every order $m$, as hypothesis H2 does for the planet. For $m=0$ the identity $\kb(-\sigma)=\kb(\sigma)^*$ no longer holds, so each term is evaluated separately (the saving of Section~\ref{sec:algorithm} is not used). The single form~\eqref{eq:impl-single} uses $\Re\,\mathcal E_{0pq}$ for $m=0$: it keeps the Hermitian part $\tfrac12\big[\kb_\star(\sigma)+\kb_\star(-\sigma)^*\big]$ of the input, which is also what the exact response does for an axisymmetric pattern. The choice of the spectrum for $m=0$ and $m=1$ is a physical assumption of the model.
+
+\section{Mean rates}
+The frequencies of the tide in the star use the same estimator as for the planet (Section~\ref{sec:rates}), applied to the orbit seen in the equator of the star. One history is kept for each pair (star, planet), updated at the accepted steps, with the averaging window~\eqref{eq:window} of the planet.
+
+\section{Checks}
+\begin{itemize}
+  \item 16 random states with a tabulated stellar spectrum: the implementation equals the reference single form to $2.7\times10^{-15}$, and the exact response at $|q|\le42$ to $4.2\times10^{-15}$.
+  \item The torque on the star is the sum over the planets of the torques~\eqref{eq:torque}, exactly.
+  \item Two-body integrations: $\mathbf L_{\rm orb}+\mathbf L_\star$ conserved to $8\times10^{-17}$ of the exchanged angular momentum; the secular rates of the energy and of the spin of the star equal their orbit averages to $5\times10^{-5}$.
+\end{itemize}

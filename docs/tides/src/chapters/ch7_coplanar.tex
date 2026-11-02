@@ -1,0 +1,70 @@
+\chapter{The coplanar case}\label{ch:coplanar}
+
+The only approximation of this chapter is $i=0$: the star's orbit lies in the planet's equator, i.e.\ the obliquity is zero. No secular averaging is made.
+
+\section{Inclination functions, phases and coefficients}
+At $i=0$ only the terms with $l-m-2t=0$ survive in Kaula's eq.~(3.62) (Appendix~\ref{app:kaula}):
+\begin{equation}
+  F_{lmp}(0)=\begin{cases}\PK_{lm}(0)=\dfrac{(-1)^{(l-m)/2}(l+m)!}{2^l\big(\frac{l-m}{2}\big)!\big(\frac{l+m}{2}\big)!},& l-m\ \text{even},\ p=p_0\equiv\frac{l-m}{2},\\[2mm]0,&\text{otherwise}.\end{cases} \label{eq:F0}
+\end{equation}
+For example $F_{201}(0)=-\tfrac12$, $F_{220}(0)=3$, $F_{311}(0)=-\tfrac32$, $F_{330}(0)=15$. Consequences:
+\begin{itemize}
+  \item only the orders $m\equiv l\pmod2$ raise tides, with $p=p_0$;
+  \item the star stays in the equator ($\theta^\star=\pi/2$), so the meridional component vanishes identically;
+  \item $\ep$ is the transverse direction.
+\end{itemize}
+The node is undefined at $i=0$. With the longitude of pericentre $\varpi=\Omega+\omega$,
+\begin{equation}
+  \nu_{lmp_0q}=m(\varpi-\thetap)+(m+q)\M,\qquad \sigma_{lmp_0q}=m(\dot\varpi-\Op)+(m+q)n. \label{eq:nu-coplanar}
+\end{equation}
+where $\varpi=\Omega+\omega$ is the longitude of pericentre, $\M$ the mean anomaly, $n$ the mean motion, $\thetap$ and $\Op$ the rotation angle and spin rate of the planet. At $l=2$ this is $\sigma_{201q}=qn$ and $\sigma_{220q}=(2+q)n-2\Op+2\dot\varpi$, the usual coplanar form; Appendix~\ref{app:frequency} shows how it relates to the general form when $i\neq0$.
+The coefficients combine into
+\begin{equation}
+  C_{lm}\equiv\frac{(l-m)!}{(l+m)!}(2-\delta_{0,m})\big[\PK_{lm}(0)\big]^2,\qquad C_{20}=\tfrac14,\ C_{22}=\tfrac34,\ C_{31}=\tfrac38,\ C_{33}=\tfrac58, \label{eq:Clm}
+\end{equation}
+which satisfy $\sum_mC_{lm}=1$ (the addition theorem at $\Theta=0$ for points in the equator).
+
+\section{General degree}
+\paragraph{Double-sum form.} With $p=k=p_0$, we have $\alpha_{p_0qp_0j}=(q-j)\M$. Moreover, since $\sin\theta^\star=1$, the azimuthal component can be written at degree $l$ through $m\PK_{lm}/\sin\theta|_{\pi/2}=m\PK_{lm}(0)$. Then
+\begin{equation}
+  \begin{aligned}
+  (\nabla T_{lmp_0q})_r&=(l+1)\frac{\G M^\star R^{2l+1}}{r^\star a^{2l+2}}C_{lm}G_{lp_0q}(e)\sum_jG_{lp_0j}(e)\,|\kb_l|\cos\big((q-j)\M-\epsilon_l\big),\\
+  (\nabla T_{lmp_0q})_\theta&=0,\\
+  (\nabla T_{lmp_0q})_\varphi&=-m\frac{\G M^\star R^{2l+1}}{r^\star a^{2l+2}}C_{lm}G_{lp_0q}(e)\sum_jG_{lp_0j}(e)\,|\kb_l|\sin\big((q-j)\M-\epsilon_l\big).
+  \end{aligned} \label{eq:coplanar-A}
+\end{equation}
+where $r^\star$ is the distance of the star, $a,e,\M$ its semi-major axis, eccentricity and mean anomaly, $C_{lm}$ the coefficient~\eqref{eq:Clm}, $p_0=(l-m)/2$, and $|\kb_l|$, $\epsilon_l$ the modulus and lag of the Love number at the frequency $\sigma_{lmp_0q}$ of~\eqref{eq:nu-coplanar}.
+
+\paragraph{Closed form.} Kaula's definition of $G$ \citep[p.~35]{Kaula2000}, read backwards, gives
+\[
+  \sum_jG_{lp_0j}e^{-\I j\M}=\Big(\frac{a}{r^\star}\Big)^{l+1}e^{\I m(\M-f)}.
+\]
+The $j$-sum is therefore the instantaneous position of the star:
+\begin{equation}
+  \boxed{\begin{aligned}
+  (\nabla T_{lmp_0q})_r&=(l+1)\frac{\G M^\star R^{2l+1}}{a^{l+1}(r^\star)^{l+2}}C_{lm}G_{lp_0q}(e)\,|\kb_l|\cos\big((m+q)\M-mf-\epsilon_l\big),\\
+  (\nabla T_{lmp_0q})_\varphi&=-m\frac{\G M^\star R^{2l+1}}{a^{l+1}(r^\star)^{l+2}}C_{lm}G_{lp_0q}(e)\,|\kb_l|\sin\big((m+q)\M-mf-\epsilon_l\big).
+  \end{aligned}} \label{eq:coplanar-B}
+\end{equation}
+with the same notation, $f$ being the true anomaly of the star. Here $(m+q)\M-mf=\nu-m\varphi^\star$. Since $\varphi^\star=\varpi-\thetap+f$, the angles $\varpi$ and $\thetap$ cancel; they remain only in $\sigma$. The force is
+\[
+  \Fsp=M^\star\sum_{l}\sum_{m\equiv l\,(2)}\sum_q\big[(\nabla T)_r\er+(\nabla T)_\varphi\ep\big].
+\]
+
+\section{Degree two}
+Let $\kb_{20q}=\kb_2(\sigma_{201q})$ with $\sigma_{201q}=qn$, and $\kb_{22q}=\kb_2(\sigma_{220q})$ with $\sigma_{220q}=2(\dot\varpi-\Op)+(2+q)n$; their lags are $\epsilon_{20q}$ and $\epsilon_{22q}$. Then
+\begin{equation}
+  \boxed{\begin{aligned}
+  (\nabla T_2)_r&=\frac{\G M^\star R^5}{a^3(r^\star)^4}\sum_{q}\Big[\tfrac34G_{21q}(e)|\kb_{20q}|\cos(q\M-\epsilon_{20q})\\
+  &\hspace{8em}+\tfrac94G_{20q}(e)|\kb_{22q}|\cos\big((2+q)\M-2f-\epsilon_{22q}\big)\Big],\\
+  (\nabla T_2)_\theta&=0,\\
+  (\nabla T_2)_\varphi&=-\frac32\frac{\G M^\star R^5}{a^3(r^\star)^4}\sum_qG_{20q}(e)|\kb_{22q}|\sin\big((2+q)\M-2f-\epsilon_{22q}\big),
+  \end{aligned}} \label{eq:coplanar-l2}
+\end{equation}
+and $\Fsp=M^\star\nabla T_2$. Here $r^\star$ and $f$ are the distance and true anomaly of the star, $a,e,\M$ its elements, $R$ the radius of the planet; $\kb_{20q}$ acts at the frequency $qn$ (the $m=0$ tide) and $\kb_{22q}$ at $(2+q)n-2\Op+2\dot\varpi$ (the $m=2$ tide).
+
+\paragraph{Classical limit.} Take a circular orbit and a constant time lag $\Delta t$: $q=0$, $\epsilon_{200}=0$, $\epsilon_{220}=2(n-\Op)\Delta t$. Then
+\[
+  \Fps=-\frac{3k_2\G M^{\star2}R^5}{a^7}\Big[\frac14+\frac34\cos2(\Op-n)\Delta t\Big]\er+\frac{3k_2\G M^{\star2}R^5}{2a^7}\sin2(\Op-n)\Delta t\,\ep,
+\]
+the standard result \citep{Hut1981}.

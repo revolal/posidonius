@@ -1,0 +1,150 @@
+\chapter{Kaula's transformation}\label{ch:kaula}
+
+Kaula's transformation expresses a solid spherical harmonic of the position of an orbiting body in terms of its Keplerian elements. We first state Kaula's real form, then derive its complex and spherical-harmonic forms. These are the forms used throughout this document.
+
+\section{Elements, angle and frequency}
+The star's position $\vr^\star$ relative to the planet is described by its osculating elements referred to the planet's equator, $a^\star,e^\star,i^\star,\omega^\star,\Omega^\star,\M^\star$. In this chapter and the next, the $\star$ is kept on the elements; it becomes necessary in Chapter~\ref{ch:second}.
+
+\paragraph{Kaula's angle.} For each term \citep[eq.~3.71]{Kaula2000},
+\begin{equation}
+  \nu^\star_{lmpq}=(l-2p)\,\omega^\star+(l-2p+q)\,\M^\star+m\,(\Omega^\star-\thetap). \label{eq:nu}
+\end{equation}
+where:
+\begin{itemize}
+  \item $l$ is the degree, $m$ the order ($0\le m\le l$), and $p\in[0,l]$, $q\in\mathbb Z$ the indices of the inclination and eccentricity expansions;
+  \item $\omega^\star$ is the argument of pericentre of the star's orbit, measured in the orbital plane from the ascending node on the planet's equator;
+  \item $\M^\star$ is the mean anomaly;
+  \item $\Omega^\star$ is the longitude of the ascending node of the orbit on the equator;
+  \item $\thetap$ is the rotation angle of the planet, so that $\Omega^\star-\thetap$ is the body-fixed longitude of the node.
+\end{itemize}
+Since $\varphi$ is body-fixed, the rotation of the planet enters through $-m\thetap$. Only $\Omega^\star-\thetap$ appears, so the reference direction of the longitudes is irrelevant.
+
+\paragraph{Signed tidal frequency.} We use the angle itself for the phase and define the frequency as its time derivative:
+\begin{equation}
+  \sigma^\star_{lmpq}\equiv\dot\nu^\star_{lmpq}=(l-2p)\,\dot\omega^\star+(l-2p+q)\,n^\star+m\,(\dot\Omega^\star-\Op),\qquad \chi^\star_{lmpq}=|\sigma^\star_{lmpq}|. \label{eq:sigma}
+\end{equation}
+where:
+\begin{itemize}
+  \item $n^\star\simeq\dot\M^\star$ is the mean motion, $n^\star=\sqrt{\G(M^\star+M_{\mathrm p})/a^{\star3}}$;
+  \item $\dot\omega^\star$ and $\dot\Omega^\star$ are the precession rates of the pericentre and of the node, measured relative to the equator;
+  \item $\Op=\dot\theta_{\mathrm p}$ is the spin rate of the planet;
+  \item $\sigma^\star_{lmpq}$ is signed; $\chi^\star_{lmpq}$ is the physical frequency at which the Love number is evaluated.
+\end{itemize}
+Equivalent forms of this frequency (with the longitude of pericentre $\varpi=\Omega+\omega$, or the mean longitude $\lambda=\Omega+\omega+\M$), the coplanar form, and the form used in an $N$-body code are compared in Appendix~\ref{app:frequency}. Chapter~\ref{ch:nbody} explains how the rates are evaluated in an $N$-body code.
+
+\paragraph{Parity phase.}
+\begin{equation}
+  f_{lm}=\frac{(-1)^{l-m}-1}{4}\pi=\begin{cases}0,& l-m\ \text{even},\\-\pi/2,& l-m\ \text{odd},\end{cases}\qquad e^{\I f_{lm}}=\begin{cases}1,\\-\I.\end{cases} \label{eq:flm}
+\end{equation}
+
+\section{Kaula's real transformation}
+Kaula derives the transformation in three stages:
+\begin{enumerate}
+  \item eq.~(3.53)--(3.61) convert the spherical coordinates into $(r,f,\omega,\Omega,i)$, which introduces the inclination functions $F_{lmp}(i)$ (eq.~3.62);
+  \item p.~35 and eq.~(3.67)--(3.69) replace $(r,f)$ by $(a,e,\M)$, which introduces the eccentricity functions $G_{lpq}(e)$;
+  \item the result is eq.~(3.70)--(3.71) \citep{Kaula2000,Kaula1964}.
+\end{enumerate}
+For any constants $C$ and $S$,
+\begin{multline}
+  \frac{\PK_{lm}(\cos\theta^\star)}{(r^\star)^{l+1}}\big[C\cos m\varphi^\star+S\sin m\varphi^\star\big]\\
+  =\frac{1}{(a^\star)^{l+1}}\sum_{p=0}^{l}\sum_{q\in\mathbb Z}F_{lmp}(i^\star)G_{lpq}(e^\star)\times
+  \begin{cases}C\cos\nu+S\sin\nu,& l-m\ \text{even},\\ C\sin\nu-S\cos\nu,& l-m\ \text{odd},\end{cases} \label{eq:kaula-real-CS}
+\end{multline}
+with $\nu=\nu^\star_{lmpq}$. Kaula's latitude $\phi$ satisfies $\sin\phi=\cos\theta^\star$.
+
+\begin{quote}\small
+\textbf{Important.} Equation \eqref{eq:kaula-real-CS} holds for Kaula's function $\PK_{lm}$, which has no Condon--Shortley phase. With $P_l^m=(-1)^m\PK_{lm}$, the left-hand side would change sign for odd $m$.
+\end{quote}
+
+Choosing $C=\cos m\varphi$ and $S=\sin m\varphi$, where $\varphi$ is an arbitrary longitude (later the field point), gives:
+\begin{itemize}
+  \item on the left, $C\cos m\varphi^\star+S\sin m\varphi^\star=\cos m(\varphi-\varphi^\star)$;
+  \item on the right, $C\cos\nu+S\sin\nu=\cos(\nu-m\varphi)$ and $C\sin\nu-S\cos\nu=\sin(\nu-m\varphi)$.
+\end{itemize}
+Hence
+\begin{equation}
+  \frac{\PK_{lm}(\cos\theta^\star)}{(r^\star)^{l+1}}\cos m(\varphi-\varphi^\star)=\frac{1}{(a^\star)^{l+1}}\sum_{p,q}F_{lmp}(i^\star)G_{lpq}(e^\star)\Big\{{\cos\atop\sin}\Big\}^{l-m\ \text{even}}_{l-m\ \text{odd}}\big(\nu^\star_{lmpq}-m\varphi\big). \label{eq:kaula-real}
+\end{equation}
+
+\section{Complex form}
+The real form \eqref{eq:kaula-real} holds for any longitude $\varphi$. Evaluating it at two particular values of $\varphi$ gives the real and imaginary parts of $\PK_{lm}e^{\I m\varphi^\star}$, which together form the complex version. To shorten the notation, write
+\[
+  \PK\equiv\PK_{lm}(\cos\theta^\star),\qquad \Sigma[\,X\,]\equiv\frac{1}{(a^\star)^{l+1}}\sum_{p=0}^{l}\sum_{q\in\mathbb Z}F_{lmp}(i^\star)G_{lpq}(e^\star)\,X,
+\]
+so that \eqref{eq:kaula-real} reads $\PK\cos m(\varphi-\varphi^\star)/(r^\star)^{l+1}=\Sigma[\cos(\nu-m\varphi)]$ for $l-m$ even, and $\Sigma[\sin(\nu-m\varphi)]$ for $l-m$ odd.
+
+\paragraph{Two evaluations ($m\ge1$).}
+\begin{itemize}
+  \item At $\varphi=0$, the left-hand side is $\PK\cos m\varphi^\star/(r^\star)^{l+1}$ and the phase on the right is $\nu$.
+  \item At $\varphi=\pi/(2m)$, the left-hand side is $\cos(\tfrac\pi2-m\varphi^\star)=\sin m\varphi^\star$ times $\PK/(r^\star)^{l+1}$, and the phase on the right is $\nu-\tfrac\pi2$.
+\end{itemize}
+
+\paragraph{Case $l-m$ even.} With $\cos(\nu-\tfrac\pi2)=\sin\nu$, the two evaluations give
+\begin{align*}
+  \frac{\PK\cos m\varphi^\star}{(r^\star)^{l+1}}&=\Sigma[\cos\nu],\\
+  \frac{\PK\sin m\varphi^\star}{(r^\star)^{l+1}}&=\Sigma[\sin\nu].
+\end{align*}
+Multiplying the second line by $\I$ and adding it to the first,
+\[
+  \frac{\PK\,e^{\I m\varphi^\star}}{(r^\star)^{l+1}}=\Sigma\big[\cos\nu+\I\sin\nu\big]=\Sigma\big[e^{\I\nu}\big].
+\]
+
+\paragraph{Case $l-m$ odd.} With $\sin(\nu-\tfrac\pi2)=-\cos\nu$, the two evaluations give
+\begin{align*}
+  \frac{\PK\cos m\varphi^\star}{(r^\star)^{l+1}}&=\Sigma[\sin\nu],\\
+  \frac{\PK\sin m\varphi^\star}{(r^\star)^{l+1}}&=-\Sigma[\cos\nu].
+\end{align*}
+Multiplying the second line by $\I$ and adding it to the first,
+\[
+  \frac{\PK\,e^{\I m\varphi^\star}}{(r^\star)^{l+1}}=\Sigma\big[\sin\nu-\I\cos\nu\big]=\Sigma\big[-\I\,e^{\I\nu}\big].
+\]
+
+\paragraph{Case $m=0$.} Here $e^{\I m\varphi^\star}=1$, and only the evaluation at $\varphi=0$ is available. The left-hand side is real. The complex form then requires the imaginary part of the right-hand side to vanish:
+\begin{itemize}
+  \item $\Sigma[\sin\nu]=0$ for $l$ even;
+  \item $\Sigma[\cos\nu]=0$ for $l$ odd.
+\end{itemize}
+Both hold because the terms $(p,q)$ and $(l-p,-q)$ cancel in pairs. Indeed $F_{l0p}=(-1)^lF_{l0,l-p}$, $G_{lpq}=G_{l,l-p,-q}$ and $\nu_{l0pq}=-\nu_{l0,l-p,-q}$.
+
+\paragraph{Both parities together.} By \eqref{eq:flm}, $e^{\I f_{lm}}=1$ for $l-m$ even and $-\I$ for $l-m$ odd. The two cases are therefore the single formula
+\begin{equation}
+  \boxed{\frac{\PK_{lm}(\cos\theta^\star)\,e^{\I m\varphi^\star}}{(r^\star)^{l+1}}=\frac{1}{(a^\star)^{l+1}}\sum_{p=0}^{l}\sum_{q\in\mathbb Z}F_{lmp}(i^\star)G_{lpq}(e^\star)\,e^{\I\zeta^\star_{lmpq}},\qquad \zeta^\star_{lmpq}=\nu^\star_{lmpq}+f_{lm}.} \label{eq:kaula-complex}
+\end{equation}
+where:
+\begin{itemize}
+  \item $(r^\star,\theta^\star,\varphi^\star)$ are the distance, colatitude and body-fixed longitude of the star;
+  \item $(a^\star,e^\star,i^\star)$ are its semi-major axis, eccentricity and inclination on the planet's equator;
+  \item $F_{lmp}$ and $G_{lpq}$ are Kaula's inclination and eccentricity functions (Appendix~\ref{app:kaula});
+  \item $\nu^\star_{lmpq}$ is Kaula's angle~\eqref{eq:nu} and $f_{lm}$ the parity phase~\eqref{eq:flm}.
+\end{itemize}
+
+\section{Spherical-harmonic form}
+With $Y_l^m=N_{lm}P_l^me^{\I m\varphi}=(-1)^mN_{lm}\PK_{lm}e^{\I m\varphi}$,
+\begin{equation}
+  \boxed{\frac{Y_l^m(\theta^\star,\varphi^\star)}{(r^\star)^{l+1}}=\frac{(-1)^m}{(a^\star)^{l+1}}\sqrt{\frac{2l+1}{4\pi}\frac{(l-m)!}{(l+m)!}}\sum_{p=0}^{l}\sum_{q\in\mathbb Z}F_{lmp}(i^\star)G_{lpq}(e^\star)\,e^{\I\zeta^\star_{lmpq}}\qquad(0\le m\le l).} \label{eq:kaula-Ylm}
+\end{equation}
+The conjugate has $e^{-\I\zeta}$. The factor $(-1)^m$ is essential: without it every odd-$m$ term changes sign.
+
+\paragraph{Consistency check for any $l$.} We reconstruct the real form \eqref{eq:kaula-real} from \eqref{eq:kaula-Ylm} and the conjugate harmonic of the field point, $Y_l^{m*}(\theta,\varphi)=(-1)^mN_{lm}\PK_{lm}(\cos\theta)e^{-\I m\varphi}$. The two factors $(-1)^m$ cancel, and
+\[
+  \Re\big[e^{-\I m\varphi}e^{\I(\nu+f_{lm})}\big]=\Re\big[e^{\I f_{lm}}e^{\I(\nu-m\varphi)}\big]=\begin{cases}\cos(\nu-m\varphi),&l-m\ \text{even},\\ \Re[-\I e^{\I(\nu-m\varphi)}]=\sin(\nu-m\varphi),&l-m\ \text{odd},\end{cases}
+\]
+which is \eqref{eq:kaula-real}.
+
+\section{The tidal-raising potential in orbital elements}
+Inserting \eqref{eq:kaula-Ylm} into \eqref{eq:U-harmonics} and using $\frac{4\pi}{2l+1}N_{lm}=\sqrt{\frac{4\pi}{2l+1}\frac{(l-m)!}{(l+m)!}}$ gives $U^{\rm tid}=\sum_{l\ge2}\sum_{m,p,q}U_{lmpq}$, with
+\begin{align}
+  U_{lmpq}(\vr)&=-\G M^\star\frac{r^l}{(a^\star)^{l+1}}(-1)^m\sqrt{\frac{4\pi}{2l+1}\frac{(l-m)!}{(l+m)!}}(2-\delta_{0,m})\notag\\
+  &\qquad\times F_{lmp}(i^\star)G_{lpq}(e^\star)\,\Re\Big[Y_l^m(\theta,\varphi)^*e^{\I\zeta^\star_{lmpq}}\Big] \label{eq:Ulmpq-complex}\\
+  &=-\G M^\star\frac{r^l}{(a^\star)^{l+1}}\frac{(l-m)!}{(l+m)!}(2-\delta_{0,m})\PK_{lm}(\cos\theta)\notag\\
+  &\qquad\times F_{lmp}(i^\star)G_{lpq}(e^\star)\Big\{{\cos\atop\sin}\Big\}^{l-m\ \text{even}}_{l-m\ \text{odd}}\big(\nu^\star_{lmpq}-m\varphi\big). \label{eq:Ulmpq-real}
+\end{align}
+where $\vr=(r,\theta,\varphi)$ is the field point in the planet (body-fixed longitude $\varphi$), $M^\star$ the mass of the star, and the elements $(a^\star,e^\star,i^\star)$ and the angle $\nu^\star_{lmpq}$ are those of the star's orbit, as in~\eqref{eq:kaula-complex}.
+
+\paragraph{Forcing frequency of each term.} This property is needed in Chapter~\ref{ch:tidal} to apply the Love number. Fix a point of the planet: $r$, $\theta$ and $\varphi$ are constant, since $\varphi$ rotates with the planet. In \eqref{eq:Ulmpq-real}, the only time-dependent part is then the phase $\nu^\star_{lmpq}(t)-m\varphi$, whose rate is
+\[
+  \frac{\dd}{\dd t}\big(\nu^\star_{lmpq}-m\varphi\big)=\dot\nu^\star_{lmpq}=\sigma^\star_{lmpq}\qquad\text{by \eqref{eq:sigma}}.
+\]
+Each term $U_{lmpq}$ is therefore a periodic forcing of frequency $\sigma^\star_{lmpq}$ for the material of the planet. This is the frequency at which the planet responds to that term, and the argument of the Love number in Chapter~\ref{ch:tidal}.
+
+The series in $q$ converges for any $e<1$, more slowly as $e$ grows; its truncation is discussed in Chapter~\ref{ch:nbody}.

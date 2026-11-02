@@ -8,6 +8,7 @@ mod particles;
 pub mod tools;
 
 pub use effects::tides::kaula::LoveNumber;
+pub use effects::tides::kaula::kaula_tide;
 pub use effects::{
     ConstantTimeLagParameters, CreepCoplanarParameters, Disk, DiskEffect, DiskProperties,
     EvolutionType, Evolver, GeneralRelativity, GeneralRelativityEffect,

@@ -1,0 +1,229 @@
+\chapter{Second Kaula transformation: the force in orbital elements}\label{ch:second}
+
+\section{Principle and identification of the elements}
+The gradient \eqref{eq:grad-cart} is a sum of degree-$(l+1)$ solid harmonics of the field point,
+\[
+  \frac{\PK_{l+1,m'}(\cos\theta)\,e^{\pm\I m'\varphi}}{r^{l+2}},\qquad 0\le m'\le l+1.
+\]
+We describe the field point by its \emph{own} osculating elements $(a,e,i,\omega,\Omega,\M)$, and apply the degree-$(l+1)$ Kaula transformation \eqref{eq:kaula-complex} with indices $(k,j)$:
+\begin{equation}
+  \frac{\PK_{l+1,m'}(\cos\theta)e^{\I m'\varphi}}{r^{l+2}}=\frac{1}{a^{l+2}}\sum_{k=0}^{l+1}\sum_{j\in\mathbb Z}F_{l+1,m'k}(i)G_{l+1,kj}(e)e^{\I(\nu_{l+1,m'kj}+f_{l+1,m'})}, \label{eq:second-kaula}
+\end{equation}
+where $\nu_{l+1,m'kj}=(l+1-2k)\omega+(l+1-2k+j)\M+m'(\Omega-\thetap)$. The rotation angle $\thetap$ is the same in both transformations, since it is the same planet and the same body-fixed frame.
+
+\paragraph{Identification $\vr=\vr^\star$.} The force is evaluated at the star, so the field point has the orbital elements of the star:
+\begin{equation}
+  a=a^\star,\quad e=e^\star,\quad i=i^\star,\quad \omega=\omega^\star,\quad \Omega=\Omega^\star,\quad \M=\M^\star. \label{eq:identification}
+\end{equation}
+From here on, the $\star$ on the elements is dropped. Three consequences:
+\begin{enumerate}
+  \item No geometric coordinate remains. The factor $1/r^{l+2}$ is represented exactly by $a^{-(l+2)}$ times the series in $G_{l+1,kj}(e)$; $r$ is never replaced by $a$.
+  \item The lag $\epsilon_l$ and the argument of $\kb_l$ belong to the first transformation, with indices $(l,m,p,q)$. They do not depend on $(k,j)$.
+  \item No secular simplification is made: all $(p,q,k,j)$ are kept.
+\end{enumerate}
+This order of operations — gradient with respect to the field point first, identification of the elements afterwards — is the one required to obtain correct perturbation equations \citep{EfroimskyMakarov2013}.
+
+\section{Phases after identification}
+Each product in the gradient combines a phase of the first transformation, $\nu_{lmpq}$ (degree $l$), with a phase of the second one, $\nu_{l+1,m',kj}$ (degree $l+1$). Their difference contains $m(\Omega-\thetap)-m'(\Omega-\thetap)$. The factor $e^{\pm\I\varphi}$ of \eqref{eq:grad-cart} gives $m'=m\pm1$, and the projection on the nodal frame (next section) supplies the missing $e^{\mp\I(\Omega-\thetap)}$. After both steps, $\Omega-\thetap$ cancels, and only two combinations of angles remain:
+\begin{align}
+  D_{pqkj}&\equiv\nu_{lmpq}-\nu_{l+1,m,kj}=(2k-2p-1)\,\omega+(2k-2p+q-j-1)\,\M, \label{eq:D}\\
+  S_{pqkj}&\equiv\nu_{l0pq}+\nu_{l+1,1,kj}-(\Omega-\thetap)=(2l+1-2p-2k)\,\omega+(2l+1-2p-2k+q+j)\,\M. \label{eq:S}
+\end{align}
+$D$ is independent of $m$, $\Omega$ and $\thetap$. $S$, needed only for $m=0$, is independent of $\Omega$ and $\thetap$. Two further relations are used below:
+\begin{equation}
+  \nu_{l+1,m\pm1,kj}=\nu_{l+1,m,kj}\pm(\Omega-\thetap),\qquad\text{hence}\qquad \nu_{l+1,m\pm1,kj}-\nu_{lmpq}=-D_{pqkj}\pm(\Omega-\thetap). \label{eq:nu-shift}
+\end{equation}
+
+\paragraph{Parity phases.} By \eqref{eq:flm}, $f_{lm}$ depends only on the parity of $l-m$: $f_{lm}=0$ if $l-m$ is even, $-\pi/2$ if it is odd.
+\begin{itemize}
+  \item $(l+1)-(m\pm1)$ has the parity of $l-m$, so $f_{l+1,m\pm1}=f_{lm}$.
+  \item $(l+1)-m$ has the opposite parity, so $f_{lm}-f_{l+1,m}=+\pi/2$ for $l-m$ even and $-\pi/2$ for $l-m$ odd:
+  \begin{equation}
+    f_{lm}-f_{l+1,m}=(-1)^{l-m}\,\frac{\pi}{2}. \label{eq:f-diff}
+  \end{equation}
+  The same holds for $f_{lm}-f_{l,m\pm1}$, since $l-(m\pm1)$ also has the opposite parity.
+\end{itemize}
+For any angle $x$, \eqref{eq:f-diff} gives
+\begin{equation}
+  \Re\,e^{\I(x+f_{lm}-f_{l+1,m})}=\cos\big(x+(-1)^{l-m}\tfrac\pi2\big)=(-1)^{l-m+1}\sin x. \label{eq:re-shift}
+\end{equation}
+
+\section{The force in the nodal frame}
+\paragraph{The nodal frame.} The body-fixed axes $\mathbf e_x$, $\mathbf e_y$ still depend on $\Omega-\thetap$. We remove this dependence by projecting on the nodal frame:
+\begin{itemize}
+  \item $\mathbf e_Z$ is the spin axis;
+  \item $\mathbf e_X$ points towards the ascending node of the orbit on the equator, i.e.\ towards the body-fixed longitude $\varphi=\Omega-\thetap$;
+  \item rotating the axes by the angle $\Omega-\thetap$ about $\mathbf e_z$ gives
+  \begin{equation}
+    V_X+\I V_Y=e^{-\I(\Omega-\thetap)}\big(V_x+\I V_y\big)=e^{-\I(\Omega-\thetap)}\,V_+,\qquad V_Z=V_z. \label{eq:nodal-rot}
+  \end{equation}
+\end{itemize}
+
+\paragraph{Method.} In each component of \eqref{eq:grad-cart}:
+\begin{enumerate}
+  \item write the real trigonometric function as the real part of an exponential;
+  \item gather $\PK_{l+1,m'}(\cos\theta)$, $e^{\mp\I m'\varphi}$ and $1/r^{l+2}$ into one solid harmonic, and replace it with \eqref{eq:second-kaula} (or its complex conjugate);
+  \item identify the elements \eqref{eq:identification} and collect the phases with \eqref{eq:D}--\eqref{eq:re-shift}.
+\end{enumerate}
+Recall that $X=\zeta_{lmpq}-m\varphi-\epsilon_l$ with $\zeta_{lmpq}=\nu_{lmpq}+f_{lm}$. Since $\PK$, $F$ and $G$ are real, $\Re$ can be moved through the sums.
+
+\paragraph{Step 1: the $Z$-component.} With $\cos X=\Re\,e^{\I X}$,
+\[
+  \frac{\PK_{l+1,m}\cos X}{r^{l+2}}=\Re\Big[e^{\I(\zeta_{lmpq}-\epsilon_l)}\,\frac{\PK_{l+1,m}\,e^{-\I m\varphi}}{r^{l+2}}\Big].
+\]
+The second factor is the complex conjugate of \eqref{eq:second-kaula} with $m'=m$:
+\[
+  \frac{\PK_{l+1,m}\,e^{-\I m\varphi}}{r^{l+2}}=\frac{1}{a^{l+2}}\sum_{k,j}F_{l+1,mk}G_{l+1,kj}\,e^{-\I(\nu_{l+1,m,kj}+f_{l+1,m})}.
+\]
+The total phase is $\nu_{lmpq}-\nu_{l+1,m,kj}+f_{lm}-f_{l+1,m}-\epsilon_l=D_{pqkj}-\epsilon_l+(f_{lm}-f_{l+1,m})$. By \eqref{eq:re-shift},
+\[
+  \frac{\PK_{l+1,m}\cos X}{r^{l+2}}=\frac{(-1)^{l-m+1}}{a^{l+2}}\sum_{k,j}F_{l+1,mk}G_{l+1,kj}\sin(D_{pqkj}-\epsilon_l).
+\]
+Multiplying by $(l-m+1)|\kb_l|\mathcal K_{lmpq}$ gives the first line of \eqref{eq:grad-node}.
+
+\paragraph{Step 2: the horizontal components, $m\ge1$.} The bracket of \eqref{eq:grad-cart} contains two terms.
+\begin{itemize}
+  \item \emph{Order $m+1$.} Since $e^{\I\varphi}e^{-\I X}=e^{-\I(\zeta_{lmpq}-\epsilon_l)}e^{\I(m+1)\varphi}$,
+  \begin{align*}
+    \frac{e^{\I\varphi}\PK_{l+1,m+1}e^{-\I X}}{r^{l+2}}&=e^{-\I(\zeta_{lmpq}-\epsilon_l)}\frac{\PK_{l+1,m+1}e^{\I(m+1)\varphi}}{r^{l+2}}\\
+    &=\frac{1}{a^{l+2}}\sum_{k,j}F_{l+1,m+1,k}G_{l+1,kj}\,e^{\I(\nu_{l+1,m+1,kj}-\nu_{lmpq}+\epsilon_l)},
+  \end{align*}
+  where \eqref{eq:second-kaula} was used with $m'=m+1$ and $f_{l+1,m+1}=f_{lm}$. By \eqref{eq:nu-shift}, the phase is $-(D_{pqkj}-\epsilon_l)+(\Omega-\thetap)$.
+  \item \emph{Order $m-1$.} Since $e^{\I\varphi}e^{\I X}=e^{\I(\zeta_{lmpq}-\epsilon_l)}e^{-\I(m-1)\varphi}$, the conjugate of \eqref{eq:second-kaula} with $m'=m-1$ and $f_{l+1,m-1}=f_{lm}$ gives
+  \[
+    \frac{e^{\I\varphi}\PK_{l+1,m-1}e^{\I X}}{r^{l+2}}=\frac{1}{a^{l+2}}\sum_{k,j}F_{l+1,m-1,k}G_{l+1,kj}\,e^{\I(\nu_{lmpq}-\nu_{l+1,m-1,kj}-\epsilon_l)},
+  \]
+  with phase $(D_{pqkj}-\epsilon_l)+(\Omega-\thetap)$ by \eqref{eq:nu-shift}.
+\end{itemize}
+Both terms carry the same factor $e^{\I(\Omega-\thetap)}$. The rotation \eqref{eq:nodal-rot} removes it, which gives the second line of \eqref{eq:grad-node}. For $m=l$, the order $m+1=l+1$ is still allowed at degree $l+1$.
+
+\paragraph{Step 3: the horizontal components, $m=0$.} Here $(\nabla T_{l0pq})_+\propto e^{\I\varphi}\PK_{l+1,1}\cos X$ with $X=\zeta_{l0pq}-\epsilon_l$. Write $\cos X=\tfrac12(e^{-\I X}+e^{\I X})$ and use \eqref{eq:second-kaula} with $m'=1$:
+\[
+  \frac{e^{\I\varphi}\PK_{l+1,1}\cos X}{r^{l+2}}=\frac{1}{2a^{l+2}}\sum_{k,j}F_{l+1,1k}G_{l+1,kj}\,e^{\I(\nu_{l+1,1,kj}+f_{l+1,1})}\big[e^{-\I(\zeta_{l0pq}-\epsilon_l)}+e^{\I(\zeta_{l0pq}-\epsilon_l)}\big].
+\]
+\begin{itemize}
+  \item First term: $f_{l+1,1}=f_{l0}$, and the phase is $\nu_{l+1,1,kj}-\nu_{l0pq}+\epsilon_l=-(D_{pqkj}-\epsilon_l)+(\Omega-\thetap)$.
+  \item Second term: the phase is $\nu_{l0pq}+\nu_{l+1,1,kj}-\epsilon_l+2f_{l0}=S_{pqkj}-\epsilon_l+(\Omega-\thetap)+2f_{l0}$ by \eqref{eq:S}, and $e^{2\I f_{l0}}=(-1)^l$.
+\end{itemize}
+After the rotation \eqref{eq:nodal-rot}, this gives the third line of \eqref{eq:grad-node}.
+
+\paragraph{Result.} With $\mathcal K_{lmpq}$ from \eqref{eq:Klmpq}, evaluated with the identified elements,
+\begin{equation}
+  \boxed{\begin{aligned}
+  (\nabla T_{lmpq})_Z={}&(-1)^{l-m+1}(l-m+1)\frac{|\kb_l|\mathcal K_{lmpq}}{a^{l+2}}\\
+  &\qquad\times\sum_{k=0}^{l+1}\sum_jF_{l+1,mk}G_{l+1,kj}\sin(D_{pqkj}-\epsilon_l),\\
+  (\nabla T_{lmpq})_X+\I(\nabla T_{lmpq})_Y={}&\frac{|\kb_l|\mathcal K_{lmpq}}{2a^{l+2}}\sum_{k,j}G_{l+1,kj}\Big[F_{l+1,m+1,k}e^{-\I(D_{pqkj}-\epsilon_l)}\\
+  &\qquad-(l-m+1)(l-m+2)F_{l+1,m-1,k}e^{\I(D_{pqkj}-\epsilon_l)}\Big],\quad m\ge1,\\
+  (\nabla T_{l0pq})_X+\I(\nabla T_{l0pq})_Y={}&\frac{|\kb_l|\mathcal K_{l0pq}}{2a^{l+2}}\sum_{k,j}F_{l+1,1k}G_{l+1,kj}\\
+  &\qquad\times\Big[e^{-\I(D_{pqkj}-\epsilon_l)}+(-1)^le^{\I(S_{pqkj}-\epsilon_l)}\Big].
+  \end{aligned}} \label{eq:grad-node}
+\end{equation}
+where:
+\begin{itemize}
+  \item $V_Z$ is along the spin axis and $V_X+\I V_Y$ in the equator, $\mathbf e_X$ pointing to the ascending node~\eqref{eq:nodal-rot};
+  \item $a,e,i,\omega,\M$ are the elements of the star's orbit on the planet's equator (identified with those of the field point,~\eqref{eq:identification});
+  \item $\mathcal K_{lmpq}$ is the coefficient~\eqref{eq:Klmpq}; $F_{l+1,m'k}(i)$ and $G_{l+1,kj}(e)$ are the degree-$(l+1)$ Kaula functions of the second transformation;
+  \item $D_{pqkj}$ and $S_{pqkj}$ are the combined angles~\eqref{eq:D}--\eqref{eq:S};
+  \item $|\kb_l|$, $\epsilon_l$ are the modulus and lag of the Love number at $\sigma_{lmpq}$, the frequency of the first transformation.
+\end{itemize}
+These components depend only on $(a,e,i,\omega,\M)$. The node longitude $\Omega$ and the rotation angle $\thetap$ enter only through $\kb_l(\sigma_{lmpq})$.
+
+\paragraph{Orbital components.} With $u=\omega+f$, the radial, transverse and normal components are
+\begin{equation}
+  \begin{aligned}
+  V_{\rm R}&=V_X\cos u+V_Y\sin u\cos i+V_Z\sin u\sin i,\\
+  V_{\rm T}&=-V_X\sin u+V_Y\cos u\cos i+V_Z\cos u\sin i,\\
+  V_{\rm N}&=-V_Y\sin i+V_Z\cos i.
+  \end{aligned} \label{eq:RTN}
+\end{equation}
+
+\section{The force in the local spherical basis}
+The local basis follows the star, so two geometric quantities necessarily remain in it. Both are functions of the elements through the true anomaly $f(\M,e)$:
+\begin{equation}
+  r^\star=\frac{a(1-e^2)}{1+e\cos f},\qquad \cos\theta^\star=\sin i\sin u,\qquad \varphi^\star=(\Omega-\thetap)+\lambda_N, \label{eq:star-geometry}
+\end{equation}
+where $\lambda_N$ is the longitude of the star on the equator, measured from the node:
+\[
+  \cos\lambda_N=\frac{\cos u}{\sin\theta^\star},\qquad \sin\lambda_N=\frac{\cos i\sin u}{\sin\theta^\star}
+\]
+(Kaula's orbit--equator--meridian triangle, \citealt[Fig.~4]{Kaula2000}).
+
+\paragraph{Which degree for which component.} We start from the polar form \eqref{eq:grad-polar-real} evaluated at the star, $X^\star=\zeta_{lmpq}-m\varphi^\star-\epsilon_l$, with $1/r^{l+2}=(1/r^\star)\cdot1/(r^\star)^{l+1}$.
+\begin{itemize}
+  \item The radial and meridional components contain the degree-$l$ functions $\PK_{lm}$ and $\PK_{l,m\pm1}$ of \eqref{eq:dPK-main}. They are transformed at degree $l$. This absorbs $1/(r^\star)^{l+1}$ and leaves a factor $1/r^\star$.
+  \item The azimuthal component is the degree-$(l+1)$ combination \eqref{eq:mPK-main}. It is transformed at degree $l+1$, which absorbs the whole $1/(r^\star)^{l+2}$.
+\end{itemize}
+In the degree-$l$ transformation, the indices of the second expansion are again called $(k,j)$, and the phase differences are
+\begin{equation}
+  \begin{gathered}
+  \nu_{lmpq}-\nu_{l,m,kj}=\alpha_{pqkj},\qquad \nu_{lmpq}-\nu_{l,m\pm1,kj}=\alpha_{pqkj}\mp(\Omega-\thetap),\\
+  \alpha_{pqkj}\equiv(2k-2p)\omega+(2k-2p+q-j)\M.
+  \end{gathered} \label{eq:alpha}
+\end{equation}
+Each $e^{\mp\I\varphi^\star}$ left over is split with \eqref{eq:star-geometry}: $\varphi^\star=(\Omega-\thetap)+\lambda_N$, and the part $\Omega-\thetap$ cancels the one in \eqref{eq:alpha}.
+
+\paragraph{Step 4: radial component.} With $\cos X^\star=\Re\,e^{\I X^\star}$ and the conjugate of \eqref{eq:kaula-complex} at order $m$,
+\[
+  \frac{\PK_{lm}(\cos\theta^\star)\cos X^\star}{(r^\star)^{l+1}}=\Re\Big[e^{\I(\zeta_{lmpq}-\epsilon_l)}\frac{\PK_{lm}e^{-\I m\varphi^\star}}{(r^\star)^{l+1}}\Big]=\frac{1}{a^{l+1}}\sum_{k,j}F_{lmk}G_{lkj}\cos(\alpha_{pqkj}-\epsilon_l).
+\]
+Both $f_{lm}$ and $m(\Omega-\thetap)$ cancel. Multiplying by $(l+1)|\kb_l|\mathcal K_{lmpq}/r^\star$ gives \eqref{eq:local-r}.
+
+\paragraph{Step 5: meridional component.} By \eqref{eq:dPK-main}, $\dd\PK_{lm}/\dd\theta$ contains $\PK_{l,m-1}$ and $\PK_{l,m+1}$. Insert $e^{-\I(m\mp1)\varphi^\star}e^{\mp\I\varphi^\star}=e^{-\I m\varphi^\star}$:
+\[
+  \PK_{l,m\mp1}\cos X^\star=\Re\Big[e^{\I(\zeta_{lmpq}-\epsilon_l)}\,e^{\mp\I\varphi^\star}\,\PK_{l,m\mp1}e^{-\I(m\mp1)\varphi^\star}\Big].
+\]
+Apply the conjugate of \eqref{eq:kaula-complex} at order $m\mp1$. The phase is
+\[
+  \nu_{lmpq}-\nu_{l,m\mp1,kj}\mp\varphi^\star-\epsilon_l+(f_{lm}-f_{l,m\mp1})=\alpha_{pqkj}\mp\lambda_N-\epsilon_l+(-1)^{l-m}\tfrac\pi2,
+\]
+by \eqref{eq:alpha}, \eqref{eq:star-geometry} and \eqref{eq:f-diff}. By \eqref{eq:re-shift},
+\[
+  \frac{\PK_{l,m\mp1}\cos X^\star}{(r^\star)^{l+1}}=\frac{(-1)^{l-m+1}}{a^{l+1}}\sum_{k,j}F_{l,m\mp1,k}G_{lkj}\sin(\alpha_{pqkj}\mp\lambda_N-\epsilon_l).
+\]
+The prefactor of $(\nabla T)_\theta$ in \eqref{eq:grad-polar-real} is $-|\kb_l|\mathcal K_{lmpq}/r^{l+2}$, and \eqref{eq:dPK-main} gives the weights $+\tfrac12(l+m)(l-m+1)$ for $m-1$ and $-\tfrac12$ for $m+1$. The two minus signs combine into $(-1)^{l-m}$, which gives \eqref{eq:local-theta}.
+
+For $m=0$, $\dd\PK_{l0}/\dd\theta=-\PK_{l1}$. Only the order $1$ appears, with the lower sign ($+\lambda_N$), and $f_{l0}-f_{l1}=(-1)^l\pi/2$. Hence the $m=0$ formula below \eqref{eq:local-phi}.
+
+\paragraph{Step 6: azimuthal component.} With $\sin X^\star=\Im\,e^{\I X^\star}$ and \eqref{eq:mPK-main},
+\[
+  \PK_{l+1,m\pm1}\sin X^\star=\Im\Big[e^{\I(\zeta_{lmpq}-\epsilon_l)}\,e^{\pm\I\varphi^\star}\,\PK_{l+1,m\pm1}e^{-\I(m\pm1)\varphi^\star}\Big].
+\]
+Apply the conjugate of \eqref{eq:second-kaula} at order $m\pm1$, with $f_{l+1,m\pm1}=f_{lm}$. By \eqref{eq:nu-shift} and \eqref{eq:star-geometry}, the phase is
+\[
+  \nu_{lmpq}-\nu_{l+1,m\pm1,kj}\pm\varphi^\star-\epsilon_l=D_{pqkj}\mp(\Omega-\thetap)\pm(\Omega-\thetap)\pm\lambda_N-\epsilon_l=D_{pqkj}\pm\lambda_N-\epsilon_l.
+\]
+Hence
+\[
+  \frac{\PK_{l+1,m\pm1}\sin X^\star}{(r^\star)^{l+2}}=\frac{1}{a^{l+2}}\sum_{k,j}F_{l+1,m\pm1,k}G_{l+1,kj}\sin(D_{pqkj}\pm\lambda_N-\epsilon_l).
+\]
+With the prefactor $-|\kb_l|\mathcal K_{lmpq}$ and the weights $\tfrac12$ and $\tfrac12(l-m+1)(l-m+2)$ of \eqref{eq:mPK-main}, this gives \eqref{eq:local-phi}. No factor $1/r^\star$ remains.
+
+\paragraph{Result.}
+\begin{align}
+  (\nabla T_{lmpq})_r&=(l+1)\frac{|\kb_l|\mathcal K_{lmpq}}{r^\star a^{l+1}}\sum_{k=0}^{l}\sum_jF_{lmk}G_{lkj}\cos(\alpha_{pqkj}-\epsilon_l), \label{eq:local-r}\\
+  (\nabla T_{lmpq})_\theta&=(-1)^{l-m}\frac{|\kb_l|\mathcal K_{lmpq}}{2r^\star a^{l+1}}\sum_{k,j}G_{lkj}\Big[(l+m)(l-m+1)F_{l,m-1,k}\sin(\alpha_{pqkj}-\lambda_N-\epsilon_l)\notag\\
+  &\hspace{12em}-F_{l,m+1,k}\sin(\alpha_{pqkj}+\lambda_N-\epsilon_l)\Big], \label{eq:local-theta}\\
+  (\nabla T_{lmpq})_\varphi&=-\frac{|\kb_l|\mathcal K_{lmpq}}{2a^{l+2}}\sum_{k=0}^{l+1}\sum_jG_{l+1,kj}\Big[F_{l+1,m+1,k}\sin(D_{pqkj}+\lambda_N-\epsilon_l)\notag\\
+  &\hspace{9em}+(l-m+1)(l-m+2)F_{l+1,m-1,k}\sin(D_{pqkj}-\lambda_N-\epsilon_l)\Big]. \label{eq:local-phi}
+\end{align}
+Here $r^\star$ is the distance of the star, $\lambda_N$ its longitude counted from the node~\eqref{eq:star-geometry}, $\alpha_{pqkj}$ and $D_{pqkj}$ the combined angles~\eqref{eq:alpha} and~\eqref{eq:D}, and $(\er,\et,\ep)$ the local basis at the star. The last two hold for $m\ge1$, with the convention $F_{l,l+1,k}\equiv0$ (for $m=l$, the order $l+1$ does not exist at degree $l$). For $m=0$:
+\[
+  (\nabla T_{l0pq})_\theta=-(-1)^l\frac{|\kb_l|\mathcal K_{l0pq}}{r^\star a^{l+1}}\sum_{k,j}F_{l1k}G_{lkj}\sin(\alpha_{pqkj}+\lambda_N-\epsilon_l),\qquad (\nabla T_{l0pq})_\varphi=0.
+\]
+The force is $\Fsp=+M^\star\sum_{lmpq}\nabla T_{lmpq}$. The orbital components follow from
+\[
+  F_{\rm R}=F_r,\qquad F_{\rm T}=-bF_\theta+cF_\varphi,\qquad F_{\rm N}=-cF_\theta-bF_\varphi,
+\]
+with $b=\sin i\cos u/\sin\theta^\star$ and $c=\cos i/\sin\theta^\star$.
+
+\section{Degree two}
+Here $\mathcal K_{2mpq}=\G M^\star\frac{R^5}{a^3}c_mF_{2mp}G_{2pq}$, with $c_0=1$, $c_1=\tfrac13$, $c_2=\tfrac1{12}$, and $\epsilon=\epsilon_2(\sigma_{2mpq})$:
+\begin{align}
+  (\nabla T_{2mpq})_r&=\frac{3|\kb_2|\mathcal K_{2mpq}}{r^\star a^3}\sum_{k=0}^{2}\sum_jF_{2mk}G_{2kj}\cos(\alpha_{pqkj}-\epsilon),\\
+  (\nabla T_{20pq})_\theta&=-\frac{|\kb_2|\mathcal K_{20pq}}{r^\star a^3}\sum_{k,j}F_{21k}G_{2kj}\sin(\alpha_{pqkj}+\lambda_N-\epsilon),\\
+  (\nabla T_{21pq})_\theta&=\frac{|\kb_2|\mathcal K_{21pq}}{r^\star a^3}\sum_{k,j}G_{2kj}\big[-3F_{20k}\sin(\alpha_{pqkj}-\lambda_N-\epsilon)+\tfrac12F_{22k}\sin(\alpha_{pqkj}+\lambda_N-\epsilon)\big],\\
+  (\nabla T_{22pq})_\theta&=\frac{2|\kb_2|\mathcal K_{22pq}}{r^\star a^3}\sum_{k,j}F_{21k}G_{2kj}\sin(\alpha_{pqkj}-\lambda_N-\epsilon),\\
+  (\nabla T_{21pq})_\varphi&=-\frac{|\kb_2|\mathcal K_{21pq}}{a^4}\sum_{k=0}^{3}\sum_jG_{3kj}\big[\tfrac12F_{32k}\sin(D_{pqkj}+\lambda_N-\epsilon)+3F_{30k}\sin(D_{pqkj}-\lambda_N-\epsilon)\big],\\
+  (\nabla T_{22pq})_\varphi&=-\frac{|\kb_2|\mathcal K_{22pq}}{a^4}\sum_{k=0}^{3}\sum_jG_{3kj}\big[\tfrac12F_{33k}\sin(D_{pqkj}+\lambda_N-\epsilon)+F_{31k}\sin(D_{pqkj}-\lambda_N-\epsilon)\big],
+\end{align}
+and $(\nabla T_{20pq})_\varphi=0$.

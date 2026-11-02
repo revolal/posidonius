@@ -1,0 +1,32 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{array,longtable}
+\usepackage[margin=1.8cm]{geometry}
+\usepackage{hyperref}
+\title{Annex to \emph{Tides in Kaula's formalism for an $N$-body code}:\\exact coefficients of the eccentricity functions $G_{2pq}(e)$}
+\date{}
+\begin{document}
+\maketitle
+
+\paragraph{Content.} The main document prints the series of $G_{20q}(e)$ and $G_{21q}(e)$ (Tables~C.3 and C.4) with long fractions rounded to 8 significant digits. This annex gives, for \emph{exactly the same terms}, the exact rational coefficients $c_n$ of
+\[
+  G_{2pq}(e)=\sum_n c_n\,e^n ,
+\]
+together with their value in double precision.
+
+\paragraph{Origin.} The coefficients are obtained from Tisserand's formula (Kaula 2000, eq.~3.67--3.69), expanded in exact rational arithmetic; no floating-point operation is involved. They are validated against the direct numerical Hansen integral to machine precision.
+
+\paragraph{Symmetries.} $G_{22q}=G_{20,-q}$ and $G_{21q}=G_{21,-q}$; only $G_{20q}$ ($|q|\le24$) and $G_{21q}$ ($q\le0$) are listed. $G_{2pq}=\mathcal O(e^{|q|})$, and only every other power of $e$ appears.
+
+\paragraph{Complete series.} The full series, to $e^{40}$ and for $|q|\le30$, are in
+\begin{itemize}
+  \item \texttt{data/G\_exact\_l2.txt}: plain text, one line \texttt{l p q n c\_n} per coefficient, exact fractions;
+  \item \texttt{data/G\_series.json}: the same, machine-readable (also $l=3$).
+\end{itemize}
+
+\small
+\input{G_exact_terms.tex}
+
+\end{document}

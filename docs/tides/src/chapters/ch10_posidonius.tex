@@ -1,0 +1,190 @@
+\chapter{Implementation in Posidonius}\label{ch:posidonius}
+
+This chapter describes how the equations of Chapters~\ref{ch:nbody} and~\ref{ch:star} are implemented in the $N$-body code Posidonius (Rust). It gives the files and functions, the units, the data stored with the bodies, the messages printed by the code, the tests, and the known limitations. The model is selected per body with the tidal model \script{Kaula} of the Python interface; the input format of the spectra is unchanged.
+
+\section{Files and functions}\label{sec:pos-files}
+The equations are written once, for a deformed body D and a perturber P (Section~\ref{sec:star-roles}), and used for both tides.
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{p{6.7cm}p{7.8cm}}\toprule
+File & Content\\\midrule
+\script{src/effects/tides/kaula/kaula_tide.rs} & the equations: geometry, mean rates, Love numbers, Kaula functions, truncation, single and coplanar forms, force, torque and dissipative parts. Pure functions of the state, independent of \script{Particle}\\
+\script{src/effects/tides/kaula.rs} & the connection to Posidonius: planetary tide (D $=$ body, P $=$ tidal host) and stellar tide (D $=$ tidal host, P $=$ body), stored states, update of the rate histories\\
+\script{src/effects/tides/kaula/love_number.rs} & storage of the tabulated spectrum (\script{LoveNumber}) and read access to it\\
+\script{src/effects/tides.rs} & calls of the planetary and stellar tides, dissipated power (\script{calculate_denergy_dt})\\
+\script{src/particles/universe.rs} & \script{update_kaula_rate_histories}, called by the integrators\\
+\script{src/integrator/ias15.rs}, \script{whfast.rs}, \script{leapfrog.rs} & one call per accepted step to \script{update_kaula_rate_histories}\\\bottomrule
+\end{tabular}
+\end{center}
+The former Kaula code (\script{components_2d.rs}, \script{components_3d.rs}, \script{polynomials.rs} and the Love-number cache) is removed.
+
+\paragraph{Equations and functions.} The functions of \script{kaula_tide.rs} implement:
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{p{7cm}p{7.5cm}}\toprule
+Function & Equations\\\midrule
+\script{nodal_geometry} & \eqref{eq:elements-a-e}--\eqref{eq:rho}: $a$, $e$, $n_{\rm osc}$, nodal frame, $i$, $\omega$, $\M$, $f$, $u_\M$, $r^\star$, $\rho$, $c^\star$\\
+\script{update_rate_history}\newline\script{mean_rates} & estimator of Section~\ref{sec:rates}: accumulation of $\lambda$ and $\Omega$, ring buffer, $\bar n$, $\dot{\bar\lambda}$, $\dot{\bar\Omega}$\\
+\script{mean_motion_about_host}\newline\script{averaging_window} & window~\eqref{eq:window}\\
+\script{frequency} & $\bar\sigma_{2mpq}$~\eqref{eq:sigma-regular}\\
+\script{prepare_spectrum}\newline\script{evaluate_spectrum}\newline\script{love_number_at} & unsigned spectrum of a planet: table, interpolation, extrapolation~\eqref{eq:extrap}, $\kb_2$~\eqref{eq:love-impl}\\
+\script{prepare_signed_spectrum}\newline\script{evaluate_signed_spectrum}\newline\script{love_number_signed} & signed spectrum of a star, $\kb_\star$~\eqref{eq:kbar-star}\\
+\script{q_max} & truncation table of Section~\ref{sec:truncation}\\
+\script{inclination_functions_f2} & $F_{2mp}(i)$, Table~\ref{tab:F2mp}\\
+\script{eccentricity_functions_g2}\newline\script{eccentricity_functions_g2_tisserand} & $G_{2pq}(e)$: tables~\eqref{eq:G-table} for $e\le0.5$, Tisserand's formula~\eqref{eq:tisserand} otherwise\\
+\script{tidal_gradient_nodal}\newline\script{tide_single} & single form~\eqref{eq:K2}--\eqref{eq:impl-single}, force~\eqref{eq:impl-force}, torque~\eqref{eq:torque}\\
+\script{tidal_gradient_coplanar}\newline\script{tide_coplanar} & coplanar form~\eqref{eq:coplanar-nbody}\\
+\script{tide}\newline\script{tide_tabulated} & choice of the form ($i\le i_s=10^{-7}$: coplanar), Love numbers from the tabulated spectrum; returns the force, the torque and their dissipative parts~\eqref{eq:power}\\\bottomrule
+\end{tabular}
+\end{center}
+The functions of the forms take the Love number as a closure, so that the tests can use analytic rheologies (Maxwell, constant time lag, elastic) as well as tabulated spectra.
+
+\section{Call chain}\label{sec:pos-flow}
+At each force evaluation, every integrator calls \script{Universe::calculate_additional_effects}, which calls \script{tides::calculate_tidal_acceleration} and \script{tides::calculate_dangular_momentum_dt_due_to_tides}.
+\begin{itemize}
+  \item \textbf{Planetary tide.} For each body with \script{TidesEffect::OrbitingBody(TidalModel::Kaula(_))}, \script{kaula::calculate_planetary_tidal_force} returns $\Fsp$. \script{tides.rs} applies $+\Fsp/M_{\mathrm p}$ to the body and $-\Fsp/M_\star$ to the tidal host (Section~\ref{sec:io}).
+  \item \textbf{Stellar tide.} If the tidal host has \script{TidesEffect::CentralBody(TidalModel::Kaula(_))}, \script{kaula::calculate_stellar_tidal_force} returns, for each orbiting body, the force of the body on the host, $\mathbf F_{{\rm p}\to\star}$. The host receives $+\mathbf F_{{\rm p}\to\star}/M_\star$ and the body the opposite. Every \script{OrbitingBody} feels the stellar tide, whatever its own tidal model (\script{DisabledModel} included); bodies with \script{TidesEffect::Disabled} have no tidal coordinates and are skipped.
+  \item \textbf{Torques.} \script{kaula::calculate_torque_due_to_tides} returns $\vr\times\vF=-\boldsymbol\Gamma$, which \script{tides.rs} negates and stores in \script{dangular_momentum_dt}; the integrators integrate the angular momentum of the spin with it.
+\end{itemize}
+
+\paragraph{Same state for the force and the torque.} Each computed tide is stored with the state $(\vr,\mathbf v,\mathbf s)$ that produced it (\script{TideState}). The torque reuses it when the state is the same, and recomputes it otherwise: LeapFrog, for instance, asks for the torque without the force. The force and the torque therefore always come from the same instantaneous state, which is the condition for the conservation of the total angular momentum (Section~\ref{sec:torque}).
+
+\section{Units and variables}\label{sec:pos-units}
+Posidonius uses the units of the Mercury code (\script{constants.rs}):
+\begin{center}\small
+\begin{tabular}{lll}\toprule
+Quantity & Unit & Constant\\\midrule
+length & AU & \script{AU} $=1.495\,978\,707\times10^{11}$ m\\
+time & day & \script{DAY} $=86\,400$ s\\
+mass & $M_\odot$ & \script{M_SUN} $=1.9818\times10^{30}$ kg\\
+$\G$ & AU$^3\,M_\odot^{-1}$\,day$^{-2}$ & \script{G} $=\G_{\rm SI}M_\odot\,\mathrm{DAY}^2/\mathrm{AU}^3=2.9493\times10^{-4}$\\
+spin, $n$, $\dot{\bar\lambda}$, $\dot{\bar\Omega}$, $\bar\sigma$ & rad/day & \\
+force & $M_\odot$\,AU\,day$^{-2}$ & \\
+torque & $M_\odot$\,AU$^2$\,day$^{-2}$ & \\
+dissipated power & $M_\odot$\,AU$^2$\,day$^{-3}$ & \\\bottomrule
+\end{tabular}
+\end{center}
+The spectra are tabulated in rad/s. The only conversion is at the call of the spectrum: $\chi\,[\mathrm{rad/s}]=|\bar\sigma|\,[\mathrm{rad/day}]/\mathrm{DAY}$, and $x=\bar\sigma/\mathrm{DAY}$ (rescaled by the spin, \eqref{eq:kbar-star}) for a star.
+
+\paragraph{Correspondence of the variables} (planetary tide; for the stellar tide, exchange the roles as in Section~\ref{sec:star-roles}).
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{>{$}l<{$}p{7.4cm}p{5cm}}\toprule
+\text{Symbol} & Posidonius & Note\\\midrule
+\vr=\vr_{\mathrm p}-\vr_\star & \script{particle.tides.coordinates.position} & relative to the tidal host\\
+\mathbf v=\mathbf v_{\mathrm p}-\mathbf v_\star & \script{particle.tides.coordinates.velocity} & idem\\
+\mathbf s & \script{particle.spin} & rad/day, inertial axes\\
+M_{\mathrm p},\ R & \script{particle.mass}, \script{particle.radius} & $M_\odot$, AU\\
+M_\star & \script{tidal_host_particle.mass} & $M_\odot$\\
+\texttt{rek2},\ \texttt{imk2},\ \chi & \script{KaulaParameters::love_numbers} & three arrays of 1024 values\\
+\Omega_{\rm ref} & \script{stellar_spectrum_spin_rate} & rad/s, stellar spectra only\\\bottomrule
+\end{tabular}
+\end{center}
+All quantities, the orbital elements included, are computed from \script{tides.coordinates}, i.e.\ relative to the tidal host. They differ from the \script{heliocentric_position} relative to the most massive body only when the tidal host is not the most massive body (a satellite system, for example).
+
+\section{Data stored with the bodies}\label{sec:pos-state}
+\paragraph{Planetary tide,} in \script{KaulaParameters} of the body:
+\begin{itemize}
+  \item \script{love_numbers}: the spectrum, as given by the user;
+  \item \script{spectrum} (\script{TideSpectrum}): the prepared spectrum (number $N$ of distinct frequencies, extrapolation exponents at both ends), computed at the first force evaluation;
+  \item \script{rate_history} (\script{RateHistory}): the history of the mean rates;
+  \item \script{tide_state} (\script{TideState}): the last force and torque, with their dissipative parts and the state that produced them;
+  \item \script{tidal_force}: no longer used and always zero, kept so that the files written by earlier versions can still be read.
+\end{itemize}
+\paragraph{Stellar tide,} one per pair (tidal host, body), stored in the orbiting body: \script{Tides::host_kaula_tide} (\script{HostTide}), with the rate history of the pair and the last tide of the pair. The prepared signed spectrum of the host is stored in the \script{KaulaParameters} of the host.
+
+\paragraph{Rate history.} \script{Particle} is \script{Copy}, so the history is a fixed-size array: $\lambda$ and $\Omega$ are accumulated at every accepted step (to keep the full turns), and a sample $(t,\lambda,\Omega,n_{\rm osc})$ is stored every $\Delta T/32$ in a ring buffer of 40 entries, which covers $1.25\,\Delta T$. The values at $t-\Delta T$ are interpolated linearly. With these settings the rates agree with those of the full history to $2\times10^{-5}n$ on $\bar\sigma_{2200}$, five times below the error of the estimator itself.
+
+\paragraph{Update at the accepted steps.} \script{Universe::update_kaula_rate_histories} is called once per step, at the beginning of \script{iterate} of each integrator (IAS15, WHFast, LeapFrog), before the force evaluations of the step, which only read the history. It computes:
+\begin{itemize}
+  \item the osculating mean motions of all the bodies orbiting the tidal host, with or without a tide, from their inertial coordinates relative to the host;
+  \item for each body with a planetary Kaula tide, and for each pair with a stellar Kaula tide, the window~\eqref{eq:window} and the geometry of the accepted state, with the spin $\mathbf L/I$ of that state; then it appends the step to the history.
+\end{itemize}
+
+\paragraph{Snapshots.} All the new fields are serialised, so that a run resumed from a recovery snapshot continues with the same rates and gives the same trajectory as an uninterrupted run. The fields have default values, so that the case files written by the Python interface, which give only \script{love_numbers}, are read unchanged. The \script{.bin} snapshots written by earlier versions of the Kaula model cannot be read (the binary format has no field names); the \script{.json} files can.
+
+\section{Love-number spectra}\label{sec:pos-spectra}
+The spectra are given in \script{KaulaParameters::love_numbers} as three arrays of 1024 values: \script{spectrum_excitation_frequency} ($\chi$ or $x$ in rad/s), \script{spectrum_real_part} (\texttt{rek2}) and \script{spectrum_imaginary_part} (\texttt{imk2}). They are read from three-column files and padded to 1024 values, by repeating the last row or with zeros; the padding is detected and ignored.
+\begin{itemize}
+  \item \textbf{Planet} (unsigned spectrum): $\chi\ge0$, increasing; $\texttt{imk2}\ge0$ for a lag. The values are used as given, with no change of sign: $\kb_2=\texttt{rek2}-\I\,\sgn(\bar\sigma)\,\texttt{imk2}$~\eqref{eq:love-impl}. A first row of physical parameters, present in some files, must be removed before loading.
+  \item \textbf{Star} (signed spectrum): frequencies of both signs, increasing, with $\texttt{imk2}$ of the sign of the frequency, and optionally \script{stellar_spectrum_spin_rate}; reading~\eqref{eq:kbar-star}.
+\end{itemize}
+
+\section{Messages}\label{sec:pos-messages}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{p{2cm}p{12.5cm}}\toprule
+Type & Condition\\\midrule
+warning & $e>0.5$: $q_{\max}$ is kept at 42 and the truncation error is no longer guaranteed (printed once per run)\\
+warning & a forcing frequency is more than a decade outside an unsigned spectrum (above $10\chi_N$, or below $\chi_1/10$ when $\chi_1>0$): the extrapolated value is not guaranteed (once per run)\\
+warning & a forcing frequency is outside a signed spectrum (once per run)\\
+stop & $e\ge1$: the Kaula expansion does not exist\\
+stop & invalid spectrum: fewer than 3 distinct frequencies, non-finite values, unsorted frequencies; for a planet, a negative frequency or $\texttt{imk2}<0$; for a star, no frequency of one sign, or $\texttt{imk2}$ of the sign opposite to the frequency\\
+stop & a spectrum rescaled by the spin (\script{stellar_spectrum_spin_rate}) used for a body that does not rotate\\\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Dissipated power}\label{sec:pos-power}
+The output \script{denergy_dt} of a body with a planetary Kaula tide is~\eqref{eq:power}, computed with the dissipative parts stored with the last tide. For a host with a stellar Kaula tide, it is the sum of~\eqref{eq:power} over the orbiting bodies, i.e.\ the power dissipated in the star. Before the first force evaluation, and for a body without tide, it is zero.
+
+\section{Cost}\label{sec:pos-cost}
+Time of one force evaluation for one planet, single core:
+\begin{center}\small
+\begin{tabular}{lccc}\toprule
+$e$ & $G_{2pq}$ (tables) & single form & coplanar form\\\midrule
+0.006 & 0.11\,$\mu$s & 1.9\,$\mu$s & 0.55\,$\mu$s\\
+0.06 & 0.20\,$\mu$s & 5.3\,$\mu$s & 2.1\,$\mu$s\\
+0.2 & 0.34\,$\mu$s & 10.3\,$\mu$s & 3.1\,$\mu$s\\
+0.4 & 0.78\,$\mu$s & 28\,$\mu$s & 7.4\,$\mu$s\\\bottomrule
+\end{tabular}
+\end{center}
+Tisserand's formula alone costs 1 to 117\,$\mu$s over the same range. The tables of $G_{2pq}$ are built once per run (about 0.1\,s).
+
+\section{Tests}\label{sec:pos-tests}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{p{5.4cm}p{9.1cm}}\toprule
+File & Content\\\midrule
+\script{tests/test_kaula_planet.rs} & functions of \script{kaula_tide.rs} against reference values computed independently in Python: nine reference cases and random states (force and torque), $F_{2mp}$, $G_{2pq}$ (tables against Tisserand), spectra (interpolation, extrapolation, padding), truncation table, mean rates, window\\
+\script{tests/test_kaula_planet_coplanar.rs} & coplanar form against Python and against the single form at $i=0$; continuity at the switch\\
+\script{tests/test_kaula_planet_integration.rs} & integrations (IAS15, WHFast, LeapFrog): conservation of $\mathbf L_{\rm orb}+I\mathbf s$ (V9), secular rates against the orbit averages, constant-time-lag limit against \script{ConstantTimeLag} (V3), restart from a snapshot, \script{denergy_dt}\\
+\script{tests/test_kaula_stellar.rs} & signed spectra, reading~\eqref{eq:kbar-star}, stellar tide against Python and against the exact response, one tide per body, conservation and secular rates\\
+\script{tests/data/kaula_planet/}, \script{tests/data/kaula_stellar/} & reference values (inputs, intermediate values, expected force and torque)\\\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Reference cases.} \script{tests/data/kaula_planet/kaula_l2_reference_cases.json} contains nine cases in Posidonius units:
+\begin{center}\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{5.6cm}lcccp{3.2cm}}\toprule
+Case & Spectrum & $e$ & $i$ (rad) & $q_{\max}$ & Checks\\\midrule
+\script{circular_equatorial_ctl} & const.\ time lag & 0 & 0 & 2 & V1\\
+\script{eccentric_coplanar_tilted_plane_ctl} & const.\ time lag & 0.05 & 0 & 5 & plane $\neq xy$\\
+\script{eccentric_oblique_maxwell} & Maxwell & 0.1 & 0.5 & 10 & mean rates $\neq$ Kepler\\
+\script{retrograde_spin_maxwell} & Maxwell & 0.2 & 2.6 & 12 & $i>\pi/2$\\
+\script{upside_down_ctl} & const.\ time lag & 0.05 & 0 & 5 & orbit and spin along $-z$\\
+\script{elastic_oblique} & elastic & 0.15 & 0.8 & 12 & V4\\
+\script{high_eccentricity_maxwell} & Maxwell & 0.45 & 0.3 & 42 & large $q_{\max}$\\
+\script{tabulated_spectrum_inside} & test file & 0.05 & 0.2 & 7 & interpolation\\
+\script{tabulated_spectrum_extrapolated} & test file & 0.1 & 0.1 & 7 & 108 of 135 terms extrapolated\\\bottomrule
+\end{tabular}
+\end{center}
+For each case the file gives the inputs ($\vr$, $\mathbf v$, $\mathbf s$, masses, radius, $\G$, mean rates, spectrum), intermediate values ($a$, $e$, $i$, $\omega$, $\M$, $u_\M$, $n$, $\Op$), and the expected $\Fsp$ and $\boldsymbol\Gamma$ with the truncation table and with $|q|\le70$ (converged to $10^{-15}$).
+
+\paragraph{Tolerances.}
+\begin{itemize}
+  \item With the same truncation, the code reproduces $\Fsp$ to $10^{-12}$ relative to $\|\Fsp\|$, and $\boldsymbol\Gamma$ to $10^{-12}$ relative to $r^\star\|\Fsp\|$; the measured differences are below $10^{-14}$.
+  \item Against the converged values, the difference is the truncation error, bounded by~\eqref{eq:guarantee}: below $1.1\times10^{-6}$ for these cases.
+  \item The torque is not compared relative to $\|\boldsymbol\Gamma\|$: for an elastic planet $\boldsymbol\Gamma=0$ exactly, and for a weakly dissipative one $\|\boldsymbol\Gamma\|\ll r^\star\|\Fsp\|$.
+\end{itemize}
+
+\paragraph{Stored trajectories.} The tests \script{test_tides_kaula} compare short runs with positions stored in \script{tests/data/test_tides_kaula-enabled_*}. These positions were regenerated with the present model, since the force has changed.
+
+\section{Known limitations}\label{sec:pos-limits}
+\begin{itemize}
+  \item \textbf{Spin--orbit synchronism} (Section~\ref{sec:limits}). Near the 1:1 resonance the spin equation of the model becomes stiff. WHFast then prints ``convergence issue with the integration of the additional forces'', and the secular rates depend on the step for both WHFast and IAS15. Results in this regime should be checked by changing the step.
+  \item \textbf{Mean rates and the integrator.} The history is sampled at the accepted steps, so the mean rates depend slightly on the step sequence of the integrator during the first windows of a run (relative difference of the spin $10^{-5}$ after 10 orbits between IAS15 and WHFast in a test case, $6\times10^{-8}$ after 200).
+  \item \textbf{Error control of IAS15.} The step control of IAS15 in Posidonius uses one error estimate for the accelerations and the torques together. For a planet, the torques are many orders of magnitude smaller than the accelerations, so the integration error of the spin is not controlled by the step size.
+  \item \textbf{Eccentricity} above 0.5: no truncation guarantee (warning).
+  \item \textbf{Coplanar form} for prograde orbits only; a retrograde coplanar orbit uses the single form, which is correct but slower.
+\end{itemize}

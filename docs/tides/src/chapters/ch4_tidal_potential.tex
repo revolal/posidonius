@@ -1,0 +1,54 @@
+\chapter{The tidal potential}\label{ch:tidal}
+
+\section{Response of one term}
+At a body-fixed point of the surface, $(R,\theta,\varphi)$, each term \eqref{eq:Ulmpq-complex} can be written
+\[
+  U_{lmpq}(R,\theta,\varphi;t)=\Re\big[\mathcal U_{lmpq}(R,\theta,\varphi)\,e^{\I\nu^\star_{lmpq}(t)}\big].
+\]
+Here $\mathcal U_{lmpq}$ is a complex amplitude that depends on time only through the slow variation of $a^\star,e^\star,i^\star$ (hypothesis H3). Its phase advances as $\nu^\star_{lmpq}(t)$, at the rate $\sigma^\star_{lmpq}$, and because $\varphi$ is body-fixed this is the frequency seen by the material.
+
+By hypothesis H1, the response to $\Re[\mathcal Ue^{\I\sigma t}]$ is $\Re[\kb_l(\sigma)\,\mathcal Ue^{\I\sigma t}]$, where $\kb_l$ is the Fourier transform of the (real) response kernel. Hence \eqref{eq:love-def}: $\kb_l(-\sigma)=\kb_l(\sigma)^*$. In terms of the physical frequency $\chi=|\sigma|$,
+\begin{equation}
+  \kb_l(\sigma^\star_{lmpq})=\begin{cases}\kb_l(\chi^\star_{lmpq}),&\sigma^\star_{lmpq}>0,\\ \kb_l(\chi^\star_{lmpq})^*,&\sigma^\star_{lmpq}<0,\end{cases}\qquad\Longleftrightarrow\qquad \epsilon_l(\sigma)=\sgn(\sigma)\,\epsilon_l(\chi). \label{eq:love-chi}
+\end{equation}
+Here $\sigma^\star_{lmpq}$ is the signed frequency~\eqref{eq:sigma}, $\chi^\star_{lmpq}=|\sigma^\star_{lmpq}|$ the physical frequency, and $\kb_l=|\kb_l|e^{-\I\epsilon_l}$ (Appendix~\ref{app:conventions}).
+
+\paragraph{Sign of the lag.} With $\epsilon_l(\chi)>0$, the response lags behind the forcing for both signs of $\sigma$. For instance, a constant time lag $\Delta t>0$ gives $\epsilon_l=\sigma\Delta t$, whose sign follows $\sigma$, and the time-averaged work done on the bulge is then dissipative. Using $\epsilon_l(\chi)$ for $\sigma<0$ without conjugation would turn the lag into an advance.
+
+\paragraph{Exterior potential.} The degree-$l$ potential of the deformed planet:
+\begin{itemize}
+  \item satisfies Laplace's equation outside the planet;
+  \item vanishes at infinity;
+  \item is continuous at $r=R$.
+\end{itemize}
+It is therefore proportional to $r^{-(l+1)}Y_l^m$, with the factor $(R/r)^{l+1}$.
+
+\section{Result}
+The tidal potential of the term $(l,m,p,q)$ is
+\begin{equation}
+  T_{lmpq}(\vr)=\Big(\frac{R}{r}\Big)^{l+1}\Re\Big[\kb_l(\sigma^\star_{lmpq})\,\mathcal U_{lmpq}(R,\theta,\varphi)\,e^{\I\nu^\star_{lmpq}}\Big],\qquad r\ge R. \label{eq:T-def}
+\end{equation}
+The lag enters only once, through the argument of $\kb_l$. With $r^l\to R^l$ and $R^l(R/r)^{l+1}=R^{2l+1}/r^{l+1}$,
+\begin{equation}
+  \boxed{\begin{aligned}T_{lmpq}(\vr)=-|\kb_l|\,\G M^\star\frac{R^{2l+1}}{(a^\star)^{l+1}r^{l+1}}&(-1)^m\sqrt{\frac{4\pi}{2l+1}\frac{(l-m)!}{(l+m)!}}(2-\delta_{0,m})\\
+  &\times F_{lmp}(i^\star)G_{lpq}(e^\star)\,\Re\Big[Y_l^m(\theta,\varphi)^*e^{\I(\zeta^\star_{lmpq}-\epsilon_l)}\Big],\end{aligned}} \label{eq:T-complex}
+\end{equation}
+where:
+\begin{itemize}
+  \item $\vr=(r,\theta,\varphi)$ is a point outside the planet, $r\ge R$, with $R$ the radius of the planet and $\varphi$ the body-fixed longitude;
+  \item $|\kb_l|\equiv|\kb_l(\chi^\star_{lmpq})|$ and $\epsilon_l\equiv\epsilon_l(\sigma^\star_{lmpq})$ are the modulus and the phase lag of the Love number, evaluated at the frequency~\eqref{eq:sigma} of the term;
+  \item $\zeta^\star_{lmpq}=\nu^\star_{lmpq}+f_{lm}$ (Kaula's angle plus parity phase, Chapter~\ref{ch:kaula});
+  \item $a^\star,e^\star,i^\star$ are the elements of the star's orbit on the planet's equator;
+  \item the total tidal potential is $T=\sum_{l\ge2}\sum_{m,p,q}T_{lmpq}$.
+\end{itemize}
+
+\paragraph{Real form.}
+\begin{multline}
+  T_{lmpq}(\vr)=-|\kb_l|\G M^\star\frac{R^{2l+1}}{(a^\star)^{l+1}r^{l+1}}\frac{(l-m)!}{(l+m)!}(2-\delta_{0,m})\PK_{lm}(\cos\theta)\\
+  \times F_{lmp}G_{lpq}\Big\{{\cos\atop\sin}\Big\}^{l-m\ \text{even}}_{l-m\ \text{odd}}\big(\nu^\star_{lmpq}-m\varphi-\epsilon_l\big). \label{eq:T-real}
+\end{multline}
+
+\paragraph{Love-number split.} From $|\kb|e^{-\I\epsilon}=\Re\kb+\I\Im\kb$ and $\Re[(x+\I y)z]=x\Re z-y\Im z$,
+\begin{equation}
+  |\kb_l|\Re\big[Y_l^{m*}e^{\I(\zeta-\epsilon_l)}\big]=\Re\kb_l\,\Re\big[Y_l^{m*}e^{\I\zeta}\big]-\Im\kb_l\,\Im\big[Y_l^{m*}e^{\I\zeta}\big],\qquad \kb_l=\kb_l(\sigma^\star_{lmpq}). \label{eq:love-split}
+\end{equation}

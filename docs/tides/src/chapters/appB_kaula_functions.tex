@@ -1,0 +1,111 @@
+\chapter{Kaula's inclination and eccentricity functions}\label{app:kaula}
+
+\section{The transformation and its two functions}
+Kaula's transformation \citep[\S3.3]{Kaula2000} converts a term of a spherical-harmonic potential of degree $l$ and order $m$, evaluated at the position of an orbiting body, into a double Fourier series in the body's angles. Two functions appear:
+\begin{itemize}
+  \item the inclination function $F_{lmp}(i)$, which results from rotating the frame from the equator to the orbital plane;
+  \item the eccentricity function $G_{lpq}(e)$, which results from replacing $(r,f)$ by $(a,\M)$, i.e.\ the Hansen coefficients.
+\end{itemize}
+The real form of the transformation is \eqref{eq:kaula-real-CS}, the complex form \eqref{eq:kaula-complex}, and the spherical-harmonic form, with the factor $(-1)^m$ of the Condon--Shortley convention, is \eqref{eq:kaula-Ylm}. The angle is $\nu_{lmpq}=(l-2p)\omega+(l-2p+q)\M+m(\Omega-\thetap)$; the parity phase is $f_{lm}$.
+
+\paragraph{Indices.} $l\ge2$ is the degree, $0\le m\le l$ the order, $0\le p\le l$ and $q\in\mathbb Z$ the indices of the inclination and eccentricity expansions. A second set $(k,j)$ is used when the transformation is applied at the field point (Chapter~\ref{ch:second}). Negative orders $m$ never appear in the results.
+
+\section{Inclination function $F_{lmp}(i)$}
+\paragraph{Definition} \citep[eq.~3.62]{Kaula2000}:
+\begin{multline}
+  F_{lmp}(i)=\sum_t\frac{(2l-2t)!}{t!(l-t)!(l-m-2t)!\,2^{2l-2t}}\sin^{l-m-2t}i\\
+  \times\sum_{s=0}^m\binom ms\cos^si\sum_c\binom{l-m-2t+s}{c}\binom{m-s}{p-t-c}(-1)^{c-k}. \label{eq:F-def}
+\end{multline}
+Here $k=\lfloor(l-m)/2\rfloor$, $t$ runs from 0 to $\min(p,k)$, and $c$ over all values that make the binomials nonzero. The function is defined with Kaula's $\PK_{lm}$ (no Condon--Shortley phase).
+
+\paragraph{Properties.}
+\begin{itemize}
+  \item Symmetry: $F_{l,m,l-p}(i)=(-1)^{l-m}F_{lmp}(\pi-i)$.
+  \item Coplanar value: $F_{lmp}(0)=\PK_{lm}(0)$ if $l-m$ is even and $p=(l-m)/2$, and $0$ otherwise.
+\end{itemize}
+Tables~\ref{tab:F2mp} and \ref{tab:F3mp} give the exact closed forms, generated symbolically from \eqref{eq:F-def}. They agree with Kaula's Table~1.
+
+\input{chapters/tables_F.tex}
+
+\section{Eccentricity function $G_{lpq}(e)$}
+\paragraph{Definition.} $G_{lpq}$ is defined by Kaula's replacement \citep[p.~35]{Kaula2000}:
+\begin{equation}
+  \Big(\frac ar\Big)^{l+1}e^{\I(l-2p)f}=\sum_{q\in\mathbb Z}G_{lpq}(e)\,e^{\I(l-2p+q)\M}, \label{eq:G-def}
+\end{equation}
+i.e.\ $G_{lpq}$ is a Hansen coefficient:
+\[
+  G_{lpq}(e)=\frac1{2\pi}\int_0^{2\pi}\Big(\frac ar\Big)^{l+1}e^{\I(l-2p)f}e^{-\I(l-2p+q)\M}\,\dd\M.
+\]
+
+\paragraph{Properties.}
+\begin{itemize}
+  \item $G_{lpq}$ is real.
+  \item Symmetry: $G_{l,l-p,-q}=G_{lpq}$.
+  \item $G_{lpq}=\mathcal O(e^{|q|})$.
+\end{itemize}
+
+\paragraph{Tisserand's formula} \citep[eq.~3.67--3.69]{Kaula2000}, after \citet[p.~256]{Tisserand1889}. It holds for any $q$:
+\begin{equation}
+  G_{lpq}(e)=(-1)^{|q|}(1+\beta^2)^l\beta^{|q|}\sum_{k\ge0}P_{lpqk}Q_{lpqk}\beta^{2k},\qquad \beta=\frac{e}{1+\sqrt{1-e^2}}, \label{eq:tisserand}
+\end{equation}
+\[
+  P_{lpqk}=\sum_{r=0}^{h}\binom{2p'-2l}{h-r}\frac{(-1)^r}{r!}\Big(\frac{(l-2p'+q')e}{2\beta}\Big)^r,\qquad h=\begin{cases}k+q',&q'>0,\\k,&q'\le0,\end{cases}
+\]
+\[
+  Q_{lpqk}=\sum_{r=0}^{h}\binom{-2p'}{h-r}\frac{1}{r!}\Big(\frac{(l-2p'+q')e}{2\beta}\Big)^r,\qquad h=\begin{cases}k,&q'>0,\\k-q',&q'\le0,\end{cases}
+\]
+where:
+\begin{itemize}
+  \item $p'=p$, $q'=q$ for $p\le l/2$, and $p'=l-p$, $q'=-q$ for $p>l/2$;
+  \item the binomials are generalised, $\binom nj=n(n-1)\cdots(n-j+1)/j!$ for any integer $n$.
+\end{itemize}
+
+\paragraph{Convergence.} The series converges geometrically in $\beta^2\approx e^2/4$. Number of $k$-terms for an absolute error below $10^{-13}$ on all $G_{2pq}$ needed by the truncation table of Chapter~\ref{ch:nbody}:
+\begin{center}
+\begin{tabular}{l|ccccccc}\toprule
+$e$ & 0.01 & 0.05 & 0.1 & 0.2 & 0.3 & 0.4 & 0.5\\\midrule
+$K$ & 4 & 5 & 6 & 8 & 11 & 14 & 22\\\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Closed forms.} For $l-2p+q=0$ \citep[eq.~3.66]{Kaula2000}, for example $G_{210}=(1-e^2)^{-3/2}$ and $G_{31,-1}=e(1-e^2)^{-5/2}$. Also $G_{20,-2}=G_{222}=0$ exactly.
+
+\paragraph{Power series.} Tables~\ref{tab:G20q}--\ref{tab:G21q} give the exact power series in $e$ for $l=2$, $|q|\le24$, obtained by expanding \eqref{eq:tisserand} in exact rational arithmetic. They extend Kaula's Table~2 and the tables of \citet{Cayley1861}. The series to $e^{40}$, with exact rational coefficients, are available as a data file accompanying this document.
+
+Accuracy of the truncated series, as the maximum over the $G_{2pq}$ needed by the table:
+\begin{center}
+\begin{tabular}{l|cccccc}\toprule
+order $N$ $\backslash$ $e$ & 0.05 & 0.1 & 0.2 & 0.3 & 0.4 & 0.5\\\midrule
+7 & $3\times10^{-9}$ & $3\times10^{-6}$ & $8\times10^{-4}$ & $2\times10^{-2}$ & $0.2$ & $0.9$\\
+15 & $3\times10^{-16}$ & $4\times10^{-15}$ & $9\times10^{-8}$ & $7\times10^{-5}$ & $6\times10^{-3}$ & $0.2$\\
+20 & -- & -- & $8\times10^{-12}$ & $2\times10^{-6}$ & $6\times10^{-4}$ & $6\times10^{-2}$\\
+30 & -- & -- & -- & $7\times10^{-12}$ & $6\times10^{-6}$ & $5\times10^{-3}$\\\bottomrule
+\end{tabular}
+\end{center}
+A series truncated at $e^{30}$ is accurate to $7\times10^{-12}$ up to $e=0.3$ (for the reference row $10^{-5}$ of the truncation table of Chapter~\ref{ch:nbody}; the data file stops at $|q|=30$, and the series is taken as zero beyond). Beyond that, Tisserand's formula should be evaluated directly.
+
+\paragraph{Exact values.} In Tables~\ref{tab:G20q} and~\ref{tab:G21q}, fractions longer than 12 digits are printed as decimals with 8 significant digits (relative rounding below $5\times10^{-8}$). The exact fractions are provided with this document:
+\begin{itemize}
+  \item \texttt{G\_exact\_fractions.pdf}: the same terms as Tables~\ref{tab:G20q}--\ref{tab:G21q}, each coefficient as an exact fraction and in double precision;
+  \item \texttt{data/G\_exact\_l2.txt}: the complete series of $G_{20q}$ and $G_{21q}$, $|q|\le30$, to $e^{40}$, as exact fractions;
+  \item \texttt{data/G\_series.json}: the same in machine-readable form, also for $l=3$.
+\end{itemize}
+
+\input{chapters/tables_G.tex}
+
+\section{Erratum of earlier tables}
+The exact tables reveal the following errors in earlier working tables. They are listed so that they are not reused.
+\begin{center}\small
+\begin{tabular}{lll}\toprule
+Function & written & exact\\\midrule
+$G_{20,+2}$, coefficient of $e^4$ & $-115/16$ & $-115/6$ (as in Kaula, Table~2)\\
+$G_{22,-2}=G_{20,+2}$ & $\tfrac{17}{2}e^2-\tfrac{115}{16}e^3$ & $\tfrac{17}{2}e^2-\tfrac{115}{6}e^4$\\
+$G_{31,-6}$ & $\tfrac{48203}{9240}e^6$ & $\tfrac{48203}{9216}e^6$\\
+$G_{310}$ & $1+\tfrac12e^2+\tfrac{239}{64}e^4-\tfrac{3323}{576}e^6$ & $1+2e^2+\tfrac{239}{64}e^4+\tfrac{3323}{576}e^6$\\
+$G_{31,q}$, $q=3..7$ & copied from $G_{30,q}$ & e.g.\ $G_{313}=\tfrac{77}{6}e^3-\tfrac{25}{48}e^5+\dots$\\
+$F_{311}$ & $\tfrac{15}{16}\sin^2i(1+3\cos i)-\tfrac34(1+3\cos i)$ & $\tfrac{15}{16}\sin^2i(1+3\cos i)-\tfrac34(1+\cos i)$\\
+$F_{312}$ & $\tfrac{15}{16}\sin^2i(1-3\cos i)-\tfrac34(1-3\cos i)$ & $\tfrac{15}{16}\sin^2i(1-3\cos i)-\tfrac34(1-\cos i)$\\
+$F_{331}$, $F_{332}$ & $\tfrac{48}{8}\sin^2i(1\pm\cos i)$ & $\tfrac{45}{8}\sin^2i(1\pm\cos i)$\\
+$\dd F_{201}/\dd i$ & $\tfrac32\sin i\cos i-\tfrac12$ & $\tfrac32\sin i\cos i$\\\bottomrule
+\end{tabular}
+\end{center}

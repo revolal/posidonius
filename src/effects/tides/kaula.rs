@@ -12,6 +12,9 @@ pub use polynomials::Polynomials;
 mod love_number;
 pub use love_number::LoveNumber;
 
+// Planetary and stellar tides (docs/tides/kaula_tides.pdf, Chapters 8 to 10)
+pub mod kaula_tide;
+
 mod components_2d;
 use components_2d::calculate_2d_tidal_force_components;
 

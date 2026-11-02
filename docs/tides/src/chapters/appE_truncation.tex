@@ -1,0 +1,22 @@
+\chapter{Truncation tables}\label{app:truncation}
+
+The method is described in Section~\ref{sec:truncation}. For each tolerance tol, the table gives the smallest $q_{\max}$ such that the truncation error of the single form satisfies, for any Love-number spectrum with $|\kb_2|\le\kappa_{\max}$,
+\[
+  \|\delta\vF\|\le\mathrm{tol}\cdot\kappa_{\max}F_0(r^\star),\qquad \|\delta\boldsymbol\Gamma\|\le\mathrm{tol}\cdot\kappa_{\max}\,r^\star F_0(r^\star),
+\]
+at every point of the orbit, where $F_0(r^\star)=3\G M^{\star2}R^5/(r^\star)^7$ is the instantaneous elastic force per unit Love number. Each entry is the worst case over the points of a 35-point grid in $e$ inside the bin, with 714 states per point: 7 inclinations, 3 arguments of pericentre, and 34 positions on the orbit including apocentre and pericentre. The worst state is always near apocentre, where the force is weakest: a table built with a force scale averaged over the orbit would not hold there for $e\ge0.3$. The row $10^{-5}$ is the one used in Chapter~\ref{ch:nbody}.
+\begin{center}
+\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{4pt}\small
+\begin{tabular}{l|cccccccccccc}\toprule
+$e\le$ & 0.001 & 0.01 & 0.02 & 0.05 & 0.10 & 0.15 & 0.20 & 0.25 & 0.30 & 0.35 & 0.40 & 0.50\\\midrule
+tol $10^{-2}$ & 0 & 1 & 1 & 2 & 3 & 5 & 6 & 8 & 10 & 13 & 16 & 26\\
+tol $10^{-3}$ & 1 & 2 & 2 & 3 & 5 & 6 & 8 & 10 & 13 & 16 & 20 & 31\\
+tol $10^{-4}$ & 1 & 2 & 3 & 4 & 6 & 8 & 10 & 13 & 16 & 19 & 24 & 37\\
+\textbf{tol $10^{-5}$} & \textbf{2} & \textbf{3} & \textbf{3} & \textbf{5} & \textbf{7} & \textbf{10} & \textbf{12} & \textbf{15} & \textbf{18} & \textbf{23} & \textbf{28} & \textbf{42}\\
+tol $10^{-6}$ & 2 & 3 & 4 & 6 & 8 & 11 & 14 & 17 & 21 & 26 & 32 & 48\\\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Choice of the tolerance.} The scale $\kappa_{\max}F_0$ is set mostly by the elastic part of the response. The secular evolution (migration, spin evolution) is driven by the dissipative part, $\Im\kb_2$, often $10^2$ to $10^3$ times smaller. To resolve it to $10^{-3}$, choose tol $\approx10^{-3}|\Im\kb_2|/\kappa_{\max}$, i.e.\ one of the rows $10^{-4}$ to $10^{-6}$; the reference row $10^{-5}$ corresponds to $|\Im\kb_2|/\kappa_{\max}\approx10^{-2}$. The cost is $9(2q_{\max}+1)$ terms: 45 to 765 for the row $10^{-5}$, against 27 to 567 for the row $10^{-3}$. This bound is a worst case over all spectra; for a given rheology the actual error is smaller.
+
+\paragraph{Number of terms of Tisserand's series.} For an absolute error below $10^{-13}$ on all $G_{2pq}$ of the row $10^{-5}$: 4 terms at $e=0.01$, 6 at $e=0.1$, 8 at $e=0.2$, 11 at $e=0.3$, 14 at $e=0.4$ and 22 at $e=0.5$; for the row $10^{-3}$ the same, except 21 at $e=0.5$.

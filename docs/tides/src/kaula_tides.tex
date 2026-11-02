@@ -1,0 +1,77 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{array,longtable,booktabs}
+\usepackage{xcolor}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=green!40!black,urlcolor=blue!50!black]{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{xurl}
+\newcommand{\script}[1]{\path{#1}}   % breakable file names
+
+% ------------------------------------------------------------------ macros
+\newcommand{\G}{\mathcal{G}}                 % gravitational constant
+\newcommand{\I}{\mathrm{i}}                  % imaginary unit
+\newcommand{\M}{\mathcal{M}}                 % mean anomaly
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\thetap}{\theta_{\mathrm p}}     % rotation angle of the planet
+\newcommand{\Op}{\Omega_{\mathrm p}}         % spin rate of the planet
+\newcommand{\PK}{P^{\mathrm K}}              % Kaula's associated Legendre function (no CS phase)
+\newcommand{\kb}{\bar k}                     % complex Love number
+\newcommand{\er}{\mathbf e_r}
+\newcommand{\et}{\mathbf e_\theta}
+\newcommand{\ep}{\mathbf e_\varphi}
+\newcommand{\vr}{\mathbf r}
+\newcommand{\vF}{\mathbf F}
+% (\hat kept as the LaTeX default)
+\renewcommand{\Re}{\operatorname{Re}}
+\renewcommand{\Im}{\operatorname{Im}}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\Fsp}{\mathbf F_{\star\to\mathrm p}}
+\newcommand{\Fps}{\mathbf F_{\mathrm p\to\star}}
+
+\numberwithin{equation}{chapter}
+
+\title{Tides in Kaula's formalism for an $N$-body code\\[1ex]
+\large Derivation, verification, and implementation in Posidonius\\ (tide raised in a planet and in its star, degree two, arbitrary rheology)}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We derive, step by step, the tidal force exerted by the tidal bulge of a planet on its host star, and its reaction on the planet, for a planet of arbitrary rheology described by a frequency-dependent complex Love number. The tidal-raising potential of the star is expanded in spherical harmonics and transformed into Keplerian orbital elements with Kaula's transformation. The response of the planet is applied term by term. The gradient of the resulting tidal potential is computed in the local polar basis and in a body-fixed Cartesian (cyclic) basis. A second Kaula transformation at the field point, followed by the identification of the elements of the field point with those of the star, gives the force in orbital elements only. The coplanar case is derived as a special case.
+
+The equations are then written in the form used by an $N$-body integrator: from the state vectors, in inertial axes, with the spin torque that conserves the total angular momentum, tidal frequencies built with mean rates, a rheology-independent truncation table, and the dissipated power. The tide raised in the star uses the same equations with the roles of the two bodies exchanged, and a Love number that depends on the sign of the frequency. The last chapter describes the implementation in the $N$-body code Posidonius.
+
+Every formula of this document has been verified numerically, independently of its derivation, against the exact linear response of the deformed body computed without Kaula's expansion. The conventions are stated once in Appendix~\ref{app:conventions} and never changed afterwards.
+\end{abstract}
+
+\tableofcontents
+
+\include{chapters/ch0_introduction}
+\include{chapters/ch2_potential}
+\include{chapters/ch3_kaula}
+\include{chapters/ch4_tidal_potential}
+\include{chapters/ch5_gradient}
+\include{chapters/ch6_second_kaula}
+\include{chapters/ch7_coplanar}
+\include{chapters/ch8_nbody}
+\include{chapters/ch9_star}
+\include{chapters/ch10_posidonius}
+
+\appendix
+\include{chapters/appC_conventions}
+\include{chapters/appA_harmonics}
+\include{chapters/appB_kaula_functions}
+\include{chapters/appD_double_form}
+\include{chapters/appE_truncation}
+\include{chapters/appF_frequency}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

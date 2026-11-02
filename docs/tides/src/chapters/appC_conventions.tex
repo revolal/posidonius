@@ -1,0 +1,104 @@
+\chapter{Setting, conventions and notation}\label{app:conventions}
+
+\section{Physical setting}
+We consider a star of mass $M^\star$ and a planet of mass $M_{\mathrm p}$ and radius $R$. The star is treated as a point mass. The planet is deformed by the tidal field of the star and develops a tidal bulge. We compute:
+\begin{itemize}
+  \item the gravitational force exerted by this bulge on the star, $\Fps$;
+  \item its reaction on the planet, $\Fsp=-\Fps$;
+  \item the torque that the same interaction exerts on the spin of the planet.
+\end{itemize}
+The tide raised on the star is not treated.
+
+The response of the planet is assumed to satisfy three hypotheses:
+\begin{description}
+  \item[H1 — linear and time-invariant.] The deformation depends linearly on the forcing, through a response function that does not change over the forcing periods.
+  \item[H2 — spherically symmetric body.] The planet is radially stratified at rest; its rotational flattening is neglected in the response. A forcing of degree $l$ and order $m$ then produces a response of the same $(l,m)$, with a transfer function that depends on $l$ but not on $m$.
+  \item[H3 — quasi-harmonic forcing.] Each term of the expansion of the forcing has a slowly varying amplitude and a phase that advances at a slowly varying rate (Chapter~\ref{ch:tidal}).
+\end{description}
+The transfer function is the complex Love number $\kb_l(\sigma)$ \citep{EfroimskyMakarov2013,EfroimskyMakarov2014}.
+
+\section{Frames and coordinates}
+\begin{itemize}
+  \item \textbf{Planet-centred spherical coordinates} $(r,\theta,\varphi)$:
+  \begin{itemize}
+    \item $\theta$ is the colatitude, measured from the spin axis of the planet;
+    \item $\varphi$ is the \emph{body-fixed} longitude, i.e. it rotates with the planet. This is Kaula's convention: $\varphi=\alpha-\thetap$, where $\alpha$ is the longitude measured from a reference direction of the equatorial plane and $\thetap$ is the rotation angle of the planet from the same direction \citep[eq.~3.53--3.54]{Kaula2000}.
+  \end{itemize}
+  \item \textbf{Points.} The field point is $\vr=(r,\theta,\varphi)$. The star is at $\vr^\star=(r^\star,\theta^\star,\varphi^\star)$.
+  \item \textbf{Local basis.} $(\er,\et,\ep)$ points outward, southward and eastward respectively.
+  \item \textbf{Body-fixed Cartesian basis} $(\mathbf e_x,\mathbf e_y,\mathbf e_z)$: $\mathbf e_z$ along the spin axis, $\mathbf e_x$ towards $\varphi=0$.
+  \item \textbf{Nodal frame} $(\mathbf e_X,\mathbf e_Y,\mathbf e_Z)$: $\mathbf e_Z$ along the spin axis, $\mathbf e_X$ towards the ascending node of the star's orbit on the planet's equator (Chapter~\ref{ch:second}).
+\end{itemize}
+
+\section{Orbital elements and rotation}
+The relative orbit of the star around the planet is described by osculating Keplerian elements \emph{referred to the planet's equator}:
+\begin{itemize}
+  \item $a$ semi-major axis, $e$ eccentricity;
+  \item $i$ inclination, i.e. the angle between the orbital and the spin angular momenta (the obliquity);
+  \item $\omega$ argument of pericentre, $\Omega$ longitude of the ascending node, $\M$ mean anomaly;
+  \item $n$ mean motion, $f$ true anomaly, $u=\omega+f$ argument of latitude.
+\end{itemize}
+When the two transformations must be distinguished (Chapter~\ref{ch:second}), the elements of the star carry a $\star$. The rotation angle of the planet is $\thetap$ and its spin rate is $\Op=\dot\thetap$. Only the combination $\Omega-\thetap$ ever appears, so the choice of the reference direction drops out.
+
+\section{Spherical harmonics and Kaula functions}
+The associated Legendre functions $P_l^m$ include the Condon--Shortley phase. Spherical harmonics are $Y_l^m=N_{lm}P_l^me^{\I m\varphi}$, and Kaula's associated function is $\PK_{lm}=(-1)^mP_l^m$. The definitions, the two phase conventions and all identities are collected in Appendix~\ref{app:harmonics}. Kaula's functions $F_{lmp}(i)$ and $G_{lpq}(e)$ are given in Appendix~\ref{app:kaula}.
+
+The indices are $l\ge2$, $0\le m\le l$, $0\le p\le l$ and $q\in\mathbb Z$. A second set $(k,j)$ is used for the transformation at the field point. Negative orders $m$ never appear in the results.
+
+\section{Love number}
+The response to a term of signed frequency $\sigma$ is
+\begin{equation}
+  \kb_l(\sigma)=|\kb_l(\sigma)|e^{-\I\epsilon_l(\sigma)}=\Re\kb_l+\I\Im\kb_l,\qquad
+  \kb_l(-\sigma)=\kb_l(\sigma)^*. \label{eq:love-def}
+\end{equation}
+\begin{itemize}
+  \item The response kernel is real. Hence $\Re\kb_l$ is even and $\Im\kb_l$ odd in $\sigma$.
+  \item With the physical frequency $\chi=|\sigma|$, we have $\kb_l(\sigma)=\kb_l(\chi)$ for $\sigma>0$ and $\kb_l(\chi)^*$ for $\sigma<0$.
+  \item When the spectra are given as $\texttt{rek2}(\chi)\ge0$ and $\texttt{imk2}(\chi)\ge0$, the latter positive for a lag,
+  \begin{equation}
+    \kb_2(\sigma)=\texttt{rek2}(|\sigma|)-\I\,\sgn(\sigma)\,\texttt{imk2}(|\sigma|). \label{eq:love-spectra}
+  \end{equation}
+\end{itemize}
+
+\section{Force convention}
+The tidal-raising potential is negative: $U=-\G M^\star/\|\vr^\star-\vr\|$. The force on a mass $m_0$ is $-m_0\nabla(\text{potential})$. With $T$ the potential of the bulge (Chapter~\ref{ch:tidal}),
+\begin{equation}
+  \Fps=-M^\star\nabla T\big|_{\vr=\vr^\star},\qquad \Fsp=+M^\star\nabla T\big|_{\vr=\vr^\star}. \label{eq:force-convention}
+\end{equation}
+
+\section{Notation summary}
+\begin{longtable}{>{$}l<{$}p{11.5cm}}
+\toprule
+\text{Symbol} & Meaning\\\midrule\endhead
+\G & gravitational constant\\
+M^\star,\ M_{\mathrm p},\ R & mass of the star, mass and radius of the planet\\
+(r,\theta,\varphi) & planet-centred spherical coordinates (colatitude, body-fixed longitude)\\
+\vr,\ \vr^\star & field point, position of the star seen from the planet\\
+\Theta & angle between $\vr$ and $\vr^\star$, $\cos\Theta=\hat{\vr}\cdot\hat{\vr}^\star$\\
+a,e,i,\omega,\Omega,\M & osculating elements of the star's orbit, referred to the planet's equator\\
+n,\ f,\ u & mean motion $\sqrt{\G(M^\star+M_{\mathrm p})/a^3}$, true anomaly, argument of latitude $u=\omega+f$\\
+\varpi,\ \lambda,\ u_\M & longitude of pericentre $\Omega+\omega$, mean longitude $\Omega+\omega+\M$, argument of the mean latitude $\omega+\M$\\
+\bar n,\ \dot{\bar\lambda},\ \dot{\bar\Omega} & mean motion, rate of the mean longitude, precession rate of the node, averaged over the fast angles (Section~\ref{sec:rates}, Appendix~\ref{app:frequency})\\
+k & $m-2+2p$, the integer multiplying $\Omega$ in the frequency at $l=2$ (Appendix~\ref{app:frequency})\\
+\thetap,\ \Op & rotation angle and spin rate of the planet\\
+P_l^m,\ \PK_{lm},\ Y_l^m,\ N_{lm} & Legendre functions (with / without Condon--Shortley phase), spherical harmonics, normalisation\\
+F_{lmp}(i),\ G_{lpq}(e) & Kaula inclination and eccentricity functions\\
+\nu_{lmpq} & Kaula's angle $(l-2p)\omega+(l-2p+q)\M+m(\Omega-\thetap)$\\
+f_{lm} & parity phase $\big((-1)^{l-m}-1\big)\pi/4$, i.e. $0$ for $l-m$ even and $-\pi/2$ for $l-m$ odd\\
+\zeta_{lmpq} & $\nu_{lmpq}+f_{lm}$\\
+\sigma_{lmpq},\ \chi_{lmpq} & signed tidal frequency $\dot\nu_{lmpq}$, physical frequency $|\sigma_{lmpq}|$\\
+\kb_l,\ \epsilon_l & complex Love number, phase lag\\
+U,\ T & tidal-raising potential, tidal potential (potential of the bulge)\\
+\mathcal K_{lmpq} & $\G M^\star\frac{R^{2l+1}}{a^{l+1}}\frac{(l-m)!}{(l+m)!}(2-\delta_{0,m})F_{lmp}(i)G_{lpq}(e)$\\
+\mathcal A_{lmpq} & $-|\kb_l|\G M^\star\frac{R^{2l+1}}{a^{l+1}}(-1)^m\sqrt{\frac{4\pi}{2l+1}\frac{(l-m)!}{(l+m)!}}(2-\delta_{0,m})F_{lmp}G_{lpq}$\\
+c^0_{lm},\ c^\pm_{lm} & ladder constants (Chapter~\ref{ch:gradient})\\
+\Lambda_{lmpq} & phase at the field point, $\zeta_{lmpq}-m\varphi$\\
+\hat{\mathbf s},\ \hat{\mathbf h},\ \hat{\mathbf N},\ \hat{\mathbf Y} & spin axis, orbit normal, ascending node on the equator, $\hat{\mathbf s}\times\hat{\mathbf N}$ (nodal frame, Section~\ref{sec:geometry})\\
+\rho,\ c^\star,\ \lambda_N & $\sin\theta^\star e^{\I\lambda_N}$, $\cos\theta^\star$, longitude of the star from the node (Section~\ref{sec:geometry})\\
+\mathcal P_{3m} & $\dd^mP_3/\dd x^m$, with $\PK_{3m}=\sin^m\theta\,\mathcal P_{3m}$ (eq.~\ref{eq:P3m})\\
+\Psi_{mpq},\ \mathcal E_{mpq} & regular phase $(2-2p)u_\M+q\M+f_{2m}$ and $\kb_2(\bar\sigma_{2mpq})e^{\I\Psi_{mpq}}$ (Section~\ref{sec:implementable})\\
+q_{\max}(e) & truncation of the $q$-series (Section~\ref{sec:truncation}, Appendix~\ref{app:truncation})\\
+\Fsp,\ \Fps & force of the star on the planet, of the planet on the star\\
+\boldsymbol\Gamma & torque on the spin of the planet, $\dd(I\mathbf s)/\dd t$\\
+\bottomrule
+\end{longtable}

@@ -1,0 +1,401 @@
+\chapter{Use in an $N$-body code}\label{ch:nbody}
+
+This chapter gives the equations to be implemented in an $N$-body integrator for the tide raised by the star in the planet, at degree two. It does not depend on a particular code. The tide raised in the star uses the same equations (Chapter~\ref{ch:star}), and the implementation in Posidonius is the subject of Chapter~\ref{ch:posidonius}. Every formula of this chapter was checked numerically against an independent computation of the exact linear response of the planet, which does not use Kaula's expansion (Section~\ref{sec:validation}).
+
+\section{Inputs, outputs and frame of the force}\label{sec:io}
+\paragraph{Inputs,} all in inertial axes, at the time $t$ of the force evaluation:
+\begin{itemize}
+  \item $\vr=\vr_{\mathrm p}-\vr_\star$ and $\mathbf v=\mathbf v_{\mathrm p}-\mathbf v_\star$, position and velocity of the planet relative to the star;
+  \item $\mathbf s$, spin vector of the planet;
+  \item $M^\star$, $M_{\mathrm p}$, $R$, and the gravitational constant $\G$;
+  \item the Love-number spectra $\texttt{rek2}(\chi)$, $\texttt{imk2}(\chi)$ of the planet (Section~\ref{sec:love});
+  \item the history of the accepted steps, from which the mean rates $\bar n$, $\dot{\bar\lambda}$, $\dot{\bar\Omega}$ are computed (Section~\ref{sec:rates}), and the mean motions of the other orbiting bodies, which fix the averaging window.
+\end{itemize}
+
+\paragraph{Outputs.}
+\begin{itemize}
+  \item The force of the star on the planet, $\Fsp=M^\star\nabla T|_{\vr^\star}$, in inertial axes (convention~\eqref{eq:force-convention}).
+  \item The torque on the spin, $\boldsymbol\Gamma=\dd(I\mathbf s)/\dd t$ (Section~\ref{sec:torque}).
+\end{itemize}
+
+\paragraph{How the force is applied.} The tidal interaction is an internal force of the star--planet pair:
+\begin{itemize}
+  \item the planet receives $+\Fsp/M_{\mathrm p}$ and the star $-\Fsp/M^\star$, in the barycentric frame;
+  \item the relative acceleration is then $\Fsp(1/M_{\mathrm p}+1/M^\star)$ automatically;
+  \item in a multi-planet system, the reaction on the star produces the indirect terms in the motion of the other planets.
+\end{itemize}
+No extra factor and no indirect term must be added by hand.
+
+\section{Geometry from the state vectors}\label{sec:geometry}
+All geometric quantities are computed from $(\vr,\mathbf v,\mathbf s)$. No Euler angle of the spin axis and no inertial reference direction is needed.
+
+\paragraph{Orbit of the star seen from the planet.} The star is at $\vr^\star=-\vr$, with velocity $\mathbf v^\star=-\mathbf v$. Its orbit has the angular momentum per unit reduced mass $\mathbf h=\vr^\star\times\mathbf v^\star=\vr\times\mathbf v$, the same as that of the planet. With $\mu_{\rm orb}=\G(M^\star+M_{\mathrm p})$ and $r^\star=\|\vr^\star\|$,
+\begin{equation}
+  a=\Big(\frac{2}{r^\star}-\frac{\|\mathbf v\|^2}{\mu_{\rm orb}}\Big)^{-1},\qquad
+  \mathbf e_{\rm v}=\frac{\mathbf v^\star\times\mathbf h}{\mu_{\rm orb}}-\frac{\vr^\star}{r^\star},\qquad
+  e=\|\mathbf e_{\rm v}\|,\qquad \bar n_{\rm osc}=\sqrt{\mu_{\rm orb}/a^3}. \label{eq:elements-a-e}
+\end{equation}
+
+\paragraph{Nodal frame.} Let $\hat{\mathbf s}=\mathbf s/\|\mathbf s\|$ be the spin axis, $\Op=\|\mathbf s\|$ the spin rate, and $\hat{\mathbf h}=\mathbf h/\|\mathbf h\|$ the orbit normal. The node of the orbit on the equator is the intersection of the two planes, i.e.\ the direction $\hat{\mathbf s}\times\hat{\mathbf h}$, whose norm is $\sin i$. The frame is built in three steps.
+\begin{enumerate}
+  \item \textbf{Direction of the node.}
+  \[
+    \mathbf N_0=\begin{cases}\hat{\mathbf s}\times\hat{\mathbf h}, & \text{if}\ \|\hat{\mathbf s}\times\hat{\mathbf h}\|\ge\varepsilon_N,\\[1mm] \hat{\mathbf s}\times\mathbf e_k, & \text{otherwise}.\end{cases}
+  \]
+  $\mathbf e_k$ is the inertial axis with the smallest $|\hat s_k|$, and $\varepsilon_N=10^{-10}$.
+  \item \textbf{Projection onto the equator and normalisation.}
+  \[
+    \mathbf N_\perp=\mathbf N_0-(\mathbf N_0\cdot\hat{\mathbf s})\,\hat{\mathbf s},\qquad
+    \hat{\mathbf N}=\frac{\mathbf N_\perp}{\|\mathbf N_\perp\|}.
+  \]
+  \item \textbf{Third axis.}
+  \[
+    \hat{\mathbf Y}=\hat{\mathbf s}\times\hat{\mathbf N}.
+  \]
+\end{enumerate}
+In compact form,
+\begin{equation}
+  \hat{\mathbf N}=\frac{\mathbf N_0-(\mathbf N_0\cdot\hat{\mathbf s})\,\hat{\mathbf s}}{\big\|\mathbf N_0-(\mathbf N_0\cdot\hat{\mathbf s})\,\hat{\mathbf s}\big\|},\qquad
+  \hat{\mathbf Y}=\hat{\mathbf s}\times\hat{\mathbf N}. \label{eq:node-frame}
+\end{equation}
+\begin{itemize}
+  \item $(\hat{\mathbf N},\hat{\mathbf Y},\hat{\mathbf s})$ is the nodal frame of Chapter~\ref{ch:second}: $\hat{\mathbf N}$ points to the ascending node of the star's orbit on the equator.
+  \item \textbf{The denominator.} In the general case, $\mathbf N_0=\hat{\mathbf s}\times\hat{\mathbf h}$ is already orthogonal to $\hat{\mathbf s}$, so $\mathbf N_\perp=\mathbf N_0$ and $\|\mathbf N_\perp\|=\|\hat{\mathbf s}\times\hat{\mathbf h}\|=\sin i\ge\varepsilon_N$. In the other case, $\|\mathbf N_\perp\|=\|\hat{\mathbf s}\times\mathbf e_k\|=\sqrt{1-\hat s_k^2}\ge\sqrt{2/3}$, because the smallest component of a unit vector satisfies $\hat s_k^2\le1/3$. The denominator is therefore never zero.
+  \item \textbf{The projection.} Mathematically $\mathbf N_\perp=\mathbf N_0$. The projection only removes the rounding error, so that $\hat{\mathbf N}\cdot\hat{\mathbf s}=0$ to machine precision.
+  \item \textbf{The threshold.} When $\hat{\mathbf s}\parallel\hat{\mathbf h}$ ($i=0$ or $\pi$), the node is undefined and any equatorial direction can be used: the force does not depend on it (Section~\ref{sec:validation}, test V7). The threshold $\varepsilon_N$ only avoids dividing by a vanishing $\sin i$; it does not switch to another formula for the force.
+\end{itemize}
+
+\paragraph{Inclination and angles in the orbital plane.}
+\begin{equation}
+  i=\operatorname{atan2}\big(\|\hat{\mathbf s}\times\hat{\mathbf h}\|,\ \hat{\mathbf h}\cdot\hat{\mathbf s}\big)\in[0,\pi],\qquad
+  \hat{\mathbf W}=\frac{\hat{\mathbf h}\times\hat{\mathbf N}}{\|\hat{\mathbf h}\times\hat{\mathbf N}\|},\qquad
+  \hat{\mathbf N}'=\hat{\mathbf W}\times\hat{\mathbf h}. \label{eq:inclination}
+\end{equation}
+$\hat{\mathbf N}'$ and $\hat{\mathbf W}$ span the orbital plane, with $\hat{\mathbf N}'=\hat{\mathbf N}$ when the node is defined. A retrograde rotation corresponds to $i>\pi/2$; no sign convention is needed for $\Op$.
+
+\paragraph{Elements referred to the equator.} With $\hat{\vr}^\star=\vr^\star/r^\star$,
+\begin{gather}
+  u=\operatorname{atan2}\big(\hat{\vr}^\star\cdot\hat{\mathbf W},\ \hat{\vr}^\star\cdot\hat{\mathbf N}'\big),\qquad
+  \omega=\operatorname{atan2}\big(\mathbf e_{\rm v}\cdot\hat{\mathbf W},\ \mathbf e_{\rm v}\cdot\hat{\mathbf N}'\big),\qquad f=u-\omega, \label{eq:elements-angles}\\
+  E=\operatorname{atan2}\big(\sqrt{1-e^2}\,\sin f,\ e+\cos f\big),\qquad \M=E-e\sin E,\qquad u_\M\equiv\omega+\M. \notag
+\end{gather}
+\begin{itemize}
+  \item $\omega$ is the argument of pericentre of the \emph{star's} orbit, referred to the planet's equator. It equals that of the planet plus $\pi$.
+  \item $u_\M$ is the argument of the mean latitude. It is defined even when $e=0$: the force depends on $\omega$ and $\M$ only through $u_\M$ and through $\M$ multiplied by $G_{2pq}(e)=\mathcal O(e^{|q|})$. If $e=0$, set $\omega=0$.
+\end{itemize}
+
+\paragraph{Position of the star in the nodal frame.}
+\begin{equation}
+  \rho\equiv\hat{\vr}^\star\cdot\hat{\mathbf N}+\I\,\hat{\vr}^\star\cdot\hat{\mathbf Y}=\sin\theta^\star e^{\I\lambda_N},\qquad
+  c^\star\equiv\cos\theta^\star=\hat{\vr}^\star\cdot\hat{\mathbf s}, \label{eq:rho}
+\end{equation}
+where $\theta^\star$ is the colatitude of the star and $\lambda_N$ its longitude counted from the node, as in~\eqref{eq:star-geometry}.
+
+\section{From the gradient to the implementable form}\label{sec:implementable}
+We start from the Cartesian gradient~\eqref{eq:grad-cart} at $l=2$, evaluated at the star. Three steps make it implementable: the change to the nodal frame, the elimination of $\Omega-\thetap$, and the polynomial form of the angular functions.
+
+\paragraph{Notation for $l=2$.} With the elements of Section~\ref{sec:geometry},
+\begin{equation}
+  \mathcal K_{2mpq}=\G M^\star\frac{R^5}{a^3}\,c_m\,F_{2mp}(i)\,G_{2pq}(e),\qquad c_0=1,\ c_1=\tfrac13,\ c_2=\tfrac1{12}, \label{eq:K2}
+\end{equation}
+from~\eqref{eq:Klmpq}, and $\kb_2\equiv\kb_2(\bar\sigma_{2mpq})$ (Section~\ref{sec:love}). Only the terms with $F_{2mp}(i)\neq0$ and $|q|\le q_{\max}(e)$ (Section~\ref{sec:truncation}) are kept.
+
+\paragraph{Step 1: phases at the star.} By~\eqref{eq:star-geometry}, the body-fixed longitude of the star is $\varphi^\star=(\Omega-\thetap)+\lambda_N$. In the phase of~\eqref{eq:grad-cart}, $\Lambda_{2mpq}=\zeta_{2mpq}-m\varphi^\star$, the term $m(\Omega-\thetap)$ of $\nu_{2mpq}$ cancels:
+\begin{equation}
+  \Lambda_{2mpq}=\Psi_{mpq}-m\lambda_N,\qquad \Psi_{mpq}\equiv(2-2p)\,\omega+(2-2p+q)\,\M+f_{2m}=(2-2p)\,u_\M+q\,\M+f_{2m}. \label{eq:Psi}
+\end{equation}
+The second form uses $(2-2p)\omega+(2-2p+q)\M=(2-2p)(\omega+\M)+q\M$ and is regular as $e\to0$.
+
+\paragraph{Step 2: phase factor.} With $|\kb_2|e^{-\I\epsilon_2}=\kb_2$, the factor $|\kb_2|e^{\pm\I X}$ of~\eqref{eq:grad-cart}, $X=\Lambda-\epsilon_2$, becomes
+\begin{equation}
+  |\kb_2|\,e^{\I X}=\mathcal E_{mpq}\,e^{-\I m\lambda_N},\qquad \mathcal E_{mpq}\equiv\kb_2(\bar\sigma_{2mpq})\,e^{\I\Psi_{mpq}}, \label{eq:Ecal}
+\end{equation}
+and $|\kb_2|e^{-\I X}=\mathcal E^*_{mpq}e^{\I m\lambda_N}$.
+
+\paragraph{Step 3: angular functions.} The degree-3 functions factor as
+\[
+  \PK_{3m'}(\cos\theta)=\sin^{m'}\theta\;\mathcal P_{3m'}(\cos\theta),\qquad \mathcal P_{3m'}=\frac{\dd^{m'}P_3}{\dd x^{m'}}
+\]
+(Appendix~\ref{app:harmonics}), with
+\begin{equation}
+  \mathcal P_{30}(x)=\tfrac12(5x^3-3x),\qquad \mathcal P_{31}(x)=\tfrac32(5x^2-1),\qquad \mathcal P_{32}(x)=15x,\qquad \mathcal P_{33}(x)=15. \label{eq:P3m}
+\end{equation}
+Hence, at the star, by~\eqref{eq:rho},
+\[
+  \PK_{3m'}(c^\star)\,e^{\pm\I m'\lambda_N}=\rho^{m'}\mathcal P_{3m'}(c^\star)\quad(+),\qquad \bar\rho^{\,m'}\mathcal P_{3m'}(c^\star)\quad(-).
+\]
+\begin{itemize}
+  \item $Z$-component: $|\kb_2|\,\PK_{3m}\cos X=\Re\big[\PK_{3m}\,e^{-\I m\lambda_N}\mathcal E_{mpq}\big]=\mathcal P_{3m}\,\Re\big[\bar\rho^{\,m}\mathcal E_{mpq}\big]$.
+  \item Order $m+1$: $|\kb_2|\,e^{\I\lambda_N}\PK_{3,m+1}e^{-\I X}=\PK_{3,m+1}\,e^{\I(m+1)\lambda_N}\mathcal E^*_{mpq}=\rho^{m+1}\mathcal P_{3,m+1}\,\mathcal E^*_{mpq}$.
+  \item Order $m-1$: $|\kb_2|\,e^{\I\lambda_N}\PK_{3,m-1}e^{\I X}=\PK_{3,m-1}\,e^{-\I(m-1)\lambda_N}\mathcal E_{mpq}=\bar\rho^{\,m-1}\mathcal P_{3,m-1}\,\mathcal E_{mpq}$.
+\end{itemize}
+In the last two lines, $e^{\I\varphi^\star}=e^{\I(\Omega-\thetap)}e^{\I\lambda_N}$ was used; the factor $e^{\I(\Omega-\thetap)}$ is removed by the rotation~\eqref{eq:nodal-rot} to the nodal frame. Steps 1--3 were checked numerically term by term.
+
+\paragraph{Result.} The gradient of $T$ at the star, in the nodal frame, is
+\begin{equation}
+  \boxed{\begin{aligned}
+  V_Z&=\frac{1}{(r^\star)^4}\sum_{m,p,q}(3-m)\,\mathcal K_{2mpq}\,\mathcal P_{3m}(c^\star)\,\Re\big[\bar\rho^{\,m}\mathcal E_{mpq}\big],\\
+  V_X+\I V_Y&=\frac{1}{(r^\star)^4}\sum_{p,q}\mathcal K_{20pq}\,\mathcal P_{31}(c^\star)\,\rho\,\Re\,\mathcal E_{0pq}\\
+  &\quad+\frac{1}{2(r^\star)^4}\sum_{m=1}^{2}\sum_{p,q}\mathcal K_{2mpq}\Big[\mathcal P_{3,m+1}(c^\star)\,\rho^{m+1}\mathcal E^*_{mpq}\\
+  &\hspace{9em}-(3-m)(4-m)\,\mathcal P_{3,m-1}(c^\star)\,\bar\rho^{\,m-1}\mathcal E_{mpq}\Big].
+  \end{aligned}} \label{eq:impl-single}
+\end{equation}
+where:
+\begin{itemize}
+  \item $V_Z$ is the component of $\nabla T$ along the spin axis $\hat{\mathbf s}$, and $V_X+\I V_Y$ its components along $\hat{\mathbf N}$ and $\hat{\mathbf Y}$ (nodal frame~\eqref{eq:node-frame});
+  \item $r^\star$ is the distance star--planet, $\rho=\sin\theta^\star e^{\I\lambda_N}$ and $c^\star=\cos\theta^\star$ give the direction of the star in the nodal frame~\eqref{eq:rho};
+  \item $\mathcal K_{2mpq}$ is the real coefficient~\eqref{eq:K2}: masses, radius, $a$, $F_{2mp}(i)$, $G_{2pq}(e)$;
+  \item $\mathcal P_{3m'}$ are the polynomials~\eqref{eq:P3m};
+  \item $\mathcal E_{mpq}=\kb_2(\bar\sigma_{2mpq})\,e^{\I\Psi_{mpq}}$ combines the Love number of the term and its phase $\Psi_{mpq}=(2-2p)u_\M+q\M+f_{2m}$ \eqref{eq:Psi}--\eqref{eq:Ecal};
+  \item the sums run over $m,p\in\{0,1,2\}$ and $|q|\le q_{\max}(e)$ (Section~\ref{sec:truncation}).
+\end{itemize}
+Properties:
+\begin{itemize}
+  \item It holds for any obliquity $0\le i\le\pi$. No separate formula is needed at $i=0$. A faster form for a coplanar orbit is given in Section~\ref{sec:coplanar-nbody}, as an optimisation only.
+  \item It contains no division by $\sin i$, $\sin\theta^\star$ or $e$. The angular functions are polynomials in $(\rho,\bar\rho,c^\star)$.
+  \item The exact geometry is used: $r^\star$ and the direction of the star come from the state vectors, not from the series. The truncation acts only on the Kaula expansion of the tidal-raising potential.
+\end{itemize}
+The double transformation~\eqref{eq:grad-node}, which uses the elements only, is given in Appendix~\ref{app:double} for reference.
+
+\section{Tidal frequencies and Love numbers}\label{sec:love}
+\subsection{Frequencies with mean rates}\label{sec:rates}
+The Love number is defined for a harmonic forcing of fixed frequency (H1). Each Kaula term is quasi-harmonic, with a slowly varying rate (H3). The frequency used in $\kb_2$ is therefore the rate of $\nu_{2mpq}$ averaged over the \emph{fast} angles: the orbital period and the synodic periods with the other planets. The slow angles (secular precessions, resonant angles, super-periods) are not averaged; they are part of the forcing frequency. The phases $\Psi_{mpq}$ always use the osculating $u_\M$ and $\M$ of the current instant.
+
+\paragraph{Regular form.} The rate~\eqref{eq:sigma} of Kaula's angle can be written in three equivalent forms, derived in Appendix~\ref{app:frequency}:
+\begin{itemize}
+  \item Kaula's form: $\sigma_{2mpq}=(2-2p+q)\,n-m\,\Op+(2-2p)\,\dot\omega+m\,\dot\Omega$;
+  \item with the longitude of pericentre $\varpi=\Omega+\omega$: $\sigma_{2mpq}=(2-2p+q)\,n-m\,\Op+(2-2p)\,\dot\varpi+(m-2+2p)\,\dot\Omega$. In the coplanar case only $k=m-2+2p=0$ occurs and this is the usual form $(2-2p+q)n-m\Op+(2-2p)(\dot\Omega+\dot\omega)$;
+  \item with the mean longitude $\lambda=\Omega+\omega+\M$, the form used here.
+\end{itemize}
+With $\lambda\equiv\Omega+\omega+\M$, the mean longitude of the star counted in the equator, and $k\equiv m-2+2p$, the rate at $l=2$ reads, identically,
+\begin{equation}
+  \boxed{\bar\sigma_{2mpq}=(2-2p)\,\dot{\bar\lambda}+q\,\bar n+k\,\dot{\bar\Omega}-m\,\Op,\qquad k=m-2+2p.} \label{eq:sigma-regular}
+\end{equation}
+where (a bar denotes the average over the fast angles, defined below):
+\begin{itemize}
+  \item $\dot{\bar\lambda}$ is the mean rate of the mean longitude $\lambda$ of the star; it is close to $n$ and contains the precession of the pericentre and of the node;
+  \item $\bar n$ is the mean motion $\sqrt{\G(M^\star+M_{\mathrm p})/a^3}$ averaged over the window; it replaces $\dot\M$;
+  \item $\dot{\bar\Omega}$ is the mean precession rate of the node of the star's orbit on the planet's equator, zero for an isolated Kepler orbit;
+  \item $\Op=\|\mathbf s\|$ is the spin rate of the planet;
+  \item $m,p,q$ are the indices of the term.
+\end{itemize}
+Properties:
+\begin{itemize}
+  \item $\dot{\bar\lambda}$ stays defined as $e\to0$ and as $i\to0$. The osculating $\dot\omega$ alone behaves like $1/e$, and $\dot\Omega$ like $1/\sin i$.
+  \item $\dot{\bar\Omega}$ appears only with $k\neq0$. These terms have $F_{2mp}(i)=\mathcal O(i^{|k|})$ and vanish as $i\to0$, where $\Omega$ is undefined. For $m=2,p=0$ and $m=0,p=1$ ($k=0$, the only terms of the coplanar case), the frequency depends on $\dot{\bar\lambda}$, $\bar n$ and $\Op$ only.
+\end{itemize}
+
+\paragraph{Averaging window.} The window $\Delta T$ must remove the fast oscillations and keep the slow ones:
+\begin{itemize}
+  \item longer than the orbital period $P_i=2\pi/n_i$ of the planet, and than its synodic periods with the other bodies, $P_{{\rm syn},ij}=2\pi/|n_i-n_j|$, which are the periods of the conjunctions;
+  \item much shorter than the slow time scales (secular precessions, libration of a resonance), which are part of the forcing.
+\end{itemize}
+It is computed by the code, at each accepted step, from the osculating mean motions $n_j$ of all the other orbiting bodies:
+\begin{equation}
+  \boxed{\Delta T_i=\min\Big(\max\big(\max_{j\neq i}P_{{\rm syn},ij},\ P_i\big),\ 10\,P_i\Big),\qquad P_{{\rm syn},ij}=\frac{2\pi}{|n_i-n_j|},\quad P_i=\frac{2\pi}{n_i}.} \label{eq:window}
+\end{equation}
+\begin{itemize}
+  \item The longest synodic period covers all the conjunction frequencies of the planet.
+  \item The lower bound $P_i$ applies to a single planet, the upper bound $10P_i$ to two planets with very close periods, whose synodic period would otherwise become longer than the slow time scales.
+  \item The user gives no parameter.
+\end{itemize}
+
+\paragraph{Estimation in a run.} Keep, for each tidally active planet, a history of the accepted steps $(t_j,\lambda_j,\Omega_j,n_{{\rm osc},j})$ covering at least $\Delta T$:
+\begin{enumerate}
+  \item $\Omega_j$ is accumulated from the rotation of $\hat{\mathbf N}$ about $\hat{\mathbf s}$: $\Delta\Omega=\operatorname{atan2}\big(\hat{\mathbf s}\cdot(\hat{\mathbf N}_{j-1}\times\hat{\mathbf N}_j),\ \hat{\mathbf N}_{j-1}\cdot\hat{\mathbf N}_j\big)$;
+  \item $\lambda_j=\lambda_{j-1}+\operatorname{wrap}\big(\Delta\Omega+u_{\M,j}-u_{\M,j-1}\big)$, with $\operatorname{wrap}$ to $(-\pi,\pi]$;
+  \item $\dot{\bar\lambda}=[\lambda(t)-\lambda(t-\Delta T)]/\Delta T$ and $\dot{\bar\Omega}=[\Omega(t)-\Omega(t-\Delta T)]/\Delta T$, the values at $t-\Delta T$ being interpolated linearly between the two stored samples around it; $\bar n$ is the mean of $n_{\rm osc}$ over the window;
+  \item before one window has elapsed: $\dot{\bar\lambda}=\bar n=n_{\rm osc}$, $\dot{\bar\Omega}=0$.
+\end{enumerate}
+
+\paragraph{Accuracy.}
+\begin{itemize}
+  \item Two planets near the 3:2 resonance: the rule~\eqref{eq:window} gives one synodic period. One integration step ($\Delta T=P/20$) gives the osculating rate, with an error of $4.5\times10^{-4}n$ on $\bar\sigma_{2200}$ and up to $45\,\%$ on the force near synchronism. One synodic period gives $9\times10^{-5}n$ and $4\,\%$.
+  \item TRAPPIST-1 b, c, d, e, with their resonant chain: the rule gives $2.0$ to $3.0\,P_i$. The error on $\bar\sigma_{2200}$ is $2\times10^{-5}n$ to $6\times10^{-5}n$, against $5\times10^{-4}n$ to $8\times10^{-4}n$ for one step and $2\times10^{-4}n$ for one orbital period. Over the four planets, the worst error of the rule is within $10\,\%$ of the best of the fixed windows tested ($P_i$ to $10P_i$). No single window is the best for every planet.
+  \item The history is updated on \emph{accepted} steps only. Intermediate force evaluations (sub-steps, predictor--corrector iterations) only read it, so that the rates do not depend on the trial states of the integrator.
+\end{itemize}
+
+\subsection{Love numbers from tabulated spectra}
+The spectra $\texttt{rek2}(\chi)$ and $\texttt{imk2}(\chi)\ge0$ are given at physical frequencies $\chi=|\sigma|\ge0$, with $\texttt{imk2}>0$ for a lag. By~\eqref{eq:love-spectra},
+\begin{equation}
+  \kb_2(\bar\sigma)=\texttt{rek2}(|\bar\sigma|)-\I\,\sgn(\bar\sigma)\,\texttt{imk2}(|\bar\sigma|),\qquad \kb_2(0)=\texttt{rek2}(0). \label{eq:love-impl}
+\end{equation}
+
+\paragraph{Preparation of the table.} Keep the strictly increasing prefix $\chi_1<\dots<\chi_N$ of the tabulated frequencies: it stops at a padding that repeats the last row or that falls back to zero. Inside $[\chi_1,\chi_N]$, interpolate linearly.
+
+\paragraph{Extrapolation above $\chi_N$.} Real rheologies have power-law tails at high frequency: $\texttt{imk2}\propto\chi^{-\alpha}$ and $\texttt{rek2}\to k_\infty+C\chi^{b}$, with $b=-\alpha$ (Andrade) or $b=-2\alpha$ (Maxwell, $\alpha=1$). With the last two (three) distinct points:
+\begin{equation}
+  \begin{gathered}
+  \beta=\frac{\ln(\texttt{imk2}_N/\texttt{imk2}_{N-1})}{\ln(\chi_N/\chi_{N-1})}\ \text{clamped to}\ [-1,0],\qquad
+  \texttt{imk2}(\chi)=\texttt{imk2}_N\Big(\frac{\chi}{\chi_N}\Big)^{\beta},\\
+  \texttt{rek2}(\chi)=\texttt{rek2}_N+(\texttt{rek2}_N-\texttt{rek2}_{N-1})\,\frac{\chi^{b}-\chi_N^{b}}{\chi_N^{b}-\chi_{N-1}^{b}},
+  \end{gathered} \label{eq:extrap}
+\end{equation}
+where $\chi_N>\chi_{N-1}>\chi_{N-2}$ are the last three distinct frequencies of the table, $\texttt{rek2}_j$ and $\texttt{imk2}_j$ the tabulated values there, $\beta$ the high-frequency slope of $\texttt{imk2}$ in log--log, and $b$ solves $\dfrac{\chi_N^b-\chi_{N-1}^b}{\chi_{N-1}^b-\chi_{N-2}^b}=\dfrac{\texttt{rek2}_N-\texttt{rek2}_{N-1}}{\texttt{rek2}_{N-1}-\texttt{rek2}_{N-2}}$ (a fit of $\texttt{rek2}=k_\infty+C\chi^b$ through the last three points), clamped between $2\beta$ and $\beta$, i.e.\ between the Maxwell and the Andrade behaviours.
+\begin{itemize}
+  \item If $\texttt{imk2}_N$ or $\texttt{imk2}_{N-1}$ is not positive, or $\beta\ge0$, both values are held constant. If $\texttt{rek2}$ is not monotonic over the last three points, $b=\beta$ is used.
+  \item For $\beta<0$, $\chi^b\to0$: $\texttt{rek2}$ tends to a finite limit and $\texttt{imk2}$ to zero. The extrapolated values stay finite and $\texttt{imk2}\ge0$ for any $\chi$.
+\end{itemize}
+
+\paragraph{Extrapolation below $\chi_1$} (only if $\chi_1>0$). The same rule is applied with the first points, $\beta$ clamped to $[0,1]$ ($\texttt{imk2}\propto\chi^{\beta}$ below the dissipation peak), and $\texttt{imk2}(0)=0$.
+
+\paragraph{Accuracy.} Tested on spectra truncated by one decade and compared with the exact values:
+\begin{center}\small
+\begin{tabular}{lcc}\toprule
+Spectrum (cut one decade before its end) & error on \texttt{rek2} & error on \texttt{imk2}\\\midrule
+Maxwell, homogeneous body & $3\times10^{-14}$ & $4\times10^{-9}$\\
+Andrade, $\alpha=0.2$ / $0.3$ & $3\times10^{-5}$ / $1\times10^{-5}$ & $1.3\times10^{-3}$\\
+Burgers & $6\times10^{-5}$ & $4\times10^{-2}$\\
+TRAPPIST-1 b--h spectra (Revol et al.\ 2024) & $\le5\times10^{-3}$ & $\le8\times10^{-3}$\\
+Low-frequency end, Maxwell / Andrade (cut below the peak) & $\le2\times10^{-7}$ & $\le5\times10^{-3}$\\
+Holding the end values (no extrapolation), same cases & up to $7\times10^{-2}$ & $0.6$ to $9$\\\bottomrule
+\end{tabular}
+\end{center}
+No rule can predict a feature that lies outside the data, such as a second relaxation peak beyond $\chi_N$: the spectra should cover the forcing frequencies of the run, with the extrapolation as a safeguard.
+
+\section{Truncation and eccentricity functions}\label{sec:truncation}
+The force must be accurate for any Love-number spectrum, since the spectrum can vary strongly with frequency. In the worst case, each term may have an arbitrary $\kb_{2,mpq}$ with $|\kb_{2,mpq}|\le\kappa_{\max}$. The force of a term is linear in $(\Re\kb,\Im\kb)$, $\vF_{mpq}=\mathsf L_{mpq}(\Re\kb,\Im\kb)^{\mathsf T}$, so the truncation error is bounded by
+\[
+  \|\delta\vF\|\le\kappa_{\max}\sum_{|q|>q_{\max}}\sum_{m,p}\|\mathsf L_{mpq}\|_2.
+\]
+The table below keeps $|q|\le q_{\max}(e)$. It guarantees, for any spectrum with $|\kb_2|\le\kappa_{\max}$,
+\begin{equation}
+  \|\delta\vF\|\le10^{-5}\,\kappa_{\max}F_0(r^\star),\qquad \|\delta\boldsymbol\Gamma\|\le10^{-5}\,\kappa_{\max}\,r^\star F_0(r^\star),\qquad F_0(r^\star)=\frac{3\G M^{\star2}R^5}{(r^\star)^7}, \label{eq:guarantee}
+\end{equation}
+at every point of the orbit, where $F_0(r^\star)$ is the instantaneous elastic force per unit Love number:
+\begin{center}
+\renewcommand{\arraystretch}{1.2}\setlength{\tabcolsep}{4pt}\small
+\begin{tabular}{l|cccccccccccc}\toprule
+$e\le$ & 0.001 & 0.01 & 0.02 & 0.05 & 0.10 & 0.15 & 0.20 & 0.25 & 0.30 & 0.35 & 0.40 & 0.50\\\midrule
+$q_{\max}$ & 2 & 3 & 3 & 5 & 7 & 10 & 12 & 15 & 18 & 23 & 28 & 42\\\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}
+  \item Each value is the worst over the points of a 35-point grid in $e$ that fall in the bin. For each $e$ there are 714 states: 7 inclinations from 0 to $\pi$, 3 arguments of pericentre, and 34 positions on the orbit (32 uniform in $\M$, plus apocentre and pericentre). The worst state is always near the apocentre, where the force is weakest. The bound was checked again on independent states.
+  \item The torque bound, divided by $r^\star F_0$, never exceeds the force bound divided by $F_0$, since $\|\vr^\star\times\delta\vF\|\le r^\star\|\delta\vF\|$.
+  \item The guarantee is relative to $\kappa_{\max}F_0$, a scale set mostly by the elastic part, while the secular evolution is driven by the dissipative part $\Im\kb_2$. The tolerance $10^{-5}$ resolves the dissipative part to $10^{-3}$ in the worst case when $|\Im\kb_2|/\kappa_{\max}\gtrsim10^{-2}$; in general, choose a tolerance of order $10^{-3}|\Im\kb_2|/\kappa_{\max}$. The tables for tolerances $10^{-2}$ to $10^{-6}$ are in Appendix~\ref{app:truncation}.
+  \item The table covers $e\le0.5$. Beyond, $q_{\max}$ must be extended with the same method.
+\end{itemize}
+
+\paragraph{Eccentricity functions.} $G_{2pq}(e)$ is needed up to $|q|=42$. The power series truncated at $e^{7}$ is not sufficient: its error reaches $8\times10^{-4}$ at $e=0.2$ and $2\times10^{-2}$ at $e=0.3$. $G_{2pq}$ is computed exactly with Tisserand's formula (Appendix~\ref{app:kaula}, eq.~\eqref{eq:tisserand}), with at most 22 terms for $e\le0.5$ and an absolute error below $10^{-13}$. The symmetries $G_{22q}=G_{20,-q}$ and $G_{21q}=G_{21,-q}$ halve the work. The inclination functions $F_{2mp}(i)$ are the closed forms of Table~\ref{tab:F2mp}.
+
+\paragraph{Fast evaluation of $G_{2pq}$.} Tisserand's formula costs up to $10^{-4}$\,s per force evaluation at $e=0.4$, and a cache keyed on $e$ does not help: the eccentricity rebuilt from the state vectors changes in its last bits at every call. For $e\le0.5$ the functions are therefore read from Chebyshev tables of their smooth part,
+\begin{equation}
+  G_{2pq}(e)=\beta_e^{|q|}\,H_{pq}(u),\qquad u=\beta_e^2,\qquad \beta_e=\frac{e}{1+\sqrt{1-e^2}},\qquad
+  H_{pq}(u)\simeq\sum_{k=0}^{8}c^{(j)}_{pqk}\,T_k\big(t_j(u)\big), \label{eq:G-table}
+\end{equation}
+where:
+\begin{itemize}
+  \item $u\in[0,u_{\max}]$, $u_{\max}=\beta_e^2(0.5)=0.0718$, is cut into 8 equal intervals $j$; $t_j(u)\in[-1,1]$ is the local variable of interval $j$ and $T_k$ are the Chebyshev polynomials (Clenshaw's recurrence);
+  \item $H_{pq}=G_{2pq}/\beta_e^{|q|}$ is a smooth function of $u$, since $G_{2pq}=\mathcal O(e^{|q|})$; the factor $\beta_e^{|q|}$ is applied afterwards;
+  \item the coefficients $c^{(j)}_{pqk}$ are computed from Tisserand's formula (45 terms) at the 9 Chebyshev nodes of each interval, once per run (about 0.1\,s).
+\end{itemize}
+The absolute error is $3\times10^{-15}$ for $e\le0.5$ and $|q|\le q_{\max}(e)$. Above $e=0.5$, Tisserand's formula is used directly.
+
+\section{Force and torque in inertial axes}\label{sec:torque}
+\paragraph{Force.} From~\eqref{eq:impl-single} and the convention~\eqref{eq:force-convention},
+\begin{equation}
+  \boxed{\Fsp=M^\star\Big[\Re(V_X+\I V_Y)\,\hat{\mathbf N}+\Im(V_X+\I V_Y)\,\hat{\mathbf Y}+V_Z\,\hat{\mathbf s}\Big].} \label{eq:impl-force}
+\end{equation}
+where $\Fsp$ is the force of the star on the planet in inertial axes, $M^\star$ the mass of the star, $V_X,V_Y,V_Z$ the components~\eqref{eq:impl-single} of $\nabla T$ at the star, and $(\hat{\mathbf N},\hat{\mathbf Y},\hat{\mathbf s})$ the nodal frame expressed in inertial axes~\eqref{eq:node-frame}.
+
+\paragraph{Torque.} Neglect the tide in the star. The only internal interaction of the pair is $\Fsp=-\Fps$, applied at the centres of mass. With the reduced mass $\mu=M^\star M_{\mathrm p}/(M^\star+M_{\mathrm p})$, the orbital angular momentum $\mathbf L_{\rm orb}=\mu\,\vr\times\dot\vr$ evolves as $\dot{\mathbf L}_{\rm orb}=\vr\times\Fsp$, because gravity is central. The conservation of $\mathbf L_{\rm orb}+\mathbf L_{\rm spin}$ then imposes
+\begin{equation}
+  \boxed{\frac{\dd(I\mathbf s)}{\dd t}=\boldsymbol\Gamma=-\,\vr\times\Fsp=M^\star\,\vr^\star\times\nabla T\big|_{\vr^\star}.} \label{eq:torque}
+\end{equation}
+where $I$ is the moment of inertia of the planet, $\mathbf s$ its spin vector, $\vr=\vr_{\mathrm p}-\vr_\star$ the position of the planet relative to the star, $\vr^\star=-\vr$ the position of the star seen from the planet, and $\Fsp$ the force~\eqref{eq:impl-force}.
+\begin{itemize}
+  \item The torque must be computed with \emph{the same instantaneous} force as the one applied to the orbit. A torque built from an orbit-averaged force exchanges, at each step, a different angular momentum from the one taken from the orbit, and $\mathbf L_{\rm tot}$ drifts.
+  \item The component along the spin axis, $\boldsymbol\Gamma\cdot\hat{\mathbf s}$, changes the spin rate; the perpendicular components change the direction of the spin axis.
+  \item The constant-time-lag model \citep{Hut1981,Bolmont2015} satisfies~\eqref{eq:torque} exactly.
+\end{itemize}
+
+\section{Coplanar orbit: a faster form}\label{sec:coplanar-nbody}
+When the orbit lies in the equator of the planet ($i=0$), only $(m,p)=(0,1)$ and $(2,0)$ survive in~\eqref{eq:impl-single}, since $F_{201}(0)=-\tfrac12$, $F_{220}(0)=3$ and the other $F_{2mp}(0)$ vanish. The star is in the equator: $c^\star=0$, $|\rho|=1$, $\mathcal P_{31}(0)=-\tfrac32$, $\mathcal P_{33}(0)=15$ and $\mathcal P_{30}(0)=\mathcal P_{32}(0)=0$. Hence $V_Z=0$, and $V_X+\I V_Y=\rho\,(w_r+\I w_\varphi)$ with real $w_r$, $w_\varphi$. The gradient has a radial and an azimuthal part only:
+\begin{equation}
+\boxed{\begin{gathered}
+  \nabla T\big|_{\vr^\star}=\frac{\G M^\star R^5}{a^3(r^\star)^4}\big(w_r\,\hat\vr^\star+w_\varphi\,\hat{\boldsymbol\varphi}\big),\qquad \hat{\boldsymbol\varphi}=\hat{\mathbf s}\times\hat\vr^\star,\\
+  w_r=\sum_{|q|\le q_{\max}}\Big[\tfrac34\,G_{21q}(e)\,\Re\big(\kb_{01q}\,e^{\I q\M}\big)+\tfrac94\,G_{20q}(e)\,\Re Z_q\Big],\\
+  w_\varphi=-\tfrac32\sum_{|q|\le q_{\max}}G_{20q}(e)\,\Im Z_q,\qquad Z_q=\kb_{20q}\,e^{\I[(2+q)\M-2f]},
+\end{gathered}} \label{eq:coplanar-nbody}
+\end{equation}
+where:
+\begin{itemize}
+  \item $\kb_{01q}=\kb_2(q\bar n)$ and $\kb_{20q}=\kb_2(2\dot{\bar\lambda}+q\bar n-2\Op)$ are the Love numbers at the frequencies~\eqref{eq:sigma-regular} with $i=0$;
+  \item $f$ is the true anomaly of the star: $\cos f=\hat{\mathbf e}_{\rm v}\cdot\hat\vr^\star$, $\sin f=\hat{\mathbf h}\cdot(\hat{\mathbf e}_{\rm v}\times\hat\vr^\star)$, with $\hat{\mathbf e}_{\rm v}=\mathbf e_{\rm v}/e$; if $e=0$, $f=\M=0$;
+  \item only $a$, $e$, $r^\star$, $\hat\vr^\star$, $\M$ and $f$ are needed: no node, no $\omega$, no $F_{2mp}$ and no $\mathcal P_{3m}$.
+\end{itemize}
+The force and the torque follow from~\eqref{eq:force-convention} and~\eqref{eq:torque}: $\Fsp=M^\star\nabla T|_{\vr^\star}$. This is the form~\eqref{eq:coplanar-l2} of Chapter~\ref{ch:coplanar} written with $|\kb|\cos(\cdot-\epsilon)=\Re(\kb\,e^{\I\,\cdot})$; it equals~\eqref{eq:impl-single} at $i=0$ to rounding error.
+
+\paragraph{When to use it.} It costs $2(2q_{\max}+1)$ terms instead of $9(2q_{\max}+1)$. Its error with respect to~\eqref{eq:impl-single} is linear in the obliquity. For any Love numbers with $|\kb_2|\le\kappa_{\max}$ (the assumption of the truncation guarantee~\eqref{eq:guarantee}),
+\begin{equation}
+  \|\vF_{\rm coplanar}-\vF_{\rm single}\|\le C(e)\;i\;\kappa_{\max}F_0(r^\star), \label{eq:coplanar-switch}
+\end{equation}
+where $C(e)$ is the worst case over the orbit, reached at apocentre: $C=2.0$ ($e=0$), $2.7$ ($e=0.05$), $3.6$ ($0.1$), $7.1$ ($0.2$), $13$ ($0.3$), $24$ ($0.4$), $55$ ($0.5$). Realistic rheologies stay well below (Maxwell, constant time lag: $C\le2.5$ at $e=0.49$). The coplanar form is used for $i\le i_s=10^{-7}$\,rad: the jump at the switch is then below $5.5\times10^{-6}\,\kappa_{\max}F_0$ for all $e\le0.5$, i.e.\ below the truncation tolerance $10^{-5}$. It applies to a prograde orbit only ($\hat{\mathbf h}\cdot\hat{\mathbf s}>0$); near $i=\pi$ the surviving terms are $(0,1)$ and $(2,2)$, and the general form~\eqref{eq:impl-single} is used.
+
+\section{Dissipated power}\label{sec:power}
+$N$-body codes often output the power dissipated by the tide in the planet. For the constant-time-lag model it is $-(\mathbf F_{\rm diss}\cdot\mathbf v+\boldsymbol\Gamma\cdot\mathbf s)$, with the dissipative part of the force only \citep{Bolmont2015}. The same definition is used here: the dissipative part is the part of the force carried by $\Im\kb_2$,
+\begin{equation}
+  \boxed{P_{\rm diss}=-\big(\mathbf F_{\Im}\cdot\mathbf v+\boldsymbol\Gamma_{\Im}\cdot\mathbf s\big),} \label{eq:power}
+\end{equation}
+where $\mathbf v=\mathbf v_{\mathrm p}-\mathbf v_\star$, and $\mathbf F_{\Im}$, $\boldsymbol\Gamma_{\Im}$ are the force~\eqref{eq:impl-force} and the torque~\eqref{eq:torque} computed with every $\kb_2(\bar\sigma_{2mpq})$ replaced by $\I\,\Im\kb_2(\bar\sigma_{2mpq})$. Since the force is linear in $(\Re\kb_2,\Im\kb_2)$, $\mathbf F_{\Im}$ and $\boldsymbol\Gamma_{\Im}$ are obtained by a second accumulation of the same terms.
+\begin{itemize}
+  \item \textbf{Orbit average.} Over an orbit with constant rates,
+  \begin{equation}
+    \langle P_{\rm diss}\rangle=\frac{\G M^{\star2}R^5}{a^6}\sum_{m,p,q}c_m\,F_{2mp}^2(i)\,G_{2pq}^2(e)\;\bar\sigma_{2mpq}\,\big(-\Im\kb_2(\bar\sigma_{2mpq})\big)\ \ge0, \label{eq:power-mean}
+  \end{equation}
+  non-negative since $\sigma\,\Im\kb_2(\sigma)\le0$ for a lag.
+  \item \textbf{Instantaneous value.} $P_{\rm diss}$ is not positive at every instant for a general rheology (minimum $-0.8\,\%$ of the mean in an Andrade case at $e=0.3$, against $-860\,\%$ for the power of the total force). The split into $\Re$ and $\Im$ parts is a convention, the one that extends the constant-time-lag output: in that limit~\eqref{eq:power} equals the constant-time-lag power up to $\mathcal O\big((n\Delta t)^2\big)$. For an elastic planet it is exactly zero.
+\end{itemize}
+
+\section{Algorithm}\label{sec:algorithm}
+For each planet with the tide active, at each force evaluation:
+\begin{enumerate}
+  \item \textbf{Geometry} (Section~\ref{sec:geometry}): $\hat{\mathbf s}$, $\Op$, $\hat{\mathbf h}$; nodal frame $\hat{\mathbf N},\hat{\mathbf Y}$; $i$, $\hat{\mathbf W}$, $\hat{\mathbf N}'$; $a$, $e$, $\bar n_{\rm osc}$, $u$, $\omega$, $f$, $\M$, $u_\M$; $r^\star$, $\rho$, $c^\star$.
+  \item \textbf{Mean rates} (Section~\ref{sec:rates}): $\bar n$, $\dot{\bar\lambda}$, $\dot{\bar\Omega}$ from the history (read only).
+  \item \textbf{Kaula functions}: $q_{\max}(e)$ from the table of Section~\ref{sec:truncation}; $F_{2mp}(i)$ for $m,p=0,1,2$; $G_{2pq}(e)$ for $p=0,1$ and $|q|\le q_{\max}$, from~\eqref{eq:G-table} for $e\le0.5$.
+  \item \textbf{Terms}: for each term $(m,p,q)$ with $F_{2mp}(i)\neq0$, compute $\bar\sigma_{2mpq}$~\eqref{eq:sigma-regular}, $\kb_2(\bar\sigma)$~\eqref{eq:love-impl}, $\mathcal K_{2mpq}$~\eqref{eq:K2}, $\mathcal E_{mpq}$~\eqref{eq:Ecal}; accumulate the single form~\eqref{eq:impl-single}, or the coplanar form~\eqref{eq:coplanar-nbody} if $i\le i_s$.
+  \item \textbf{Output}: $\Fsp$~\eqref{eq:impl-force} and $\boldsymbol\Gamma$~\eqref{eq:torque}, and their dissipative parts for~\eqref{eq:power}.
+\end{enumerate}
+At each \emph{accepted} step, update $\lambda$ and $\Omega$, recompute the window~\eqref{eq:window}, and append $(t,\lambda,\Omega,n_{\rm osc})$ to the history.
+
+\paragraph{Exact savings.} Two identities halve the cost of the Love numbers and of the phases, without changing the result beyond rounding:
+\begin{itemize}
+  \item for $m=0$, $\bar\sigma_{201,-q}=-\bar\sigma_{201q}$ and $\bar\sigma_{202q}=-\bar\sigma_{200,-q}$ exactly, and $\kb_2(-\sigma)=\kb_2(\sigma)^*$ (hypothesis H1): one evaluation of the spectrum per pair;
+  \item $e^{\I q\M}$ is obtained by successive products of $e^{\I\M}$ (rounding error $\approx|q|\times10^{-16}$).
+\end{itemize}
+
+\paragraph{Cost.} At most $9\times(2q_{\max}+1)$ terms: 45 for $e\le0.001$, 63 for $e\le0.02$ and 765 for $e=0.5$. In the coplanar form, $2\times(2q_{\max}+1)$. Each term needs one interpolation in the spectra and one complex product.
+
+\section{Validation tests}\label{sec:validation}
+Any implementation should pass the following tests. Each one checks a property of the exact physics, independent of the Kaula derivation. The reference implementation (Python) and Posidonius pass all of them (Section~\ref{sec:pos-tests}).
+\begin{description}
+  \item[V1 Circular equatorial orbit, constant time lag.] The closed forms of Section~\ref{sec:physical-check}:
+  \[
+    F^{\mathrm p\to\star}_r=-\frac{3k_2\G M^{\star2}R^5}{a^7}\Big[\tfrac14+\tfrac34\cos2(\Op-n)\Delta t\Big],\qquad
+    F^{\mathrm p\to\star}_\varphi=\frac{3k_2\G M^{\star2}R^5}{2a^7}\sin2(\Op-n)\Delta t,
+  \]
+  and $F_\theta=0$.
+  Agreement $5\times10^{-16}$.
+  \item[V2 Constant time lag, eccentric and oblique.] With $\kb_2=k_2e^{-\I\sigma\Delta t}$ and Kepler rates, the force equals the exact force of the delayed bulge: the bulge points to the star position $\Delta t$ earlier, rotated with the planet by $\Op\Delta t$. Agreement $10^{-10}$ with $|q|\le40$.
+  \item[V3 Small time lag.] The difference with the Hut force \citep{Hut1981} decreases as $\Delta t$.
+  \item[V4 Elastic planet.] With a constant real $k_2$, for any rates and any obliquity, $\boldsymbol\Gamma=0$ and
+  \[
+    \Fsp=-3k_2\G M^{\star2}R^5(r^\star)^{-7}\,\hat{\vr}.
+  \]
+  \item[V5 Rotation of the inertial axes.] Rotating $(\vr,\mathbf v,\mathbf s)$ rotates $\Fsp$ and $\boldsymbol\Gamma$ in the same way. This test detects any hidden reference to the inertial axes or to an inertial plane.
+  \item[V6 Change of length unit.] Multiply all lengths by $\lambda$ and $\G$ by $\lambda^3$, which keeps the time unit. Then $\Fsp\to\lambda\Fsp$ and $\boldsymbol\Gamma\to\lambda^2\boldsymbol\Gamma$. This test detects dimensional errors.
+  \item[V7 Obliquity $\to0$.] The force is continuous at $i=0$, with $|\vF(i)-\vF(0)|=\mathcal O(i)$, and independent of the node direction chosen at $i=0$.
+  \item[V8 Signs.] For a coplanar orbit and a constant time lag, the orbit-averaged $\boldsymbol\Gamma\cdot\hat{\mathbf s}$ is negative for $\Op>n$ and positive for $\Op<n$. For an oblique spin, the averaged torque equals the averaged Hut torque to $\mathcal O(\Delta t)$.
+  \item[V9 Angular momentum.] In a two-body integration with the instantaneous torque~\eqref{eq:torque}, $\mathbf L_{\rm orb}+I\mathbf s$ is conserved up to the integration error of the scheme.
+\end{description}
+
+\section{Assumptions and limits}\label{sec:limits}
+\begin{itemize}
+  \item \textbf{Physics:} hypotheses H1--H3, response at the mean frequency. The result is exact for a constant time lag. For a general rheology, the error is of order $\partial_\sigma\kb_2\cdot\delta\sigma$, where $\delta\sigma$ is the neglected fast modulation of the rates.
+  \item \textbf{Elements:} two-body osculating elements with $\mu_{\rm orb}=\G(M^\star+M_{\mathrm p})$, referred to the instantaneous equator.
+  \item \textbf{Degree:} degree two only. The neglected degree-three terms are of relative order $(R/a)^2$.
+  \item \textbf{Scope:} the tide in the planet. The tide in the star uses the same equations with the roles of the bodies exchanged (Chapter~\ref{ch:star}).
+  \item \textbf{Eccentricity:} $e\le0.5$ with the truncation table above. Beyond, the code falls back to the largest $q_{\max}$ of the table ($42$) and Tisserand's formula, without guarantee.
+  \item \textbf{Spin--orbit synchronism.} Hypothesis H3 fails for a term whose mean frequency is zero. At the 1:1 spin--orbit resonance, $\bar\sigma_{2200}=2(\dot{\bar\lambda}-\Op)$ uses the instantaneous spin rate $\Op$, while the spin librates with the orbital period: $\bar\sigma_{2200}$ changes sign twice per orbit. Its Love number is read at a frequency that oscillates around zero: $\Im\kb_2$ changes sign with $\bar\sigma_{2200}$, and jumps if the spectrum does not tend to zero at low frequency. The torque of this term then behaves like a dry friction (stick--slip): the spin equation becomes stiff and discontinuous, and the secular rates obtained in a run depend on the integration step. With an obliquity, the terms $(1,0,-1)$, $(1,1,1)$ and $(2,1,2)$ also have frequencies close to zero. A treatment of the response in the time domain (the bulge as a state variable with its own relaxation equations) would be needed in this regime; it is not part of this document.
+\end{itemize}

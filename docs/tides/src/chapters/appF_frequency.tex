@@ -1,0 +1,102 @@
+\chapter{The tidal frequency in three equivalent forms}\label{app:frequency}
+
+The frequency of the term $(l,m,p,q)$ is the time derivative of Kaula's angle. This appendix writes it in three equivalent forms, explains why they are equal, and why Chapter~\ref{ch:nbody} uses the third one. It is restricted to $l=2$; the general case follows by replacing $2$ by $l$.
+
+\section{Variables}
+All angles refer to the orbit of the star seen from the planet, measured in the planet's equatorial plane (Appendix~\ref{app:conventions}).
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{$}l<{$}p{12.3cm}}\toprule
+\text{Symbol} & Meaning\\\midrule
+\omega & argument of pericentre: angle from the ascending node to the pericentre, in the orbital plane\\
+\M & mean anomaly; $\dot\M\simeq n$\\
+\Omega & longitude of the ascending node of the star's orbit on the planet's equator\\
+\thetap & rotation angle of the planet; $\dot\theta_{\mathrm p}=\Op$, the spin rate\\
+\varpi=\Omega+\omega & longitude of pericentre (a "broken" angle: $\Omega$ in the equator, $\omega$ in the orbital plane)\\
+\lambda=\Omega+\omega+\M & mean longitude of the star\\
+n & mean motion, $\sqrt{\G(M^\star+M_{\mathrm p})/a^3}$\\
+k=m-2+2p & integer that multiplies $\Omega$ in the second and third forms\\\bottomrule
+\end{tabular}
+\end{center}
+
+\section{The three forms}
+\paragraph{Kaula's form.} Kaula's angle at $l=2$, eq.~\eqref{eq:nu}, and its time derivative, eq.~\eqref{eq:sigma}, are
+\[
+  \nu_{2mpq}=(2-2p)\,\omega+(2-2p+q)\,\M+m\,(\Omega-\thetap),
+\]
+\begin{equation}
+  \boxed{\sigma_{2mpq}=(2-2p+q)\,n-m\,\Op+(2-2p)\,\dot\omega+m\,\dot\Omega.} \label{eq:sigma-form1}
+\end{equation}
+
+\paragraph{Form with the longitude of pericentre.} Write $\omega=\varpi-\Omega$ in $\nu_{2mpq}$:
+\[
+  \nu_{2mpq}=(2-2p)\,\varpi+(2-2p+q)\,\M+(m-2+2p)\,\Omega-m\,\thetap .
+\]
+Hence, with $k=m-2+2p$,
+\begin{equation}
+  \boxed{\sigma_{2mpq}=(2-2p+q)\,n-m\,\Op+(2-2p)\,\dot\varpi+k\,\dot\Omega.} \label{eq:sigma-form2}
+\end{equation}
+
+\paragraph{Form with the mean longitude.} Group $(2-2p+q)\M+(2-2p)\varpi=(2-2p)(\varpi+\M)+q\M=(2-2p)\lambda+q\M$:
+\[
+  \nu_{2mpq}=(2-2p)\,\lambda+q\,\M+k\,\Omega-m\,\thetap .
+\]
+Hence
+\begin{equation}
+  \boxed{\sigma_{2mpq}=(2-2p)\,\dot\lambda+q\,n+k\,\dot\Omega-m\,\Op.} \label{eq:sigma-form3}
+\end{equation}
+Expanding $\dot\lambda=\dot\Omega+\dot\omega+n$ in~\eqref{eq:sigma-form3}, or $\dot\varpi=\dot\Omega+\dot\omega$ in~\eqref{eq:sigma-form2}, gives back~\eqref{eq:sigma-form1}: the three forms are identical, for all $(m,p,q)$. Equation~\eqref{eq:sigma-form3} is equation~\eqref{eq:sigma-regular} of Chapter~\ref{ch:nbody}.
+
+\section{The coplanar form}
+\paragraph{Which terms exist at $i=0$.} The integer $k$ and the order of $F_{2mp}(i)$ at small $i$ are given below:
+\begin{center}\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{l|ccc|ccc|ccc}\toprule
+$(m,p)$ & $(0,0)$ & $(0,1)$ & $(0,2)$ & $(1,0)$ & $(1,1)$ & $(1,2)$ & $(2,0)$ & $(2,1)$ & $(2,2)$\\\midrule
+$k$ & $-2$ & $0$ & $2$ & $-1$ & $1$ & $3$ & $0$ & $2$ & $4$\\
+$F_{2mp}(i)$ & $\mathcal O(i^2)$ & $-\tfrac12$ & $\mathcal O(i^2)$ & $\mathcal O(i)$ & $\mathcal O(i)$ & $\mathcal O(i^3)$ & $3$ & $\mathcal O(i^2)$ & $\mathcal O(i^4)$\\\bottomrule
+\end{tabular}
+
+\smallskip
+($-\tfrac12$ and $3$ are the values at $i=0$; the corrections are $\mathcal O(i^2)$.)
+\end{center}
+In every case $F_{2mp}(i)=\mathcal O(i^{|k|})$. At $i=0$ only $(m,p)=(0,1)$ and $(2,0)$ remain, and for both $k=0$.
+
+\paragraph{Coplanar frequencies.} With $k=0$, \eqref{eq:sigma-form2} becomes
+\begin{equation}
+  \sigma_{2mpq}=(2-2p+q)\,n-m\,\Op+(2-2p)\,\dot\varpi=(2-2p+q)\,n-m\,\Op+(2-2p)\,(\dot\Omega+\dot\omega), \label{eq:sigma-coplanar}
+\end{equation}
+that is, $\sigma_{201q}=q\,n$ and $\sigma_{220q}=(2+q)\,n-2\Op+2\dot\varpi$, as in~\eqref{eq:nu-coplanar}. This is the form commonly used in the coplanar case. It coincides with Kaula's form for the two coplanar terms.
+
+\paragraph{Oblique planet.} When $i\neq0$, the seven other pairs $(m,p)$ appear, with $k\neq0$. The coplanar form~\eqref{eq:sigma-coplanar} then misses the term $k\,\dot\Omega$. For example, for $(m,p)=(1,1)$, $k=1$:
+\[
+  \text{Kaula:}\quad\sigma_{211q}=q\,n+\dot\Omega-\Op,\qquad \text{coplanar form:}\quad q\,n-\Op .
+\]
+The term $k\,\dot\Omega$ is small compared with $n$ and $\Op$ ($|\dot\Omega|\sim10^{-6}n$ in the 3:2 test of Section~\ref{sec:rates}). It matters when the other terms of $\sigma$ nearly cancel. This happens for an oblique planet in synchronous rotation: for example, with $\Op=n$ and $\dot{\bar\lambda}=n$, the term $(m,p,q)=(2,1,2)$ has $\sigma=2n+2\dot\Omega-2\Op=2\dot\Omega$, entirely given by the precession of the node. Its Love number is then evaluated at the precession frequency instead of $0$; this is the regime of Cassini states.
+
+\section{Why the third form is used in an $N$-body code}
+In a simulation, the elements are osculating and are recomputed from the state vectors at each step.
+\begin{itemize}
+  \item $\omega$ and $\varpi$ are undefined at $e=0$. Near $e=0$, the perturbations displace the pericentre by large angles: the osculating $\dot\omega$ and $\dot\varpi$ behave like $1/e$.
+  \item $\Omega$ is undefined at $i=0$, and $\dot\Omega$ behaves like $1/\sin i$.
+  \item $\lambda=\Omega+\omega+\M$ is defined for any $e$ and $i$: it differs from the true longitude of the star, $\Omega+\omega+f$, by $f-\M$, a periodic term of amplitude about $2e$. Its rate $\dot\lambda$ stays close to $n$.
+\end{itemize}
+Form~\eqref{eq:sigma-form3} contains $\dot\lambda$, $n$ and $\Op$, which are always defined, and $k\,\dot\Omega$, which is multiplied by $F_{2mp}(i)=\mathcal O(i^{|k|})$ in the force and therefore does not contribute as $i\to0$. It needs no special treatment at $e=0$ or $i=0$. Form~\eqref{eq:sigma-form1} needs $\dot\omega$, which cannot be estimated at small $e$; form~\eqref{eq:sigma-form2} needs $\dot\varpi$, which has the same problem.
+
+\section{Mean rates}
+The Love number is evaluated at the frequency of a harmonic forcing (H1). The rates in~\eqref{eq:sigma-form3} are therefore averaged over the fast oscillations (orbital and synodic periods) but not over the slow ones (precessions, resonant angles). A bar denotes this average, over a window $\Delta T$ computed by the code from the mean motions of the other bodies, eq.~\eqref{eq:window}: the longest synodic period of the planet, between one and ten orbital periods (Section~\ref{sec:rates}):
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{$}l<{$}p{7.2cm}p{5.6cm}}\toprule
+\text{Symbol} & Meaning & How it is obtained\\\midrule
+n & osculating mean motion $\sqrt{\G(M^\star+M_{\mathrm p})/a^3}$ & at each step, from $a$ (eq.~\ref{eq:elements-a-e})\\
+\bar n & mean of $n$ over the window; replaces $\dot\M$ in $q\,n$ & mean of the stored values of $n$\\
+\dot{\bar\lambda} & mean rate of the mean longitude $\lambda$; close to $n$, it contains the precession of the pericentre and of the node & $(\lambda_{\rm last}-\lambda_{\rm first})/\Delta T$, $\lambda$ accumulated step by step\\
+\dot{\bar\Omega} & mean precession rate of the node of the star's orbit on the planet's equator, due to the other planets and to the precession of the spin axis; zero for an isolated Kepler orbit & $(\Omega_{\rm last}-\Omega_{\rm first})/\Delta T$, $\Omega$ accumulated from the rotation of $\hat{\mathbf N}$ about $\hat{\mathbf s}$\\
+\Op & spin rate of the planet, $\|\mathbf s\|$ & at each step\\\bottomrule
+\end{tabular}
+\end{center}
+With these mean rates,
+\[
+  \bar\sigma_{2mpq}=(2-2p)\,\dot{\bar\lambda}+q\,\bar n+k\,\dot{\bar\Omega}-m\,\Op,\qquad k=m-2+2p .
+\]

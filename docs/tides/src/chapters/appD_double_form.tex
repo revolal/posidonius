@@ -1,0 +1,23 @@
+\chapter{The double transformation as an implementable form}\label{app:double}
+
+Chapter~\ref{ch:nbody} uses the \emph{single} transformation: Kaula's expansion is applied to the tidal-raising potential only, and the gradient is evaluated at the true position of the star. The \emph{double} transformation of Chapter~\ref{ch:second} also expands the field point in the star's elements, then identifies the elements, eq.~\eqref{eq:grad-node}. It is kept here as an analytical reference.
+
+\section{Form in the nodal frame}
+At $l=2$, with $\mathcal K_{2mpq}$ of~\eqref{eq:K2}, $\mathcal E^{D}_{mpq,kj}=\kb_2(\bar\sigma_{2mpq})\,e^{\I D_{pqkj}}$ and $\mathcal E^{S}_{pq,kj}=\kb_2(\bar\sigma_{20pq})\,e^{\I S_{pqkj}}$, where $D$ and $S$ are given by~\eqref{eq:D}--\eqref{eq:S}, eq.~\eqref{eq:grad-node} reads
+\begin{equation}
+  \begin{aligned}
+  V_Z&=\frac{1}{a^4}\sum_{m,p,q}\sum_{k=0}^{3}\sum_{j}(-1)^{3-m}(3-m)\,\mathcal K_{2mpq}\,F_{3mk}(i)\,G_{3kj}(e)\,\Im\,\mathcal E^{D}_{mpq,kj},\\
+  V_X+\I V_Y&=\frac{1}{2a^4}\sum_{m=1}^{2}\sum_{p,q,k,j}\mathcal K_{2mpq}\,G_{3kj}\Big[F_{3,m+1,k}\,\mathcal E^{D*}_{mpq,kj}-(3-m)(4-m)\,F_{3,m-1,k}\,\mathcal E^{D}_{mpq,kj}\Big]\\
+  &\quad+\frac{1}{2a^4}\sum_{p,q,k,j}\mathcal K_{20pq}\,F_{31k}\,G_{3kj}\Big[\mathcal E^{D*}_{0pq,kj}+\mathcal E^{S}_{pq,kj}\Big],
+  \end{aligned} \label{eq:impl-double}
+\end{equation}
+with $F_{34k}\equiv0$. The force follows from~\eqref{eq:impl-force}.
+
+\section{Comparison with the single form}
+\begin{itemize}
+  \item \textbf{Agreement.} With the same truncation in $q$ and $|j|\le40$, the two forms agree to $7\times10^{-15}$.
+  \item \textbf{Inputs.} The double form uses the elements only: $a$, $e$, $i$, $\omega$, $\M$. No geometric coordinate of the star remains. It also needs $F_{3mk}(i)$ (Table~\ref{tab:F3mp}) and $G_{3kj}(e)$.
+  \item \textbf{Cost.} $36\,(2q_{\max}+1)(2j_{\max}+1)$ terms, against $9\,(2q_{\max}+1)$ for the single form: 4\,356 against 99 at $e\le0.1$ with $j_{\max}=q_{\max}$. The ratio grows like $16q_{\max}$.
+  \item \textbf{Accuracy at equal truncation.} The double form truncates both $q$ and $j$. At equal truncation it is 2 to 3 times less accurate than the single form: for $|q|,|j|\le Q$, the relative error is $5.5\times10^{-3}$ against $1.7\times10^{-3}$ at $e=0.05$ ($Q=2$), and $7.8\times10^{-2}$ against $2.3\times10^{-2}$ at $e=0.25$ ($Q=5$).
+\end{itemize}
+The single form is therefore the one to implement. The double form is the natural starting point of a secular theory: averaging over $\M$ selects $j=q$ (and $k=p$ for the average over $\omega$) in~\eqref{eq:impl-double}.

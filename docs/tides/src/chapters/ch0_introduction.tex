@@ -1,0 +1,33 @@
+\chapter{Introduction}\label{ch:intro}
+
+\paragraph{Problem.} A star of mass $M^\star$ raises a tide on a planet of radius $R$. The deformed planet acts back on the star with the force $\Fps$, and the star acts on the planet with $\Fsp=-\Fps$. We derive this force, and the torque on the planet's spin, for an arbitrary rheology described by a frequency-dependent complex Love number $\kb_l(\sigma)$ \citep{EfroimskyMakarov2013,EfroimskyMakarov2014}. The same equations give the tide raised in the star by the planet.
+
+\paragraph{Route.} The derivation follows Kaula's approach \citep{Kaula1964,Kaula2000}:
+\begin{enumerate}
+  \item expand the potential of the star in spherical harmonics (Chapter~\ref{ch:potential});
+  \item express each term in the star's orbital elements with Kaula's transformation (Chapter~\ref{ch:kaula});
+  \item apply the planet's response term by term to obtain the tidal potential $T$ (Chapter~\ref{ch:tidal});
+  \item take its gradient (Chapter~\ref{ch:gradient});
+  \item express the result in orbital elements only, by a second Kaula transformation at the field point (Chapter~\ref{ch:second});
+  \item specialise to a coplanar orbit (Chapter~\ref{ch:coplanar});
+  \item give the form of the equations for an $N$-body code (Chapter~\ref{ch:nbody});
+  \item apply them to the tide raised in the star (Chapter~\ref{ch:star});
+  \item describe their implementation in Posidonius (Chapter~\ref{ch:posidonius}).
+\end{enumerate}
+
+\paragraph{How to read this document.}
+\begin{itemize}
+  \item \textbf{To use the model} in Posidonius: Chapter~\ref{ch:nbody} for the equations and their limits (Sections~\ref{sec:io}, \ref{sec:rates}, \ref{sec:truncation}, \ref{sec:limits}), Chapter~\ref{ch:star} for the tide in the star, and Chapter~\ref{ch:posidonius} for the input spectra, the messages and the known limitations.
+  \item \textbf{To check the implementation}: Chapter~\ref{ch:nbody} gives every equation in the order of the algorithm (Section~\ref{sec:algorithm}); the table of Section~\ref{sec:pos-files} gives the Rust function that implements each one. The code comments refer to the equation numbers of this document.
+  \item \textbf{To follow the derivation}: Chapters~\ref{ch:potential} to~\ref{ch:coplanar}, in order. Each chapter starts from the result of the previous one; Section~\ref{sec:implementable} links the general gradient of Chapter~\ref{ch:gradient} to the implementable form.
+\end{itemize}
+
+\paragraph{Where to find the conventions.} Before reading the derivation, see:
+\begin{itemize}
+  \item \textbf{Appendix~\ref{app:conventions}} — physical hypotheses H1--H3, frames, orbital elements, Love-number convention, sign of the force, and a table of all symbols;
+  \item \textbf{Appendix~\ref{app:harmonics}} — Legendre functions and spherical harmonics, including the phase convention, which is essential for the signs;
+  \item \textbf{Appendix~\ref{app:kaula}} — Kaula's inclination and eccentricity functions, with exact tables.
+\end{itemize}
+The conventions are stated once and never changed.
+
+\paragraph{Verification.} Every formula was checked numerically, independently of its derivation, against the exact linear response of the deformed body. This response is computed directly from the tidal-raising potential and the rheology, without Kaula's expansion. The agreement is at the level of rounding errors ($10^{-16}$ to $10^{-14}$), except where a truncation is stated. The checks of the implementation are listed in Section~\ref{sec:pos-tests}.

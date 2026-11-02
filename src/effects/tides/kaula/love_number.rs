@@ -97,6 +97,20 @@ impl LoveNumber {
         }
     }
 
+    /// Read access to the tabulated spectrum: (chi in rad/s, rek2, imk2), used by kaula_tide.
+    pub(crate) fn spectrum(&self) -> (&[f64; 1024], &[f64; 1024], &[f64; 1024]) {
+        (
+            &self.spectrum_excitation_frequency,
+            &self.spectrum_real_part,
+            &self.spectrum_imaginary_part,
+        )
+    }
+
+    /// Spin rate of the body for which the spectrum was computed (rad/s), `None` for no rescaling.
+    pub(crate) fn spectrum_spin_rate(&self) -> Option<f64> {
+        self.stellar_spectrum_spin_rate
+    }
+
     /// Fetches the real love number from the cache for index of tuple (m, p, q).
     pub(crate) fn real(&self, m: usize, p: usize, q: usize) -> f64 {
         self.cache.real(m, p, q)
