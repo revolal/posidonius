@@ -395,7 +395,16 @@ pub fn calculate_denergy_dt(
             };
             continue;
         }
-        if let TidesEffect::OrbitingBody(_) = particle.tides.effect {
+        if let TidesEffect::OrbitingBody(model) = &particle.tides.effect {
+            // No tide, or tidal coordinates not computed yet (first snapshot, before any force
+            // evaluation: distance = 0): no dissipated power is written instead of 0/0 = NaN, which
+            // serde writes as null in the .json snapshots and cannot read back
+            if matches!(model, TidalModel::DisabledModel)
+                || particle.tides.parameters.internal.distance == 0.
+            {
+                particle.tides.parameters.internal.denergy_dt = 0.;
+                continue;
+            }
             // - Equation 32 from Bolmont et al. 2015
             //// Instantaneous energy loss dE/dt due to tides
             //// in Msun.AU^2.day^(-3)
